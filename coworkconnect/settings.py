@@ -54,17 +54,28 @@ def database_config_from_env():
     database_url = (
         os.getenv("DATABASE_URL")
         or os.getenv("POSTGRES_URL")
+        or os.getenv("POSTGRES_PRISMA_URL")
+        or os.getenv("POSTGRES_URL_NON_POOLING")
         or os.getenv("SUPABASE_DATABASE_URL")
+        or os.getenv("SUPABASE_DB_URL")
         or os.getenv("MYSQL_URL")
     )
+    explicit_engine = os.getenv("DB_ENGINE")
+    postgres_host = os.getenv("POSTGRES_HOST") or os.getenv("SUPABASE_DB_HOST")
+    postgres_user = os.getenv("POSTGRES_USER") or os.getenv("SUPABASE_DB_USER")
+    postgres_password = os.getenv("POSTGRES_PASSWORD") or os.getenv("SUPABASE_DB_PASSWORD")
+    postgres_name = os.getenv("POSTGRES_DATABASE") or os.getenv("POSTGRES_DB") or os.getenv("SUPABASE_DB_NAME")
+    postgres_port = os.getenv("POSTGRES_PORT") or os.getenv("SUPABASE_DB_PORT")
+
+    inferred_engine = "postgresql" if any([postgres_host, postgres_user, postgres_password, postgres_name]) else "mysql"
     config = {
-        "engine": os.getenv("DB_ENGINE", "mysql"),
-        "name": os.getenv("DB_NAME", "coworkconnect"),
-        "host": os.getenv("DB_HOST", "localhost"),
-        "user": os.getenv("DB_USER", "root"),
-        "password": os.getenv("DB_PASSWORD", ""),
-        "port": os.getenv("DB_PORT", "3306"),
-        "ssl": truthy(os.getenv("DB_SSL", "false")),
+        "engine": explicit_engine or inferred_engine,
+        "name": postgres_name or os.getenv("DB_NAME", "coworkconnect"),
+        "host": postgres_host or os.getenv("DB_HOST", "localhost"),
+        "user": postgres_user or os.getenv("DB_USER", "root"),
+        "password": postgres_password or os.getenv("DB_PASSWORD", ""),
+        "port": postgres_port or os.getenv("DB_PORT", "5432" if inferred_engine == "postgresql" else "3306"),
+        "ssl": truthy(os.getenv("DB_SSL", "true" if inferred_engine == "postgresql" else "false")),
     }
 
     if database_url:
@@ -90,13 +101,25 @@ def database_config_from_env():
     return config
 
 
+HAS_EXTERNAL_DB_CONFIG = any(
+    os.getenv(name)
+    for name in [
+        "DATABASE_URL",
+        "POSTGRES_URL",
+        "POSTGRES_PRISMA_URL",
+        "POSTGRES_URL_NON_POOLING",
+        "SUPABASE_DATABASE_URL",
+        "SUPABASE_DB_URL",
+        "MYSQL_URL",
+        "DB_HOST",
+        "POSTGRES_HOST",
+        "SUPABASE_DB_HOST",
+    ]
+)
+
 USE_SQLITE_FALLBACK = (
     truthy(os.getenv("VERCEL", "false"))
-    and not os.getenv("DATABASE_URL")
-    and not os.getenv("POSTGRES_URL")
-    and not os.getenv("SUPABASE_DATABASE_URL")
-    and not os.getenv("MYSQL_URL")
-    and not os.getenv("DB_HOST")
+    and not HAS_EXTERNAL_DB_CONFIG
 )
 
 DB_CONFIG = database_config_from_env()
