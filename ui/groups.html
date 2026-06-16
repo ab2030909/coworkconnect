@@ -10,12 +10,17 @@
     <style>
         body {
             background: #eef2f7;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
         .groups-page {
-            height: 100vh;
-            padding: 96px 1rem 0.75rem;
+            position: fixed;
+            top: 90px;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: auto;
+            padding: 0.75rem 1rem;
             background:
                 linear-gradient(180deg, rgba(6, 78, 59, 0.08), rgba(238, 242, 247, 0) 320px),
                 #eef2f7;
@@ -24,7 +29,7 @@
 
         .groups-shell {
             width: min(1540px, calc(100vw - 2rem));
-            height: calc(100vh - 106px);
+            height: 100%;
             min-height: 0;
             margin: 0 auto;
             display: grid;
@@ -1225,12 +1230,13 @@
 
         @media (max-width: 960px) {
             .groups-page {
-                padding: 82px 0 0;
+                top: 70px;
+                padding: 0;
             }
 
             .groups-shell {
                 width: 100%;
-                height: calc(100vh - 82px);
+                height: 100%;
                 min-height: 0;
                 border-radius: 0;
                 border-left: 0;
