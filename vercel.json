@@ -3,11 +3,11 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/wsgi.py"
+      "destination": "/api/index.py"
     }
   ],
   "functions": {
-    "wsgi.py": {
+    "api/index.py": {
       "maxDuration": 30,
       "excludeFiles": "{.git/**,.venv/**,__pycache__/**,**/__pycache__/**,*.pyc,.codex-*.log,SRS*.docx}"
     }
