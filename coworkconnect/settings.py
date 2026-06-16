@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from urllib.parse import parse_qs, urlparse, unquote
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,11 +41,45 @@ ROOT_URLCONF = "coworkconnect.urls"
 WSGI_APPLICATION = "coworkconnect.wsgi.application"
 ASGI_APPLICATION = "coworkconnect.asgi.application"
 
-DB_NAME = os.getenv("DB_NAME", "coworkconnect")
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-DB_PORT = os.getenv("DB_PORT", "3306")
+def truthy(value):
+    return str(value).lower() in {"1", "true", "yes", "on", "required"}
+
+
+def database_config_from_env():
+    database_url = os.getenv("DATABASE_URL") or os.getenv("MYSQL_URL")
+    config = {
+        "name": os.getenv("DB_NAME", "coworkconnect"),
+        "host": os.getenv("DB_HOST", "localhost"),
+        "user": os.getenv("DB_USER", "root"),
+        "password": os.getenv("DB_PASSWORD", ""),
+        "port": os.getenv("DB_PORT", "3306"),
+        "ssl": truthy(os.getenv("DB_SSL", "false")),
+    }
+
+    if database_url:
+        parsed = urlparse(database_url)
+        query = parse_qs(parsed.query)
+        config.update(
+            {
+                "name": parsed.path.lstrip("/") or config["name"],
+                "host": parsed.hostname or config["host"],
+                "user": unquote(parsed.username or config["user"]),
+                "password": unquote(parsed.password or config["password"]),
+                "port": str(parsed.port or config["port"]),
+                "ssl": config["ssl"] or "ssl" in query or truthy(query.get("ssl-mode", [""])[0]),
+            }
+        )
+
+    return config
+
+
+DB_CONFIG = database_config_from_env()
+DB_NAME = DB_CONFIG["name"]
+DB_HOST = DB_CONFIG["host"]
+DB_USER = DB_CONFIG["user"]
+DB_PASSWORD = DB_CONFIG["password"]
+DB_PORT = DB_CONFIG["port"]
+DB_SSL = DB_CONFIG["ssl"]
 
 try:
     import pymysql
@@ -56,6 +91,7 @@ try:
         port=int(DB_PORT),
         charset="utf8mb4",
         autocommit=True,
+        ssl={} if DB_SSL else None,
     )
     with connection.cursor() as cursor:
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{DB_NAME}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
@@ -71,7 +107,10 @@ DATABASES = {
         "PASSWORD": DB_PASSWORD,
         "HOST": DB_HOST,
         "PORT": DB_PORT,
-        "OPTIONS": {"charset": "utf8mb4"},
+        "OPTIONS": {
+            "charset": "utf8mb4",
+            **({"ssl": {}} if DB_SSL else {}),
+        },
     }
 }
 

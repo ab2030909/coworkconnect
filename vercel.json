@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/wsgi.py"
+    }
+  ],
+  "functions": {
+    "wsgi.py": {
+      "maxDuration": 30,
+      "excludeFiles": "{.git/**,.venv/**,__pycache__/**,**/__pycache__/**,*.pyc,.codex-*.log,SRS*.docx}"
+    }
+  }
+}

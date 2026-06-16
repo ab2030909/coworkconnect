@@ -359,6 +359,42 @@ Open the application in the browser:
 http://localhost:5000
 ```
 
+## Deployment on Vercel
+
+The project includes Vercel deployment support through:
+
+- `vercel.json`
+- root-level `wsgi.py`
+- `.python-version`
+- `requirements.txt`
+
+Important: Vercel cannot connect to the MySQL database running on your laptop through `localhost`. For the backend to work online, you must use an external MySQL database such as Railway, Aiven, PlanetScale-compatible MySQL, or another hosted MySQL service.
+
+Set these environment variables in the Vercel project dashboard:
+
+```text
+DEBUG=false
+DJANGO_SECRET_KEY=your_long_random_secret
+JWT_SECRET=your_long_random_secret
+JWT_EXPIRE=30d
+DB_HOST=your_external_mysql_host
+DB_PORT=3306
+DB_USER=your_external_mysql_user
+DB_PASSWORD=your_external_mysql_password
+DB_NAME=coworkconnect
+DB_SSL=true
+```
+
+You can also use one database URL instead of the individual DB variables:
+
+```text
+DATABASE_URL=mysql://user:password@host:3306/coworkconnect?ssl-mode=REQUIRED
+```
+
+After saving the environment variables, redeploy the Vercel project. The Django backend will create the required tables automatically on the first request.
+
+Note: Vercel serverless storage is not persistent. Uploaded files may not remain permanently unless external file storage is added later, such as Vercel Blob, S3, or Cloudinary.
+
 ### 5. Optional Seed Data
 
 After registering at least one user, run:
