@@ -60,7 +60,17 @@ def register(request):
         "INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)",
         [name, email, hash_password(password), role],
     )
-    return api_response({"success": True, "message": "User registered successfully", "userId": user_id}, 201)
+    user = {"id": user_id, "name": name, "email": email, "role": role}
+    return api_response(
+        {
+            "success": True,
+            "message": "User registered successfully",
+            "userId": user_id,
+            "token": make_token(user),
+            "user": user,
+        },
+        201,
+    )
 
 
 def login(request):

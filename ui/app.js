@@ -109,11 +109,14 @@ const loginForm = document.getElementById('login-form');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('email').value;
+        const email = document.getElementById('email').value.trim().toLowerCase();
         const password = document.getElementById('password').value;
         const errorMsg = document.getElementById('error-message');
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
 
         try {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing in...';
             const response = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -133,6 +136,9 @@ if (loginForm) {
         } catch (error) {
             errorMsg.querySelector('.msg-content').textContent = 'Server error. Please try again.';
             errorMsg.classList.remove('hidden');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Log In';
         }
     });
 }
@@ -142,13 +148,16 @@ const registerForm = document.getElementById('register-form');
 if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim().toLowerCase();
         const password = document.getElementById('password').value;
         const errorMsg = document.getElementById('error-message');
         const successMsg = document.getElementById('success-message');
+        const submitBtn = registerForm.querySelector('button[type="submit"]');
 
         try {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating account...';
             const response = await fetch(`${API_URL}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -158,19 +167,28 @@ if (registerForm) {
             const data = await response.json();
 
             if (data.success) {
-                successMsg.querySelector('.msg-content').textContent = 'Account created! Redirecting to login...';
+                if (data.token && data.user) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                }
+                successMsg.querySelector('.msg-content').textContent = 'Account created! Taking you to the app...';
                 successMsg.classList.remove('hidden');
                 errorMsg.classList.add('hidden');
                 setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
+                    window.location.href = 'index.html';
+                }, 700);
             } else {
                 errorMsg.querySelector('.msg-content').textContent = data.message;
                 errorMsg.classList.remove('hidden');
+                successMsg.classList.add('hidden');
             }
         } catch (error) {
             errorMsg.querySelector('.msg-content').textContent = 'Server error. Please try again.';
             errorMsg.classList.remove('hidden');
+            successMsg.classList.add('hidden');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Account';
         }
     });
 }
