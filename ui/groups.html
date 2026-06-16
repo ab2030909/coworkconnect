@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Groups & Chat | CoWorkConnect</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=groups-composer-2">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -459,9 +459,11 @@
 
         .chat-active {
             flex: 1;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-rows: auto auto minmax(0, 1fr) auto auto;
             min-height: 0;
+            height: 100%;
+            max-height: 100%;
             overflow: hidden;
         }
 
@@ -756,6 +758,7 @@
             border-top: 2px solid #dbe5ef;
             position: relative;
             box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.08);
+            z-index: 5;
         }
 
         .composer {
@@ -1592,7 +1595,7 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=groups-composer-2"></script>
     <script>
         const state = {
             groups: [],
