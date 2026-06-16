@@ -19,6 +19,11 @@ def ensure_schema():
         with connection.cursor() as cursor:
             for statement in statements:
                 cursor.execute(statement)
+            for statement in compatibility_statements(connection.vendor):
+                try:
+                    cursor.execute(statement)
+                except Exception:
+                    pass
     except Exception:
         return
 
@@ -126,6 +131,7 @@ def mysql_statements():
           group_id INT NOT NULL,
           user_id INT NOT NULL,
           content TEXT NOT NULL,
+          image_url VARCHAR(255),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (group_id) REFERENCES community_groups(id) ON DELETE CASCADE,
           FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -265,6 +271,7 @@ def sqlite_statements():
           group_id INTEGER NOT NULL,
           user_id INTEGER NOT NULL,
           content TEXT NOT NULL,
+          image_url TEXT,
           created_at TEXT DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (group_id) REFERENCES community_groups(id) ON DELETE CASCADE,
           FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -404,6 +411,7 @@ def postgres_statements():
           group_id INTEGER NOT NULL,
           user_id INTEGER NOT NULL,
           content TEXT NOT NULL,
+          image_url VARCHAR(255),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (group_id) REFERENCES community_groups(id) ON DELETE CASCADE,
           FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -438,4 +446,18 @@ def postgres_statements():
           FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
         """,
+    ]
+
+
+def compatibility_statements(vendor):
+    if vendor == "postgresql":
+        return [
+            "ALTER TABLE messages ADD COLUMN IF NOT EXISTS image_url VARCHAR(255)",
+        ]
+    if vendor == "sqlite":
+        return [
+            "ALTER TABLE messages ADD COLUMN image_url TEXT",
+        ]
+    return [
+        "ALTER TABLE messages ADD COLUMN image_url VARCHAR(255)",
     ]

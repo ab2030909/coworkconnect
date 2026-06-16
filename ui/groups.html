@@ -620,6 +620,21 @@
             word-break: break-word;
         }
 
+        .message-bubble:empty {
+            display: none;
+        }
+
+        .message-image {
+            display: block;
+            max-width: min(320px, 100%);
+            max-height: 320px;
+            margin-top: 0.45rem;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #dbe5ef;
+            background: white;
+        }
+
         .sent .message-bubble {
             background: #dcfce7;
             border-color: #bbf7d0;
@@ -730,6 +745,7 @@
             padding: 0.85rem 1.25rem 1.15rem;
             background: white;
             border-top: 1px solid #e2e8f0;
+            position: relative;
         }
 
         .composer {
@@ -768,6 +784,68 @@
             display: flex;
             align-items: center;
             gap: 0.25rem;
+        }
+
+        .emoji-picker {
+            position: absolute;
+            left: 1.25rem;
+            bottom: 5.8rem;
+            width: min(310px, calc(100% - 2.5rem));
+            background: white;
+            border: 1px solid #dbe5ef;
+            border-radius: 8px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.15);
+            padding: 0.75rem;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.25rem;
+            z-index: 10;
+        }
+
+        .emoji-picker button {
+            height: 34px;
+            border: 0;
+            border-radius: 8px;
+            background: #f8fafc;
+            cursor: pointer;
+            font-size: 1.12rem;
+        }
+
+        .emoji-picker button:hover {
+            background: #dcfce7;
+        }
+
+        .selected-image-preview {
+            display: none;
+            align-items: center;
+            gap: 0.7rem;
+            margin-bottom: 0.7rem;
+            border: 1px solid #dbe5ef;
+            border-radius: 8px;
+            background: #f8fafc;
+            padding: 0.55rem;
+        }
+
+        .selected-image-preview.active {
+            display: flex;
+        }
+
+        .selected-image-preview img {
+            width: 58px;
+            height: 58px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .selected-image-preview span {
+            flex: 1;
+            min-width: 0;
+            color: #475569;
+            font-size: 0.82rem;
+            font-weight: 800;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .send-btn {
@@ -1347,15 +1425,24 @@
                     </div>
 
                     <div class="composer-wrap">
+                        <div id="selected-image-preview" class="selected-image-preview">
+                            <img id="selected-image-thumb" src="" alt="Selected image">
+                            <span id="selected-image-name">Selected image</span>
+                            <button class="icon-button" type="button" id="clear-image-btn" title="Remove image"><i data-lucide="x" size="18"></i></button>
+                        </div>
+                        <div id="emoji-picker" class="emoji-picker hidden"></div>
                         <form id="chat-form" class="composer">
                             <div class="composer-actions">
+                                <button class="icon-button" id="attach-image-btn" type="button" title="Send photo"><i data-lucide="image-plus" size="19"></i></button>
                                 <button class="icon-button" id="mention-btn" type="button" title="Mention"><i data-lucide="at-sign" size="19"></i></button>
                             </div>
                             <textarea id="msg-input" autocomplete="off" rows="1" placeholder="Message this circle"></textarea>
                             <div class="composer-actions">
+                                <button class="icon-button" id="emoji-btn" type="button" title="Emoji"><i data-lucide="smile" size="19"></i></button>
                                 <button class="send-btn" id="send-message-btn" type="submit"><span>Send</span><i data-lucide="send" size="17"></i></button>
                             </div>
                         </form>
+                        <input id="message-image-input" type="file" accept="image/*" hidden>
                         <p class="composer-hint" id="composer-hint">Messages update automatically every few seconds.</p>
                     </div>
                 </div>
@@ -1486,8 +1573,10 @@
             filter: 'all',
             messagePoller: null,
             sending: false,
+            selectedImage: null,
         };
 
+        const emojis = ['😀', '😁', '😂', '😊', '😍', '😎', '🤝', '👏', '👍', '🔥', '💡', '🚀', '✅', '📌', '📸', '🎉'];
         const categories = ['Tech', 'Design', 'Marketing', 'Founder', 'Growth', 'Remote'];
         const channelSets = [
             ['general', 'introductions', 'resources', 'wins'],
@@ -1563,7 +1652,7 @@
             sendButton.disabled = disabled;
             input.placeholder = token ? 'Message this circle' : 'Login to send messages';
             hint.textContent = token
-                ? 'Messages update automatically every 3 seconds. Press Enter to send, Shift+Enter for a new line.'
+                ? 'Send text, photos, and emojis. Messages update automatically every 3 seconds.'
                 : 'Login first to read and send group messages.';
         }
 
@@ -1588,6 +1677,45 @@
             input.selectionStart = input.selectionEnd = start + text.length;
             autoResizeMessageInput();
             input.focus();
+        }
+
+        function renderEmojiPicker() {
+            const picker = document.getElementById('emoji-picker');
+            picker.innerHTML = emojis.map((emoji) => `<button type="button" data-emoji="${emoji}">${emoji}</button>`).join('');
+            picker.querySelectorAll('button').forEach((button) => {
+                button.addEventListener('click', () => {
+                    insertComposerText(button.dataset.emoji);
+                    picker.classList.add('hidden');
+                });
+            });
+        }
+
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emoji-picker');
+            picker.classList.toggle('hidden');
+        }
+
+        function handleMessageImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                showToast('Please select an image file.');
+                event.target.value = '';
+                return;
+            }
+            state.selectedImage = file;
+            const preview = document.getElementById('selected-image-preview');
+            document.getElementById('selected-image-thumb').src = URL.createObjectURL(file);
+            document.getElementById('selected-image-name').textContent = file.name;
+            preview.classList.add('active');
+        }
+
+        function clearMessageImage() {
+            state.selectedImage = null;
+            document.getElementById('message-image-input').value = '';
+            document.getElementById('selected-image-thumb').src = '';
+            document.getElementById('selected-image-name').textContent = 'Selected image';
+            document.getElementById('selected-image-preview').classList.remove('active');
         }
 
         function showGroupInfo() {
@@ -1810,6 +1938,7 @@
                                 <span>${time}</span>
                             </div>
                             <div class="message-bubble">${escapeHtml(message.content)}</div>
+                            ${message.image_url ? `<img class="message-image" src="${escapeHtml(message.image_url)}" alt="Shared image">` : ''}
                             <div class="message-tools">
                                 <button class="message-tool" type="button">Reply</button>
                                 <button class="message-tool" type="button">Save</button>
@@ -1875,19 +2004,26 @@
                 showToast('Join this group before sending messages.');
                 return;
             }
-            if (!content) return;
+            if (!content && !state.selectedImage) {
+                showToast('Write a message or attach a photo.');
+                return;
+            }
 
             try {
                 state.sending = true;
                 updateComposerState();
+                const formData = new FormData();
+                formData.append('content', content);
+                if (state.selectedImage) formData.append('image', state.selectedImage);
                 const response = await fetch(`/api/groups/${state.selectedGroupId}/messages`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                    body: JSON.stringify({ content }),
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData,
                 });
 
                 if (response.ok) {
                     input.value = '';
+                    clearMessageImage();
                     autoResizeMessageInput();
                     await fetchMessages();
                 } else {
@@ -1959,6 +2095,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+            renderEmojiPicker();
             updateComposerState();
             fetchGroups();
 
@@ -1980,6 +2117,10 @@
             document.getElementById('jump-latest-btn').addEventListener('click', scrollMessagesToBottom);
             document.getElementById('group-info-btn').addEventListener('click', showGroupInfo);
             document.getElementById('mention-btn').addEventListener('click', () => insertComposerText('@'));
+            document.getElementById('emoji-btn').addEventListener('click', toggleEmojiPicker);
+            document.getElementById('attach-image-btn').addEventListener('click', () => document.getElementById('message-image-input').click());
+            document.getElementById('message-image-input').addEventListener('change', handleMessageImage);
+            document.getElementById('clear-image-btn').addEventListener('click', clearMessageImage);
 
             const messageInput = document.getElementById('msg-input');
             messageInput.addEventListener('input', autoResizeMessageInput);

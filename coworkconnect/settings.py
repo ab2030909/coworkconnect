@@ -190,7 +190,7 @@ USE_TZ = False
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "ui"]
 MEDIA_URL = "/uploads/"
-MEDIA_ROOT = Path(tempfile.gettempdir()) / "uploads" if USE_SQLITE_FALLBACK else BASE_DIR / "uploads"
+MEDIA_ROOT = Path(tempfile.gettempdir()) / "uploads" if truthy(os.getenv("VERCEL", "false")) else BASE_DIR / "uploads"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 JWT_SECRET = os.getenv("JWT_SECRET", SECRET_KEY)

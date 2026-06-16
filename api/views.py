@@ -518,11 +518,12 @@ def group_messages(request, group_id):
         if not fetch_one("SELECT id FROM group_members WHERE group_id = %s AND user_id = %s", [group_id, user["id"]]):
             return api_response({"success": False, "message": "Join this group before sending messages"}, 403)
         content = (read_data(request).get("content") or "").strip()
-        if not content:
-            return api_response({"success": False, "message": "Message cannot be empty"}, 400)
+        image_url = save_upload(request.FILES["image"], "messages") if "image" in request.FILES else None
+        if not content and not image_url:
+            return api_response({"success": False, "message": "Write a message or attach an image"}, 400)
         _, message_id = execute(
-            "INSERT INTO messages (group_id, user_id, content) VALUES (%s, %s, %s)",
-            [group_id, user["id"], content],
+            "INSERT INTO messages (group_id, user_id, content, image_url) VALUES (%s, %s, %s, %s)",
+            [group_id, user["id"], content, image_url],
         )
         row = fetch_one(
             """
