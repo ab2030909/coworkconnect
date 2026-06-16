@@ -40,14 +40,14 @@ def register(request):
 
     data = read_data(request)
     name = data.get("name")
-    email = data.get("email")
+    email = (data.get("email") or "").strip().lower()
     password = data.get("password")
     role = data.get("role") or "user"
 
     if not name or not email or not password:
         return api_response({"success": False, "message": "Name, email and password are required"}, 400)
 
-    if fetch_one("SELECT id FROM users WHERE email = %s", [email]):
+    if fetch_one("SELECT id FROM users WHERE LOWER(email) = LOWER(%s)", [email]):
         return api_response({"success": False, "message": "User already exists"}, 400)
 
     _, user_id = execute(
@@ -62,7 +62,8 @@ def login(request):
         return method_not_allowed()
 
     data = read_data(request)
-    user = fetch_one("SELECT * FROM users WHERE email = %s", [data.get("email")])
+    email = (data.get("email") or "").strip().lower()
+    user = fetch_one("SELECT * FROM users WHERE LOWER(email) = LOWER(%s)", [email])
     if not user or not verify_password(data.get("password"), user["password"]):
         return api_response({"success": False, "message": "Invalid credentials"}, 401)
 
