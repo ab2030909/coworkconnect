@@ -1652,7 +1652,7 @@
             sendButton.disabled = disabled;
             input.placeholder = token ? 'Message this circle' : 'Login to send messages';
             hint.textContent = token
-                ? 'Send text, photos, and emojis. Messages update automatically every 3 seconds.'
+                ? 'Send text, photos, and emojis. Sending in a group joins it automatically.'
                 : 'Login first to read and send group messages.';
         }
 
@@ -2000,10 +2000,6 @@
                 showToast('Please login to send messages.');
                 return;
             }
-            if (!state.selectedGroup?.joined) {
-                showToast('Join this group before sending messages.');
-                return;
-            }
             if (!content && !state.selectedImage) {
                 showToast('Write a message or attach a photo.');
                 return;
@@ -2025,7 +2021,9 @@
                     input.value = '';
                     clearMessageImage();
                     autoResizeMessageInput();
+                    if (state.selectedGroup) state.selectedGroup.joined = true;
                     await fetchMessages();
+                    await fetchGroups();
                 } else {
                     const data = await response.json().catch(() => ({}));
                     showToast(data.message || 'Message could not be sent.');

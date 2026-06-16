@@ -516,7 +516,7 @@ def group_messages(request, group_id):
         if not fetch_one("SELECT id FROM community_groups WHERE id = %s", [group_id]):
             return api_response({"success": False, "message": "Group not found"}, 404)
         if not fetch_one("SELECT id FROM group_members WHERE group_id = %s AND user_id = %s", [group_id, user["id"]]):
-            return api_response({"success": False, "message": "Join this group before sending messages"}, 403)
+            execute("INSERT INTO group_members (group_id, user_id) VALUES (%s, %s)", [group_id, user["id"]])
         content = (read_data(request).get("content") or "").strip()
         image_url = save_upload(request.FILES["image"], "messages") if "image" in request.FILES else None
         if not content and not image_url:
