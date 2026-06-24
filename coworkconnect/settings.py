@@ -29,9 +29,24 @@ def truthy(value):
 
 load_env()
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", os.getenv("JWT_SECRET", "coworkconnect-dev-key"))
-DEBUG = os.getenv("DEBUG", "true").lower() == "true"
-ALLOWED_HOSTS = ["*"]
+DEBUG = truthy(os.getenv("DEBUG", "true"))
+DEV_SECRET_KEY = "coworkconnect-local-development-secret-key-32"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.getenv("JWT_SECRET") or DEV_SECRET_KEY
+JWT_SECRET = os.getenv("JWT_SECRET", SECRET_KEY)
+
+if not DEBUG and (SECRET_KEY == DEV_SECRET_KEY or JWT_SECRET == DEV_SECRET_KEY):
+    raise RuntimeError("Set DJANGO_SECRET_KEY and JWT_SECRET before running with DEBUG=false")
+
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,.vercel.app").split(",")
+    if host.strip()
+]
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 
 INSTALLED_APPS = [
     "django.contrib.staticfiles",
@@ -193,5 +208,6 @@ MEDIA_URL = "/uploads/"
 MEDIA_ROOT = Path(tempfile.gettempdir()) / "uploads" if truthy(os.getenv("VERCEL", "false")) else BASE_DIR / "uploads"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-JWT_SECRET = os.getenv("JWT_SECRET", SECRET_KEY)
 JWT_EXPIRE = os.getenv("JWT_EXPIRE", "30d")
+MAX_UPLOAD_SIZE = int(os.getenv("MAX_UPLOAD_SIZE", str(5 * 1024 * 1024)))
+ALLOWED_UPLOAD_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}

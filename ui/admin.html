@@ -86,13 +86,13 @@
             const res = await fetch('/api/spaces');
             const data = await res.json();
             const list = document.getElementById('admin-spaces-list');
-            list.innerHTML = data.data.map(space => `
+            list.innerHTML = (data.data || []).map(space => `
                 <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 1.5rem; font-weight: 800;">${space.name}</td>
-                    <td style="padding: 1.5rem;"><span style="background: #f0fdf4; color: var(--primary); padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">${space.type}</span></td>
-                    <td style="padding: 1.5rem; color: var(--gray); font-weight: 600;">${space.location}</td>
-                    <td style="padding: 1.5rem; font-weight: 800; color: var(--dark);">Rs ${space.price_per_day}</td>
-                    <td style="padding: 1.5rem;"><button class="btn-icon" style="color: #ef4444;" onclick="deleteSpace(${space.id})"><i data-lucide="trash-2" size="20"></i></button></td>
+                    <td style="padding: 1.5rem; font-weight: 800;">${escapeHtml(space.name)}</td>
+                    <td style="padding: 1.5rem;"><span style="background: #f0fdf4; color: var(--primary); padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">${escapeHtml(space.type)}</span></td>
+                    <td style="padding: 1.5rem; color: var(--gray); font-weight: 600;">${escapeHtml(space.location || 'General')}</td>
+                    <td style="padding: 1.5rem; font-weight: 800; color: var(--dark);">Rs ${escapeHtml(space.price_per_day)}</td>
+                    <td style="padding: 1.5rem;"><button class="btn-icon" style="color: #ef4444;" onclick="deleteSpace(${Number(space.id)})"><i data-lucide="trash-2" size="20"></i></button></td>
                 </tr>
             `).join('');
             lucide.createIcons();
@@ -112,7 +112,14 @@
             await fetch(`/api/spaces/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
             fetchAdminSpaces();
         }
-        document.addEventListener('DOMContentLoaded', fetchAdminSpaces);
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            if (!user || user.role !== 'admin') {
+                window.location.href = 'index.html';
+                return;
+            }
+            fetchAdminSpaces();
+        });
     </script>
 
     <!-- Footer -->

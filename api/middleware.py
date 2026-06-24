@@ -10,7 +10,15 @@ class CorsMiddleware:
         else:
             response = self.get_response(request)
 
-        response["Access-Control-Allow-Origin"] = "*"
+        from django.conf import settings
+
+        origin = request.META.get("HTTP_ORIGIN", "")
+        allowed = getattr(settings, "CORS_ALLOWED_ORIGINS", [])
+        if allowed and origin in allowed:
+            response["Access-Control-Allow-Origin"] = origin
+            response["Vary"] = "Origin"
+        elif not allowed and settings.DEBUG:
+            response["Access-Control-Allow-Origin"] = "*"
         response["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
         response["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
         return response

@@ -323,7 +323,7 @@
             document.getElementById('e-map-link').href = `https://www.google.com/maps/search/?api=1&query=${locationQuery}`;
             
             if (event.image_url) {
-                document.getElementById('e-banner').src = event.image_url;
+                document.getElementById('e-banner').src = safeImageUrl(event.image_url, document.getElementById('e-banner').src);
             }
             
             // Sticky Bar Sync
@@ -331,12 +331,12 @@
             const stickyTimeStr = new Date(event.event_date).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
             
             document.getElementById('sticky-title').textContent = event.title;
-            document.getElementById('sticky-date').textContent = `${stickyDateStr} Ã‚Â· ${stickyTimeStr} PKT`;
+            document.getElementById('sticky-date').textContent = `${stickyDateStr} - ${stickyTimeStr} PKT`;
             const spotsLeft = 50 - event.participant_count;
             document.getElementById('sticky-spots').textContent = `${spotsLeft} spots left`;
 
             document.getElementById('pass-title').textContent = event.title;
-            document.getElementById('pass-user').textContent = JSON.parse(localStorage.getItem('user'))?.name || 'Guest User';
+            document.getElementById('pass-user').textContent = JSON.parse(localStorage.getItem('user'))?.name || 'Member';
 
             // Render Related Events
             const eventImages = [
@@ -355,7 +355,7 @@
                     const d = new Date(e.event_date);
                     const formattedDate = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
                     const timeStr = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-                    const img = e.image_url ? e.image_url : eventImages[idx % eventImages.length];
+                    const img = safeImageUrl(e.image_url, eventImages[idx % eventImages.length]);
                     const venueDisplay = e.space_name || e.venue || e.city || 'Online / TBD';
                     const typeDisplay = e.event_type || 'Event';
                     
@@ -366,17 +366,17 @@
                     ];
 
                     return `
-                    <div class="evt-card" onclick="window.location.href='event-details.html?id=${e.id}'">
+                    <div class="evt-card" onclick="window.location.href='event-details.html?id=${Number(e.id)}'">
                         <div class="evt-card-img-wrap">
                             <span class="evt-card-free-badge">Free</span>
-                            <img class="evt-card-img" src="${img}" alt="${e.title}">
+                            <img class="evt-card-img" src="${img}" alt="${escapeHtml(e.title)}">
                         </div>
                         <div class="evt-card-body">
-                            <div style="margin-bottom: 0.5rem;"><span class="evt-card-tag" style="background: #e0f2fe; color: #0284c7;">${typeDisplay}</span></div>
-                            <h3 class="evt-card-title">${e.title}</h3>
-                            <p class="evt-card-meta"><i data-lucide="clock" size="14"></i> ${formattedDate} Ã‚Â· ${timeStr} PKT</p>
-                            <p class="evt-card-meta"><i data-lucide="user" size="14"></i> by ${e.creator_name}</p>
-                            <p class="evt-card-meta"><i data-lucide="map-pin" size="14"></i> ${venueDisplay}</p>
+                            <div style="margin-bottom: 0.5rem;"><span class="evt-card-tag" style="background: #e0f2fe; color: #0284c7;">${escapeHtml(typeDisplay)}</span></div>
+                            <h3 class="evt-card-title">${escapeHtml(e.title)}</h3>
+                            <p class="evt-card-meta"><i data-lucide="clock" size="14"></i> ${escapeHtml(formattedDate)} - ${escapeHtml(timeStr)} PKT</p>
+                            <p class="evt-card-meta"><i data-lucide="user" size="14"></i> by ${escapeHtml(e.creator_name || 'Host')}</p>
+                            <p class="evt-card-meta"><i data-lucide="map-pin" size="14"></i> ${escapeHtml(venueDisplay)}</p>
                             <div class="evt-card-footer">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <div class="avatar-stack">
@@ -384,7 +384,7 @@
                                         <img src="${avatars[1]}" class="avatar">
                                         <img src="${avatars[2]}" class="avatar">
                                     </div>
-                                    <span class="evt-card-attendees">${e.participant_count > 3 ? e.participant_count : e.participant_count + 12} attendees</span>
+                                    <span class="evt-card-attendees">${Number(e.participant_count || 0)} attendees</span>
                                 </div>
                             </div>
                         </div>

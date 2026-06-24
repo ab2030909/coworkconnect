@@ -1,6 +1,8 @@
 from django.db import connection
+import logging
 
 _schema_checked = False
+logger = logging.getLogger(__name__)
 
 
 def ensure_schema():
@@ -25,6 +27,7 @@ def ensure_schema():
                 except Exception:
                     pass
     except Exception:
+        logger.exception("Could not ensure database schema")
         return
 
     _schema_checked = True

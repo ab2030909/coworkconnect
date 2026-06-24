@@ -4,6 +4,33 @@ CoWorkConnect is a web-based coworking space management and professional network
 
 This project is suitable for a final year project or thesis because it combines user management, role-based authorization, booking workflows, community interaction, event management, file uploads, database design, and a complete web interface.
 
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Problem Statement](#problem-statement)
+- [Objectives](#objectives)
+- [Technology Stack](#technology-stack)
+- [System Architecture](#system-architecture)
+- [Project Structure](#project-structure)
+- [Main Modules](#main-modules)
+  - [1. Authentication Module](#1-authentication-module)
+  - [2. User Profile Module](#2-user-profile-module)
+  - [3. Space Management Module](#3-space-management-module)
+  - [4. Booking Module](#4-booking-module)
+  - [5. Community Posts Module](#5-community-posts-module)
+  - [6. Groups and Messaging Module](#6-groups-and-messaging-module)
+  - [7. Events Module](#7-events-module)
+- [Database Design](#database-design)
+- [Authentication and Authorization](#authentication-and-authorization)
+- [API Summary](#api-summary)
+- [Setup Instructions](#setup-instructions)
+- [Deployment on Vercel](#deployment-on-vercel)
+- [User Interface Pages](#user-interface-pages)
+- [Testing and Validation](#testing-and-validation)
+- [Security Features](#security-features)
+- [Limitations](#limitations)
+- [Future Enhancements](#future-enhancements)
+- [Conclusion](#conclusion)
+
 ## Project Overview
 
 The main purpose of CoWorkConnect is to provide a centralized digital platform for coworking users, space owners, freelancers, startups, and remote professionals. Instead of using separate tools for workspace booking, event discovery, and community communication, CoWorkConnect brings these features into one integrated system.
@@ -59,16 +86,11 @@ The current project does not use Node.js. The frontend is plain HTML, CSS, and J
 
 CoWorkConnect follows a client-server architecture.
 
-```text
-Browser
-  |
-  | HTML, CSS, JavaScript
-  v
-Django Backend
-  |
-  | REST-style API endpoints
-  v
-MySQL Database
+```mermaid
+flowchart TD
+    A[Browser UI<br/>HTML, CSS, JavaScript] -->|"fetch() API requests"| B[Django Backend<br/>REST APIs]
+    B -->|"SQL Queries"| C[(MySQL Database)]
+    B -->|"File I/O"| D[Local File System<br/>Uploads Directory]
 ```
 
 The frontend pages are stored in the `ui/` directory. These pages communicate with the backend through `/api/...` endpoints using JavaScript `fetch()` requests. The Django backend receives the requests, validates input, checks authentication where required, performs database operations, and returns JSON responses.
@@ -118,6 +140,19 @@ coworkconnect/
 
 The authentication module allows users to register and log in. Passwords are hashed using bcrypt before being stored in the database. After login, the backend returns a JWT token. This token is stored by the frontend and sent in the `Authorization` header for protected routes.
 
+```mermaid
+sequenceDiagram
+    participant User as Frontend (Browser)
+    participant API as Django Backend
+    participant DB as MySQL Database
+
+    User->>API: POST /api/auth/login (email, password)
+    API->>DB: Query User by email
+    DB-->>API: Return User Record (with Hashed Password)
+    API->>API: Verify password with bcrypt
+    API-->>User: Return JWT Token
+```
+
 Main features:
 
 - User registration
@@ -151,6 +186,28 @@ Main features:
 ### 4. Booking Module
 
 The booking module allows users to reserve coworking spaces.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant DB as Database
+
+    User->>Frontend: Select Workspace & Date
+    Frontend->>Backend: POST /api/bookings (JWT Token)
+    Backend->>DB: Check availability (Space, Date)
+    alt is available
+        DB-->>Backend: Space is free
+        Backend->>DB: Create Booking Record
+        Backend-->>Frontend: 201 Created
+        Frontend-->>User: Show Success
+    else already booked
+        DB-->>Backend: Space is taken
+        Backend-->>Frontend: 400 Bad Request
+        Frontend-->>User: Show Error (Duplicate)
+    end
+```
 
 Main features:
 
@@ -227,6 +284,20 @@ The system uses a MySQL relational database. The database name is configured thr
 | `event_registrations` | Stores event participant registrations |
 
 ### Important Relationships
+
+```mermaid
+erDiagram
+    USERS ||--o{ BOOKINGS : "creates"
+    SPACES ||--o{ BOOKINGS : "receives"
+    USERS ||--o{ POSTS : "creates"
+    POSTS ||--o{ COMMENTS : "has"
+    POSTS ||--o{ POST_LIKES : "has"
+    USERS ||--o{ COMMUNITY_GROUPS : "creates"
+    COMMUNITY_GROUPS ||--o{ GROUP_MEMBERS : "has"
+    COMMUNITY_GROUPS ||--o{ MESSAGES : "has"
+    USERS ||--o{ EVENTS : "creates"
+    EVENTS ||--o{ EVENT_REGISTRATIONS : "has"
+```
 
 - A user can create many bookings.
 - A space can have many bookings.

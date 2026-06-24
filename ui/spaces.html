@@ -58,7 +58,7 @@
                 </h4>
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
                     <input type="number" id="min-price" placeholder="Min" class="input-field" style="padding: 0.5rem 1rem;">
-                    <span style="color: var(--gray);">â”€</span>
+                    <span style="color: var(--gray);">-</span>
                     <input type="number" id="max-price" placeholder="Max" class="input-field" style="padding: 0.5rem 1rem;">
                 </div>
                 <button id="apply-price-btn" class="btn btn-outline" style="width: 100%; font-size: 0.85rem; border-radius: 12px;">Apply Range</button>
@@ -133,28 +133,29 @@
                 const data = await res.json();
                 document.getElementById('results-count').textContent = data.count;
                 document.getElementById('location-title').textContent = currentFilters.location || 'Anywhere';
-                if (data.count === 0) {
+                if (!data.data || data.count === 0) {
                     container.innerHTML = `<div style="text-align: center; padding: 5rem; background: white; border-radius: 24px;"><p style="color: var(--gray);">No spaces found matching your search.</p></div>`;
                 } else {
                     container.innerHTML = data.data.map(space => `
                         <div class="listing-card fade-in">
-                            <div class="listing-image" style="background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600')">
+                            <div class="listing-image" style="background-image: url('${safeImageUrl(space.image_url, 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600')}')">
                                 <div style="position: absolute; top: 1rem; left: 1rem; background: #065f46; color: white; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Verified</div>
                             </div>
                             <div class="listing-body">
                                 <div>
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                        <h3 style="font-size: 1.5rem; font-weight: 800;">${space.name}</h3>
+                                        <h3 style="font-size: 1.5rem; font-weight: 800;">${escapeHtml(space.name)}</h3>
                                         <div style="display: flex; align-items: center; gap: 4px; color: #f59e0b; font-weight: 800;">
-                                            <i data-lucide="star" fill="#f59e0b" size="16"></i> 4.9
+                                            <i data-lucide="star" fill="#f59e0b" size="16"></i> ${escapeHtml(space.rating || '4.9')}
                                         </div>
                                     </div>
-                                    <p style="display: flex; align-items: center; gap: 4px; font-size: 0.9rem; color: var(--gray); font-weight: 600; margin-bottom: 1.2rem;"><i data-lucide="map-pin" size="14"></i> ${space.location}</p>
-                                    <p style="font-size: 0.95rem; color: #475569; line-height: 1.6;">${space.description || 'Modern coworking space with premium amenities.'}</p>
+                                    <p style="display: flex; align-items: center; gap: 4px; font-size: 0.9rem; color: var(--gray); font-weight: 600; margin-bottom: 1.2rem;"><i data-lucide="map-pin" size="14"></i> ${escapeHtml(space.location || 'General')}</p>
+                                    <p style="font-size: 0.95rem; color: #475569; line-height: 1.6;">${escapeHtml(space.description || 'Modern coworking space with premium amenities.')}</p>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 1.5rem;">
-                                    <div><span style="font-size: 0.8rem; color: var(--gray); font-weight: 700; display: block; text-transform: uppercase;">Per Day</span><span style="font-size: 1.6rem; font-weight: 800; color: var(--dark);">Rs ${space.price_per_day}</span></div>
-                                    <button class="btn btn-primary" style="padding: 0.8rem 2rem; border-radius: 12px; font-weight: 800;">Book Now</button>
+                                <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 0.75rem; align-items: end; margin-top: 1.5rem;">
+                                    <div><span style="font-size: 0.8rem; color: var(--gray); font-weight: 700; display: block; text-transform: uppercase;">Per Day</span><span style="font-size: 1.6rem; font-weight: 800; color: var(--dark);">Rs ${escapeHtml(space.price_per_day)}</span></div>
+                                    <input type="date" id="booking-date-${space.id}" class="input-field" style="width: 150px; padding: 0.7rem;" min="${new Date().toISOString().slice(0, 10)}">
+                                    <button class="btn btn-primary" onclick="bookSpace(${Number(space.id)})" style="padding: 0.8rem 1.25rem; font-weight: 800;">Book</button>
                                 </div>
                             </div>
                         </div>
@@ -162,6 +163,27 @@
                 }
                 lucide.createIcons();
             } catch (err) { container.innerHTML = '<p>Error loading results.</p>'; }
+        }
+
+        async function bookSpace(spaceId) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            const dateInput = document.getElementById(`booking-date-${spaceId}`);
+            const bookingDate = dateInput?.value;
+            if (!bookingDate) {
+                showToast('Choose a booking date first.', 'error');
+                return;
+            }
+            const response = await fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ spaceId, bookingDate }),
+            });
+            const data = await response.json().catch(() => ({}));
+            showToast(data.message || (response.ok ? 'Booking request sent.' : 'Booking failed.'), response.ok ? 'success' : 'error');
         }
 
         document.getElementById('main-search-btn').addEventListener('click', () => { currentFilters.location = document.getElementById('location-input').value; fetchResults(); });

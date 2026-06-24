@@ -1609,7 +1609,7 @@
             selectedImage: null,
         };
 
-        const emojis = ['😀', '😁', '😂', '😊', '😍', '😎', '🤝', '👏', '👍', '🔥', '💡', '🚀', '✅', '📌', '📸', '🎉'];
+        const emojis = [':)', ':D', 'Nice', '+1', 'Thanks', 'Done', 'Idea', 'Ship', 'Photo', 'Pin'];
         const categories = ['Tech', 'Design', 'Marketing', 'Founder', 'Growth', 'Remote'];
         const channelSets = [
             ['general', 'introductions', 'resources', 'wins'],
@@ -1644,7 +1644,7 @@
         }
 
         function groupImage(group, width = 240) {
-            if (group.image_url) return group.image_url;
+            if (group.image_url) return safeImageUrl(group.image_url);
             const images = [
                 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
                 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4',
@@ -1971,7 +1971,7 @@
                                 <span>${time}</span>
                             </div>
                             <div class="message-bubble">${escapeHtml(message.content)}</div>
-                            ${message.image_url ? `<img class="message-image" src="${escapeHtml(message.image_url)}" alt="Shared image">` : ''}
+                            ${message.image_url ? `<img class="message-image" src="${safeImageUrl(message.image_url)}" alt="Shared image">` : ''}
                             <div class="message-tools">
                                 <button class="message-tool" type="button">Reply</button>
                                 <button class="message-tool" type="button">Save</button>

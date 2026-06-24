@@ -880,7 +880,7 @@
                     <div class="profile-cover"></div>
                     <div class="profile-card-body">
                         <div id="profile-avatar" class="profile-avatar">U</div>
-                        <h3 id="profile-name">Guest User</h3>
+                        <h3 id="profile-name">Member</h3>
                         <p>CoWorkConnect Member</p>
                     </div>
                     <div class="profile-stats">
@@ -1212,7 +1212,7 @@
                             <p class="post-text">${escapeHtml(post.content)}</p>
                             ${tags ? `<div class="tag-row">${tags}</div>` : ''}
                         </div>
-                        ${post.image_url ? `<img class="post-image" src="${escapeHtml(post.image_url)}" alt="Post image">` : ''}
+                        ${post.image_url ? `<img class="post-image" src="${safeImageUrl(post.image_url)}" alt="Post image">` : ''}
                         <div class="post-stats">
                             <span><i data-lucide="thumbs-up" size="14" style="color:#2563eb;fill:#2563eb;"></i> ${post.likes_count || 0} likes</span>
                             <span>${comments.length} comments</span>

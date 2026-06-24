@@ -63,10 +63,10 @@
                             <div class="input-group">
                                 <label>Current Status</label>
                                 <select id="profile-status" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;">
-                                    <option value="Available">ðŸŸ¢ Available</option>
-                                    <option value="Busy">ðŸ”´ Focus Mode</option>
-                                    <option value="Networking">ðŸ¤ Open to Collab</option>
-                                    <option value="Out">ðŸ™ï¸ Off-site</option>
+                                    <option value="Available">Available</option>
+                                    <option value="Busy">Focus Mode</option>
+                                    <option value="Networking">Open to Collab</option>
+                                    <option value="Out">Off-site</option>
                                 </select>
                             </div>
                             <div class="input-group"><label>Catchy Bio</label><textarea id="profile-bio" class="input-field" placeholder="Software Engineer @ Apple" style="height: 52px; resize: none; border-radius: 12px; padding: 0.8rem 1rem;"></textarea></div>
@@ -117,7 +117,10 @@
         let skills = ['UI/UX Design', 'Project Management'];
 
         function renderSkills() {
-            skillsContainer.innerHTML = skills.map(s => `<span style="background: #f0fdf4; color: var(--primary); padding: 0.6rem 1.2rem; border-radius: 50px; font-size: 0.9rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">${s} <i data-lucide="x" size="14" style="cursor: pointer" onclick="removeSkill('${s}')"></i></span>`).join('');
+            skillsContainer.innerHTML = skills.map(s => `<span style="background: #f0fdf4; color: var(--primary); padding: 0.6rem 1.2rem; border-radius: 50px; font-size: 0.9rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">${escapeHtml(s)} <button type="button" class="btn-icon remove-skill" data-skill="${escapeHtml(s)}" aria-label="Remove ${escapeHtml(s)}"><i data-lucide="x" size="14"></i></button></span>`).join('');
+            skillsContainer.querySelectorAll('.remove-skill').forEach((button) => {
+                button.addEventListener('click', () => removeSkill(button.dataset.skill));
+            });
             lucide.createIcons();
         }
 

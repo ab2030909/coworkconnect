@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import json
 import time
+from uuid import uuid4
 
 import bcrypt
 import jwt
@@ -93,7 +94,13 @@ def auth_user(request, required=True):
         return None, None
 
     try:
-        user = jwt.decode(token, settings.JWT_SECRET, algorithms=["HS256"])
+        token_user = jwt.decode(token, settings.JWT_SECRET, algorithms=["HS256"])
+        user = fetch_one(
+            "SELECT id, name, email, role FROM users WHERE id = %s",
+            [token_user.get("id")],
+        )
+        if not user:
+            raise jwt.InvalidTokenError("User no longer exists")
         return user, None
     except jwt.PyJWTError:
         if required:
@@ -114,11 +121,19 @@ def require_admin(user):
 
 
 def save_upload(file_obj, folder=""):
+    max_size = getattr(settings, "MAX_UPLOAD_SIZE", 5 * 1024 * 1024)
+    allowed_types = getattr(settings, "ALLOWED_UPLOAD_TYPES", {"image/jpeg", "image/png", "image/webp", "image/gif"})
+    content_type = getattr(file_obj, "content_type", "")
+    if content_type not in allowed_types:
+        raise ValueError("Only JPG, PNG, WebP, and GIF images are supported")
+    if getattr(file_obj, "size", 0) > max_size:
+        raise ValueError("Image must be 5MB or smaller")
+
     upload_dir = Path(settings.MEDIA_ROOT) / folder
     upload_dir.mkdir(parents=True, exist_ok=True)
-    suffix = Path(file_obj.name).suffix
+    suffix = Path(file_obj.name).suffix.lower()
     prefix = f"{folder.rstrip('/')}-" if folder else ""
-    filename = f"{prefix}{int(time.time() * 1000)}{suffix}"
+    filename = f"{prefix}{int(time.time() * 1000)}-{uuid4().hex}{suffix}"
     destination = upload_dir / filename
 
     with destination.open("wb+") as target:

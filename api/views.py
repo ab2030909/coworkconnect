@@ -17,6 +17,26 @@ from .utils import (
     verify_password,
 )
 
+VALID_SPACE_TYPES = {"desk", "private_office", "meeting_room", "virtual_office"}
+VALID_BOOKING_STATUSES = {"pending", "confirmed", "cancelled"}
+
+
+def require_fields(data, fields):
+    missing = [field for field in fields if not data.get(field)]
+    if missing:
+        return api_response({"success": False, "message": f"Missing required fields: {', '.join(missing)}"}, 400)
+    return None
+
+
+def parse_positive_number(value, label):
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None, api_response({"success": False, "message": f"{label} must be a valid number"}, 400)
+    if number <= 0:
+        return None, api_response({"success": False, "message": f"{label} must be greater than zero"}, 400)
+    return number, None
+
 
 def health(_request):
     from datetime import datetime
@@ -48,10 +68,12 @@ def register(request):
     name = data.get("name")
     email = (data.get("email") or "").strip().lower()
     password = data.get("password")
-    role = data.get("role") or "user"
+    role = "user"
 
     if not name or not email or not password:
         return api_response({"success": False, "message": "Name, email and password are required"}, 400)
+    if len(password) < 8:
+        return api_response({"success": False, "message": "Password must be at least 8 characters"}, 400)
 
     if fetch_one("SELECT id FROM users WHERE LOWER(email) = LOWER(%s)", [email]):
         return api_response({"success": False, "message": "User already exists"}, 400)
@@ -126,6 +148,17 @@ def spaces(request):
             return admin_error
 
         data = read_data(request)
+        missing = require_fields(data, ["name", "type", "price_per_day", "capacity"])
+        if missing:
+            return missing
+        if data.get("type") not in VALID_SPACE_TYPES:
+            return api_response({"success": False, "message": "Invalid workspace type"}, 400)
+        price, error = parse_positive_number(data.get("price_per_day"), "Price")
+        if error:
+            return error
+        capacity, error = parse_positive_number(data.get("capacity"), "Capacity")
+        if error:
+            return error
         _, space_id = execute(
             """
             INSERT INTO spaces (name, type, location, price_per_day, capacity, description, image_url)
@@ -135,8 +168,8 @@ def spaces(request):
                 data.get("name"),
                 data.get("type"),
                 data.get("location") or "General",
-                data.get("price_per_day"),
-                data.get("capacity"),
+                price,
+                int(capacity),
                 data.get("description"),
                 data.get("image_url"),
             ],
@@ -179,6 +212,8 @@ def space_detail(request, space_id):
         updates = [field for field in fields if field in data]
         if not updates:
             return api_response({"success": False, "message": "No fields to update"}, 400)
+        if "type" in data and data.get("type") not in VALID_SPACE_TYPES:
+            return api_response({"success": False, "message": "Invalid workspace type"}, 400)
         sql = "UPDATE spaces SET " + ", ".join(f"{field} = %s" for field in updates) + " WHERE id = %s"
         rowcount, _ = execute(sql, [data[field] for field in updates] + [space_id])
         if rowcount == 0:
@@ -203,14 +238,16 @@ def bookings(request):
         data = read_data(request)
         space_id = data.get("spaceId")
         booking_date = data.get("bookingDate")
+        if not space_id or not booking_date:
+            return api_response({"success": False, "message": "Space and booking date are required"}, 400)
         space = fetch_one("SELECT * FROM spaces WHERE id = %s", [space_id])
         if not space:
             return api_response({"success": False, "message": "Space not found"}, 404)
         if not space["is_available"]:
             return api_response({"success": False, "message": "Space is currently not available"}, 400)
         existing = fetch_one(
-            'SELECT id FROM bookings WHERE space_id = %s AND booking_date = %s AND status != "cancelled"',
-            [space_id, booking_date],
+            "SELECT id FROM bookings WHERE space_id = %s AND booking_date = %s AND status != %s",
+            [space_id, booking_date, "cancelled"],
         )
         if existing:
             return api_response({"success": False, "message": "Space is already booked for this date"}, 400)
@@ -266,6 +303,8 @@ def booking_detail(request, booking_id):
         if admin_error:
             return admin_error
         status = read_data(request).get("status")
+        if status not in VALID_BOOKING_STATUSES:
+            return api_response({"success": False, "message": "Invalid booking status"}, 400)
         rowcount, _ = execute("UPDATE bookings SET status = %s WHERE id = %s", [status, booking_id])
         if rowcount == 0:
             return api_response({"success": False, "message": "Booking not found"}, 404)
@@ -277,7 +316,7 @@ def booking_detail(request, booking_id):
             return api_response({"success": False, "message": "Booking not found"}, 404)
         if booking["user_id"] != user["id"] and user.get("role") != "admin":
             return api_response({"success": False, "message": "Not authorized to cancel this booking"}, 403)
-        execute('UPDATE bookings SET status = "cancelled" WHERE id = %s', [booking_id])
+        execute("UPDATE bookings SET status = %s WHERE id = %s", ["cancelled", booking_id])
         return api_response({"success": True, "message": "Booking cancelled successfully"})
 
     return method_not_allowed()
@@ -296,8 +335,8 @@ def profile(request):
 
     if request.method == "PUT":
         data = read_data(request)
-        email = data.get("email")
-        if email and fetch_one("SELECT id FROM users WHERE email = %s AND id != %s", [email, user["id"]]):
+        email = (data.get("email") or "").strip().lower() or None
+        if email and fetch_one("SELECT id FROM users WHERE LOWER(email) = LOWER(%s) AND id != %s", [email, user["id"]]):
             return api_response({"success": False, "message": "Email already in use"}, 400)
         execute(
             """
@@ -319,10 +358,13 @@ def update_password(request):
     if error:
         return error
     data = read_data(request)
+    new_password = data.get("newPassword")
+    if not new_password or len(new_password) < 8:
+        return api_response({"success": False, "message": "New password must be at least 8 characters"}, 400)
     row = fetch_one("SELECT password FROM users WHERE id = %s", [user["id"]])
     if not row or not verify_password(data.get("currentPassword"), row["password"]):
         return api_response({"success": False, "message": "Current password is incorrect"}, 401)
-    execute("UPDATE users SET password = %s WHERE id = %s", [hash_password(data.get("newPassword")), user["id"]])
+    execute("UPDATE users SET password = %s WHERE id = %s", [hash_password(new_password), user["id"]])
     return api_response({"success": True, "message": "Password updated successfully"})
 
 
@@ -376,17 +418,23 @@ def posts(request):
         user, error = auth_user(request)
         if error:
             return error
-        image_url = save_upload(request.FILES["image"], "posts") if "image" in request.FILES else None
         data = read_data(request)
+        content = (data.get("content") or "").strip()
+        if not content:
+            return api_response({"success": False, "message": "Post content is required"}, 400)
+        try:
+            image_url = save_upload(request.FILES["image"], "posts") if "image" in request.FILES else None
+        except ValueError as exc:
+            return api_response({"success": False, "message": str(exc)}, 400)
         _, post_id = execute(
             "INSERT INTO posts (user_id, content, tags, image_url) VALUES (%s, %s, %s, %s)",
-            [user["id"], data.get("content"), data.get("tags") or None, image_url],
+            [user["id"], content, data.get("tags") or None, image_url],
         )
         return api_response(
             {
                 "success": True,
                 "message": "Post shared",
-                "data": {"id": post_id, "content": data.get("content"), "tags": data.get("tags"), "image_url": image_url},
+                "data": {"id": post_id, "content": content, "tags": data.get("tags"), "image_url": image_url},
             },
             201,
         )
@@ -401,6 +449,8 @@ def toggle_like(request, post_id):
     if error:
         return error
     existing = fetch_one("SELECT id FROM post_likes WHERE post_id = %s AND user_id = %s", [post_id, user["id"]])
+    if not existing and not fetch_one("SELECT id FROM posts WHERE id = %s", [post_id]):
+        return api_response({"success": False, "message": "Post not found"}, 404)
     if existing:
         execute("DELETE FROM post_likes WHERE post_id = %s AND user_id = %s", [post_id, user["id"]])
         return api_response({"success": True, "liked": False})
@@ -414,7 +464,11 @@ def add_comment(request, post_id):
     user, error = auth_user(request)
     if error:
         return error
-    content = read_data(request).get("content")
+    content = (read_data(request).get("content") or "").strip()
+    if not content:
+        return api_response({"success": False, "message": "Comment content is required"}, 400)
+    if not fetch_one("SELECT id FROM posts WHERE id = %s", [post_id]):
+        return api_response({"success": False, "message": "Post not found"}, 404)
     _, comment_id = execute(
         "INSERT INTO comments (post_id, user_id, content) VALUES (%s, %s, %s)",
         [post_id, user["id"], content],
@@ -470,6 +524,8 @@ def groups(request):
         if error:
             return error
         data = read_data(request)
+        if not (data.get("name") or "").strip():
+            return api_response({"success": False, "message": "Group name is required"}, 400)
         _, group_id = execute(
             "INSERT INTO community_groups (name, description, created_by) VALUES (%s, %s, %s)",
             [data.get("name"), data.get("description"), user["id"]],
@@ -500,6 +556,10 @@ def group_messages(request, group_id):
         return error
 
     if request.method == "GET":
+        if not fetch_one("SELECT id FROM community_groups WHERE id = %s", [group_id]):
+            return api_response({"success": False, "message": "Group not found"}, 404)
+        if user.get("role") != "admin" and not fetch_one("SELECT id FROM group_members WHERE group_id = %s AND user_id = %s", [group_id, user["id"]]):
+            return api_response({"success": False, "message": "Join the group to view messages"}, 403)
         rows = fetch_all(
             """
             SELECT m.*, u.name as user_name
@@ -518,7 +578,10 @@ def group_messages(request, group_id):
         if not fetch_one("SELECT id FROM group_members WHERE group_id = %s AND user_id = %s", [group_id, user["id"]]):
             execute("INSERT INTO group_members (group_id, user_id) VALUES (%s, %s)", [group_id, user["id"]])
         content = (read_data(request).get("content") or "").strip()
-        image_url = save_upload(request.FILES["image"], "messages") if "image" in request.FILES else None
+        try:
+            image_url = save_upload(request.FILES["image"], "messages") if "image" in request.FILES else None
+        except ValueError as exc:
+            return api_response({"success": False, "message": str(exc)}, 400)
         if not content and not image_url:
             return api_response({"success": False, "message": "Write a message or attach an image"}, 400)
         _, message_id = execute(
@@ -558,7 +621,13 @@ def events(request):
         if error:
             return error
         data = read_data(request)
-        image_url = save_upload(request.FILES["image"]) if "image" in request.FILES else None
+        missing = require_fields(data, ["title", "description", "eventDate"])
+        if missing:
+            return missing
+        try:
+            image_url = save_upload(request.FILES["image"], "events") if "image" in request.FILES else None
+        except ValueError as exc:
+            return api_response({"success": False, "message": str(exc)}, 400)
         space_id = data.get("spaceId") or None
         _, event_id = execute(
             """
@@ -589,6 +658,8 @@ def register_event(request, event_id):
     user, error = auth_user(request)
     if error:
         return error
+    if not fetch_one("SELECT id FROM events WHERE id = %s", [event_id]):
+        return api_response({"success": False, "message": "Event not found"}, 404)
     if fetch_one("SELECT id FROM event_registrations WHERE event_id = %s AND user_id = %s", [event_id, user["id"]]):
         return api_response({"success": False, "message": "Already registered for this event"}, 400)
     execute("INSERT INTO event_registrations (event_id, user_id) VALUES (%s, %s)", [event_id, user["id"]])
@@ -601,6 +672,11 @@ def event_participants(request, event_id):
     user, error = auth_user(request)
     if error:
         return error
+    event = fetch_one("SELECT created_by FROM events WHERE id = %s", [event_id])
+    if not event:
+        return api_response({"success": False, "message": "Event not found"}, 404)
+    if user.get("role") != "admin" and event["created_by"] != user["id"]:
+        return api_response({"success": False, "message": "Only the event host or admin can view participants"}, 403)
     rows = fetch_all(
         """
         SELECT u.id, u.name, u.email, r.registered_at
