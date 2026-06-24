@@ -88,9 +88,9 @@ CoWorkConnect follows a client-server architecture.
 
 ```mermaid
 flowchart TD
-    A[Browser UI<br/>HTML, CSS, JavaScript] -->|fetch() API requests| B[Django Backend<br/>REST APIs]
-    B -->|SQL Queries| C[(MySQL Database)]
-    B -->|File I/O| D[Local File System<br/>Uploads Directory]
+    A[Browser UI<br/>HTML, CSS, JavaScript] -->|"fetch() API requests"| B[Django Backend<br/>REST APIs]
+    B -->|"SQL Queries"| C[(MySQL Database)]
+    B -->|"File I/O"| D[Local File System<br/>Uploads Directory]
 ```
 
 The frontend pages are stored in the `ui/` directory. These pages communicate with the backend through `/api/...` endpoints using JavaScript `fetch()` requests. The Django backend receives the requests, validates input, checks authentication where required, performs database operations, and returns JSON responses.
