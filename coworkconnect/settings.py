@@ -3,6 +3,9 @@ import os
 import tempfile
 from urllib.parse import parse_qs, urlparse, unquote
 
+import dj_database_url
+from dotenv import load_dotenv
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -11,16 +14,7 @@ def load_env():
     if truthy(os.getenv("VERCEL", "false")):
         return
 
-    env_path = BASE_DIR / ".env"
-    if not env_path.exists():
-        return
-
-    for line in env_path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+    load_dotenv(BASE_DIR / ".env")
 
 
 def truthy(value):
@@ -165,6 +159,15 @@ if not USE_SQLITE_FALLBACK and DB_ENGINE == "mysql":
     except Exception:
         pass
 
+DATABASE_URL = (
+    os.getenv("DATABASE_URL")
+    or os.getenv("POSTGRES_URL")
+    or os.getenv("POSTGRES_PRISMA_URL")
+    or os.getenv("POSTGRES_URL_NON_POOLING")
+    or os.getenv("SUPABASE_DATABASE_URL")
+    or os.getenv("SUPABASE_DB_URL")
+)
+
 if USE_SQLITE_FALLBACK:
     SQLITE_PATH = Path(os.getenv("SQLITE_PATH", Path(tempfile.gettempdir()) / "coworkconnect.sqlite3"))
     SQLITE_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -173,6 +176,14 @@ if USE_SQLITE_FALLBACK:
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": str(SQLITE_PATH),
         }
+    }
+elif DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=int(os.getenv("DB_CONN_MAX_AGE", "600")),
+            ssl_require=truthy(os.getenv("DB_SSL", "true")),
+        )
     }
 else:
     django_engine = "django.db.backends.postgresql" if DB_ENGINE == "postgresql" else "django.db.backends.mysql"

@@ -22,10 +22,7 @@
                 <a href="groups.html" class="nav-link">Groups</a>
                 <a href="events.html" class="nav-link">Events</a>
                 
-                <div id="auth-links" class="auth-links" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
-                    <a href="login.html" class="nav-link">Login</a>
-                    <a href="register.html" class="btn btn-primary" style="border-radius: 50px; padding: 0.6rem 1.5rem;">Join Now</a>
-                </div>
+                <div id="auth-links" class="auth-links hidden"></div>
                 <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
                     <!-- Populated dynamically by app.js -->
                 </div>
@@ -45,7 +42,7 @@
                     Discover premium workspaces, join elite professional circles, and grow with a community of 5,000+ innovators.
                 </p>
                 <div style="display: flex; gap: 1rem; justify-content: center;">
-                    <a href="register.html" class="btn btn-primary btn-lg" style="box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); padding: 1.2rem 2.5rem;">Join for Free</a>
+                    <a href="spaces.html" class="btn btn-primary btn-lg" style="box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); padding: 1.2rem 2.5rem;">Browse Spaces</a>
                     <a href="spaces.html" class="btn btn-outline btn-lg" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white; backdrop-filter: blur(10px); padding: 1.2rem 2.5rem;">Explore Ecosystem</a>
                 </div>
             </div>
@@ -86,7 +83,7 @@
                 <!-- Workspace Booking -->
                 <div class="module-card">
                     <div class="module-img-container">
-                        <img src="https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&q=80&w=800" alt="Workspace Booking" class="module-img">
+                        <img src="https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&q=80&w=800" data-fallback="assets/fallback-workspace.svg" alt="Workspace Booking" class="module-img">
                     </div>
                     <div class="module-content">
                         <h3 class="module-title">Digital Workspaces</h3>
@@ -100,7 +97,7 @@
                 <!-- Networking Feed -->
                 <div class="module-card">
                     <div class="module-img-container">
-                        <img src="https://images.unsplash.com/photo-1515169067868-5387ec356754?auto=format&fit=crop&q=80&w=800" alt="Social Network" class="module-img">
+                        <img src="https://images.unsplash.com/photo-1515169067868-5387ec356754?auto=format&fit=crop&q=80&w=800" data-fallback="assets/fallback-community.svg" alt="Social Network" class="module-img">
                     </div>
                     <div class="module-content">
                         <h3 class="module-title">Social Network</h3>
@@ -114,7 +111,7 @@
                 <!-- Specialized Groups -->
                 <div class="module-card">
                     <div class="module-img-container">
-                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=800" alt="Expert Groups" class="module-img">
+                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=800" data-fallback="assets/fallback-community.svg" alt="Expert Groups" class="module-img">
                     </div>
                     <div class="module-content">
                         <h3 class="module-title">Expert Groups</h3>
@@ -128,7 +125,7 @@
                 <!-- Events Module -->
                 <div class="module-card">
                     <div class="module-img-container">
-                        <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&q=80&w=800" alt="Academy Hub" class="module-img">
+                        <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&q=80&w=800" data-fallback="assets/fallback-event.svg" alt="Academy Hub" class="module-img">
                     </div>
                     <div class="module-content">
                         <h3 class="module-title">Academy Hub</h3>
@@ -142,7 +139,7 @@
                 <!-- Smart Profiles -->
                 <div class="module-card">
                     <div class="module-img-container">
-                        <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=800" alt="Digital Passport" class="module-img">
+                        <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=800" data-fallback="assets/fallback-avatar.svg" alt="Digital Passport" class="module-img">
                     </div>
                     <div class="module-content">
                         <h3 class="module-title">Digital Passport</h3>
@@ -156,14 +153,14 @@
                 <!-- Start Your Journey -->
                 <div class="module-card dark-card">
                     <div class="module-img-container">
-                        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=800" alt="Start Your Journey" class="module-img">
+                        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=800" data-fallback="assets/fallback-community.svg" alt="Start Your Journey" class="module-img">
                         <div style="position: absolute; inset: 0; background: rgba(6, 78, 59, 0.6); mix-blend-mode: multiply;"></div>
                     </div>
                     <div class="module-content">
                         <h3 class="module-title" style="color: white;">Ready to Begin?</h3>
                         <p class="module-desc" style="color: rgba(255,255,255,0.8);">Join 5,000+ professionals who have already stepped into the future of flexible workspace.</p>
                         <div class="module-hover-btn-container">
-                            <a href="register.html" class="module-hover-btn" style="background: white; color: var(--dark);">Create Account <i data-lucide="arrow-right" size="18"></i></a>
+                            <a href="community.html" class="module-hover-btn" style="background: white; color: var(--dark);">Open Network <i data-lucide="arrow-right" size="18"></i></a>
                         </div>
                     </div>
                 </div>
@@ -177,7 +174,7 @@
             <!-- Part 1: Synergy First -->
             <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 6rem; align-items: center; margin-bottom: 120px;">
                 <div style="position: relative;">
-                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=800" style="width: 100%; border-radius: 40px; box-shadow: 0 30px 60px rgba(0,0,0,0.1);">
+                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=800" data-fallback="assets/fallback-community.svg" style="width: 100%; border-radius: 40px; box-shadow: 0 30px 60px rgba(0,0,0,0.1);">
                     <div style="position: absolute; bottom: -30px; right: -30px; background: var(--primary); color: white; padding: 2.5rem; border-radius: 24px; box-shadow: 0 15px 30px rgba(16, 185, 129, 0.3);">
                         <span style="font-size: 2.5rem; font-weight: 800; display: block;">5K+</span>
                         <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Success Partners</span>
@@ -207,7 +204,7 @@
                     <button class="btn btn-primary" style="padding: 1rem 3rem; border-radius: 12px; font-weight: 800; letter-spacing: 1px;">BROWSE THE ECOSYSTEM</button>
                 </div>
                 <div style="position: relative;">
-                    <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&q=80&w=800" style="width: 100%; border-radius: 40px; box-shadow: 0 30px 60px rgba(0,0,0,0.1);">
+                    <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&q=80&w=800" data-fallback="assets/fallback-workspace.svg" style="width: 100%; border-radius: 40px; box-shadow: 0 30px 60px rgba(0,0,0,0.1);">
                     <div style="position: absolute; top: -30px; left: -30px; background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 15px 30px rgba(0,0,0,0.05); text-align: center;">
                         <i data-lucide="zap" color="var(--primary)" size="40"></i>
                         <span style="display: block; font-weight: 800; margin-top: 10px; font-size: 0.9rem;">Powered by Growth</span>
@@ -226,7 +223,7 @@
                 Stop searching for a desk. Start building your legacy with a community of thousands who have already redefined their professional life.
             </p>
             <div style="display: flex; gap: 1.5rem; justify-content: center;">
-                <a href="register.html" class="btn" style="background: white; color: #0d4d3d; padding: 1.2rem 3rem; font-weight: 800; border-radius: 12px; text-decoration: none; font-size: 1rem; border: none;">Get Started for Free</a>
+                <a href="spaces.html" class="btn" style="background: white; color: #0d4d3d; padding: 1.2rem 3rem; font-weight: 800; border-radius: 12px; text-decoration: none; font-size: 1rem; border: none;">Browse Spaces</a>
                 <a href="community.html" class="btn" style="background: white; color: #0d4d3d; padding: 1.2rem 3rem; font-weight: 800; border-radius: 12px; text-decoration: none; font-size: 1rem; border: none;">Explore Community</a>
             </div>
         </div>
@@ -288,7 +285,7 @@
         </div>
     </footer>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=route-images-1"></script>
     <script>
         lucide.createIcons();
     </script>

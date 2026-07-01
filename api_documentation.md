@@ -9,14 +9,22 @@ python -m pip install -r requirements.txt
 python manage.py runserver 5000
 ```
 
-The app reads the existing `.env` values:
+The app reads `.env` automatically during local development:
 
 ```text
+DEBUG=true
+DJANGO_SECRET_KEY=use_a_long_random_secret_here
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:6543/postgres?sslmode=require
+DB_SSL=true
+
+# Optional local MySQL fallback:
 DB_HOST=localhost
+DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=...
 DB_NAME=coworkconnect
-JWT_SECRET=coworkconnect_secret_key_2024
+DB_SSL=false
+JWT_SECRET=use_a_long_random_secret_here
 JWT_EXPIRE=30d
 ```
 

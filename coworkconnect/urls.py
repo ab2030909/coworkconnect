@@ -10,8 +10,13 @@ def home(_request):
 
 def serve_ui(request, path="index.html"):
     target = path or "index.html"
+    if target == "login.html":
+        target = "index.html"
     try:
-        return serve(request, target, document_root=settings.BASE_DIR / "ui")
+        response = serve(request, target, document_root=settings.BASE_DIR / "ui")
+        if str(target).endswith((".html", ".js", ".css")):
+            response["Cache-Control"] = "no-store, max-age=0"
+        return response
     except Http404:
         raise
 

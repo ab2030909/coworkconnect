@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -22,10 +22,7 @@
                 <a href="groups.html" class="nav-link">Groups</a>
                 <a href="events.html" class="nav-link">Events</a>
                 
-                <div id="auth-links" class="auth-links" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
-                    <a href="login.html" class="nav-link">Login</a>
-                    <a href="register.html" class="btn btn-primary" style="border-radius: 50px; padding: 0.6rem 1.5rem;">Join Now</a>
-                </div>
+                <div id="auth-links" class="auth-links hidden"></div>
                 <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
                     <!-- Populated dynamically by app.js -->
                 </div>
@@ -82,12 +79,12 @@
             </div>
         </div>
     </main>
-<script src="app.js"></script>
+<script src="app.js?v=route-images-1"></script>
     <script>
         lucide.createIcons();
         async function loadProfile() {
             const token = localStorage.getItem('token');
-            if (!token) { window.location.href = 'login.html'; return; }
+            if (!token) { window.location.href = 'index.html'; return; }
             try {
                 const res = await fetch('/api/users/profile', { headers: { 'Authorization': `Bearer ${token}` } });
                 const result = await res.json();

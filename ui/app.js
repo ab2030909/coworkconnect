@@ -1,23 +1,18 @@
 const API_URL = '/api';
 
-const PUBLIC_PAGES = new Set(['login.html', 'register.html']);
-const APP_PAGES = new Set([
-    '',
-    'index.html',
-    'spaces.html',
-    'community.html',
-    'groups.html',
-    'events.html',
-    'event-details.html',
-    'profile.html',
-    'admin.html',
-]);
+const PROTECTED_PAGES = new Set(['community.html', 'groups.html']);
+const FALLBACK_IMAGES = {
+    workspace: 'assets/fallback-workspace.svg',
+    community: 'assets/fallback-community.svg',
+    event: 'assets/fallback-event.svg',
+    avatar: 'assets/fallback-avatar.svg',
+};
 
 let authChecked = false;
-let authAllowed = true;
 
 function currentPage() {
-    return window.location.pathname.split('/').pop() || 'index.html';
+    const page = window.location.pathname.split('/').pop() || 'index.html';
+    return page === 'login.html' ? 'index.html' : page;
 }
 
 function getStoredUser() {
@@ -42,13 +37,39 @@ function escapeHtml(value = '') {
         .replace(/'/g, '&#039;');
 }
 
-function safeImageUrl(value, fallback = '') {
+function fallbackImage(type = 'workspace') {
+    return FALLBACK_IMAGES[type] || FALLBACK_IMAGES.workspace;
+}
+
+function safeImageUrl(value, fallback = fallbackImage('workspace')) {
     const url = String(value || '').trim();
     if (!url) return fallback;
-    if (url.startsWith('/uploads/') || url.startsWith('https://images.unsplash.com/') || url.startsWith('https://i.pravatar.cc/') || url.startsWith('https://ui-avatars.com/')) {
+    if (url.startsWith('/uploads/')) return url;
+    if (url.startsWith('uploads/')) return `/${url}`;
+    if (url.startsWith('assets/')) return url;
+    if (url.startsWith('/assets/')) return url;
+    if (url.startsWith('./assets/')) return url.slice(2);
+    if (/^\/[A-Za-z0-9/_-]+\.(png|jpe?g|gif|webp|svg)(\?[^\s"'<>]*)?$/i.test(url)) return url;
+    if (/^[A-Za-z0-9][A-Za-z0-9/_-]*\.(png|jpe?g|gif|webp|svg)(\?[^\s"'<>]*)?$/i.test(url)) return url;
+    if (/^https:\/\/[^\s"'<>]+$/i.test(url)) {
         return url;
     }
     return fallback;
+}
+
+function imageFallbackFor(img) {
+    if (img.dataset.fallback) return safeImageUrl(img.dataset.fallback, fallbackImage('workspace'));
+    if (img.classList.contains('avatar') || img.className.includes('avatar')) return fallbackImage('avatar');
+    if (img.className.includes('event') || img.className.includes('evt')) return fallbackImage('event');
+    if (img.className.includes('post') || img.className.includes('message') || img.className.includes('group') || img.className.includes('pinned') || img.className.includes('community')) return fallbackImage('community');
+    return fallbackImage('workspace');
+}
+
+function applyImageFallbacks(root = document) {
+    root.querySelectorAll('img').forEach((img) => {
+        if (!img.dataset.fallback) img.dataset.fallback = imageFallbackFor(img);
+        if (!img.getAttribute('src')) img.src = img.dataset.fallback;
+    });
 }
 
 function showToast(message, type = 'success') {
@@ -68,18 +89,64 @@ function showToast(message, type = 'success') {
 function enforceAuth() {
     authChecked = true;
     const page = currentPage();
-    const token = getToken();
-    if (APP_PAGES.has(page) && !PUBLIC_PAGES.has(page) && !token) {
-        authAllowed = false;
-        window.location.replace('login.html');
-        return false;
-    }
-    if (PUBLIC_PAGES.has(page) && token) {
-        authAllowed = false;
-        window.location.replace('index.html');
-        return false;
-    }
-    authAllowed = true;
+    return !(PROTECTED_PAGES.has(page) && !getToken());
+}
+
+function protectedPageLabel() {
+    return currentPage() === 'groups.html' ? 'Groups' : 'Network';
+}
+
+function renderInlineLoginGate(message = '') {
+    const page = currentPage();
+    if (!PROTECTED_PAGES.has(page) || getToken()) return false;
+
+    const main = document.querySelector('main');
+    if (!main) return false;
+
+    main.className = 'inline-auth-page';
+    main.innerHTML = `
+        <section class="inline-auth-shell">
+            <div class="inline-auth-copy">
+                <span class="eyebrow"><i data-lucide="lock-keyhole" size="16"></i> Members only</span>
+                <h1>${protectedPageLabel()} is available after sign in.</h1>
+                <p>Sign in here to continue without leaving this page. The rest of CoWorkConnect stays open for browsing.</p>
+                <div class="inline-auth-points">
+                    <span><i data-lucide="check" size="16"></i> Keep the same navbar</span>
+                    <span><i data-lucide="check" size="16"></i> Open protected tools instantly</span>
+                    <span><i data-lucide="check" size="16"></i> Return to this page after login</span>
+                </div>
+            </div>
+            <div class="auth-card inline-auth-card">
+                <div class="auth-card-head">
+                    <div class="auth-icon"><i data-lucide="log-in" size="28"></i></div>
+                    <h2>Sign in</h2>
+                    <p>Use your CoWorkConnect account to continue.</p>
+                </div>
+                <div id="inline-login-error" class="auth-message ${message ? '' : 'hidden'}">
+                    <i data-lucide="alert-circle" size="18"></i>
+                    <span class="msg-content">${escapeHtml(message)}</span>
+                </div>
+                <form id="inline-login-form">
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <input type="email" id="inline-email" class="input-field" placeholder="you@example.com" autocomplete="email" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="inline-password" class="input-field" placeholder="Password" autocomplete="current-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary inline-auth-submit">
+                        <i data-lucide="arrow-right" size="18"></i> Sign in
+                    </button>
+                </form>
+                <p class="inline-auth-footer">New here? <a href="register.html">Create an account</a></p>
+            </div>
+        </section>
+    `;
+
+    bindLoginForm(document.getElementById('inline-login-form'));
+    applyImageFallbacks(main);
+    if (window.lucide) lucide.createIcons();
     return true;
 }
 
@@ -154,12 +221,12 @@ function updateNavbar() {
         document.getElementById('logout-trigger')?.addEventListener('click', () => {
             localStorage.removeItem('user');
             localStorage.removeItem('token');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         });
 
         document.addEventListener('click', () => trigger?.classList.remove('active'));
     } else {
-        authLinks?.classList.remove('hidden');
+        authLinks?.classList.add('hidden');
         userLinks?.classList.add('hidden');
     }
 
@@ -175,19 +242,26 @@ async function apiFetch(path, options = {}) {
     if (response.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = 'login.html';
+        if (PROTECTED_PAGES.has(currentPage())) {
+            renderInlineLoginGate('Your session expired. Please sign in again.');
+        }
     }
     return response;
 }
 
-const loginForm = document.getElementById('login-form');
-if (loginForm) {
-    loginForm.addEventListener('submit', async (event) => {
+function bindLoginForm(form) {
+    if (!form || form.dataset.bound === 'true') return;
+    form.dataset.bound = 'true';
+
+    form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const email = document.getElementById('email').value.trim().toLowerCase();
-        const password = document.getElementById('password').value;
-        const errorMsg = document.getElementById('error-message');
-        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        const emailInput = form.querySelector('input[type="email"]');
+        const passwordInput = form.querySelector('input[type="password"]');
+        const email = emailInput.value.trim().toLowerCase();
+        const password = passwordInput.value;
+        const errorMsg = form.closest('.auth-card')?.querySelector('.auth-message, #error-message');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const defaultLabel = submitBtn.innerHTML;
 
         try {
             submitBtn.disabled = true;
@@ -202,7 +276,7 @@ if (loginForm) {
             if (data.success) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
-                window.location.href = 'index.html';
+                window.location.reload();
             } else {
                 errorMsg.querySelector('.msg-content').textContent = data.message || 'Could not sign in.';
                 errorMsg.classList.remove('hidden');
@@ -212,10 +286,13 @@ if (loginForm) {
             errorMsg.classList.remove('hidden');
         } finally {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Log In';
+            submitBtn.innerHTML = defaultLabel;
+            if (window.lucide) lucide.createIcons();
         }
     });
 }
+
+bindLoginForm(document.getElementById('login-form'));
 
 const registerForm = document.getElementById('register-form');
 if (registerForm) {
@@ -273,17 +350,31 @@ window.CoWorkConnect = {
     apiFetch,
     escapeHtml,
     safeImageUrl,
+    fallbackImage,
+    applyImageFallbacks,
     showToast,
     getStoredUser,
     getToken,
+    renderInlineLoginGate,
 };
 window.escapeHtml = escapeHtml;
 window.safeImageUrl = safeImageUrl;
+window.fallbackImage = fallbackImage;
+window.applyImageFallbacks = applyImageFallbacks;
 window.showToast = showToast;
 
 enforceAuth();
 
 document.addEventListener('DOMContentLoaded', () => {
-    if ((!authChecked && !enforceAuth()) || !authAllowed) return;
+    applyImageFallbacks();
     updateNavbar();
+    if (!authChecked) enforceAuth();
+    renderInlineLoginGate();
 });
+
+document.addEventListener('error', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLImageElement) || target.dataset.fallbackApplied === 'true') return;
+    target.dataset.fallbackApplied = 'true';
+    target.src = imageFallbackFor(target);
+}, true);

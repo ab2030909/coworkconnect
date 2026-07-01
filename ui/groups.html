@@ -1316,10 +1316,7 @@
                 <a href="community.html" class="nav-link" style="color: var(--dark);">Networking</a>
                 <a href="groups.html" class="nav-link active" style="color: var(--primary);">Groups</a>
                 <a href="events.html" class="nav-link" style="color: var(--dark);">Events</a>
-                <div id="auth-links" class="auth-links" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
-                    <a href="login.html" class="nav-link" style="color: var(--dark);">Login</a>
-                    <a href="register.html" class="btn btn-primary" style="border-radius: 8px; padding: 0.6rem 1.2rem;">Join Now</a>
-                </div>
+                <div id="auth-links" class="auth-links hidden"></div>
                 <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;"></div>
             </div>
         </div>
@@ -1370,15 +1367,15 @@
                 </div>
                 <div class="pinned-grid" id="pinned-groups">
                     <div class="pinned-card">
-                        <img class="pinned-avatar" src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=120&q=80" alt="">
+                        <img class="pinned-avatar" src="assets/fallback-community.svg" data-fallback="assets/fallback-community.svg" alt="">
                         <span>Global</span>
                     </div>
                     <div class="pinned-card">
-                        <img class="pinned-avatar" src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=120&q=80" alt="">
+                        <img class="pinned-avatar" src="assets/fallback-workspace.svg" data-fallback="assets/fallback-workspace.svg" alt="">
                         <span>Startup</span>
                     </div>
                     <div class="pinned-card">
-                        <img class="pinned-avatar" src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=120&q=80" alt="">
+                        <img class="pinned-avatar" src="assets/fallback-event.svg" data-fallback="assets/fallback-event.svg" alt="">
                         <span>Design</span>
                     </div>
                 </div>
@@ -1595,7 +1592,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=groups-composer-2"></script>
+    <script src="app.js?v=route-images-1"></script>
     <script>
         const state = {
             groups: [],
@@ -1644,16 +1641,16 @@
         }
 
         function groupImage(group, width = 240) {
-            if (group.image_url) return safeImageUrl(group.image_url);
+            if (group.image_url) return safeImageUrl(group.image_url, fallbackImage('community'));
             const images = [
-                'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
-                'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4',
-                'https://images.unsplash.com/photo-1552664730-d307ca884978',
-                'https://images.unsplash.com/photo-1517048676732-d65bc937f952',
-                'https://images.unsplash.com/photo-1497366754035-f200968a6e72',
-                'https://images.unsplash.com/photo-1556761175-b413da4baf72',
+                fallbackImage('community'),
+                fallbackImage('workspace'),
+                fallbackImage('event'),
+                fallbackImage('community'),
+                fallbackImage('workspace'),
+                fallbackImage('event'),
             ];
-            return `${images[group.id % images.length]}?auto=format&fit=crop&w=${width}&q=80&sig=${group.id}`;
+            return images[group.id % images.length];
         }
 
         function enrichGroup(group) {
@@ -1825,7 +1822,7 @@
             list.innerHTML = state.filteredGroups.map((group) => `
                 <button class="group-card ${state.selectedGroupId === group.id ? 'active' : ''}" type="button" data-group-id="${group.id}">
                     <span class="group-avatar-wrap">
-                        <img class="group-avatar" src="${groupImage(group, 120)}" alt="">
+                        <img class="group-avatar" src="${groupImage(group, 120)}" data-fallback="${fallbackImage('community')}" alt="">
                         <span class="presence-dot"></span>
                     </span>
                     <span class="group-main">
@@ -1846,6 +1843,7 @@
             list.querySelectorAll('.group-card').forEach((card) => {
                 card.addEventListener('click', () => selectGroup(Number(card.dataset.groupId)));
             });
+            applyImageFallbacks(list);
             lucide.createIcons();
         }
 
@@ -1855,13 +1853,14 @@
             if (!groups.length) return;
             pinned.innerHTML = groups.map((group) => `
                 <button class="pinned-card" type="button" data-group-id="${group.id}">
-                    <img class="pinned-avatar" src="${groupImage(group, 100)}" alt="">
+                    <img class="pinned-avatar" src="${groupImage(group, 100)}" data-fallback="${fallbackImage('community')}" alt="">
                     <span>${escapeHtml(group.name)}</span>
                 </button>
             `).join('');
             pinned.querySelectorAll('.pinned-card').forEach((card) => {
                 card.addEventListener('click', () => selectGroup(Number(card.dataset.groupId)));
             });
+            applyImageFallbacks(pinned);
         }
 
         function selectFirstGroup() {
@@ -1929,7 +1928,7 @@
             const members = memberPool.slice(0, count);
             document.getElementById('info-member-list').innerHTML = members.map((member, index) => `
                 <div class="member-item">
-                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=${index % 2 ? '0f172a' : '10b981'}&color=fff&bold=true" alt="">
+                    <img src="${fallbackImage('avatar')}" data-fallback="${fallbackImage('avatar')}" alt="">
                     <div style="min-width:0;">
                         <strong>${escapeHtml(member.name)}</strong>
                         <span>${escapeHtml(member.role)}</span>
@@ -1964,14 +1963,14 @@
                     : '';
                 rows.push(`
                     <div class="message-row ${isSent ? 'sent' : 'received'}">
-                        <img class="message-avatar" src="https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=${isSent ? '10b981' : '0f172a'}&color=fff&bold=true" alt="">
+                        <img class="message-avatar" src="${fallbackImage('avatar')}" data-fallback="${fallbackImage('avatar')}" alt="">
                         <div class="message-stack">
                             <div class="message-meta">
                                 <span>${isSent ? 'You' : escapeHtml(userName)}</span>
                                 <span>${time}</span>
                             </div>
                             <div class="message-bubble">${escapeHtml(message.content)}</div>
-                            ${message.image_url ? `<img class="message-image" src="${safeImageUrl(message.image_url)}" alt="Shared image">` : ''}
+                            ${message.image_url ? `<img class="message-image" src="${safeImageUrl(message.image_url, fallbackImage('community'))}" data-fallback="${fallbackImage('community')}" alt="Shared image">` : ''}
                             <div class="message-tools">
                                 <button class="message-tool" type="button">Reply</button>
                                 <button class="message-tool" type="button">Save</button>
@@ -1982,6 +1981,7 @@
                 `);
             });
             container.innerHTML = rows.join('');
+            applyImageFallbacks(container);
             scrollMessagesToBottom();
         }
 
@@ -1996,8 +1996,7 @@
                     document.getElementById('message-container').innerHTML = `
                         <div class="chat-empty-messages">
                             <h3>Login required</h3>
-                            <p>Please login to read and send messages in this circle.</p>
-                            <a class="btn btn-primary" href="login.html" style="margin-top:1rem;">Login</a>
+                            <p>Please sign in above to read and send messages in this circle.</p>
                         </div>
                     `;
                     updateComposerState();
@@ -2125,6 +2124,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('token')) return;
+
             lucide.createIcons();
             renderEmojiPicker();
             updateComposerState();

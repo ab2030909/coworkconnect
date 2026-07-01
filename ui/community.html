@@ -864,10 +864,7 @@
                 <a href="community.html" class="nav-link active" style="color: var(--primary);">Networking</a>
                 <a href="groups.html" class="nav-link" style="color: var(--dark);">Groups</a>
                 <a href="events.html" class="nav-link" style="color: var(--dark);">Events</a>
-                <div id="auth-links" class="auth-links" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
-                    <a href="login.html" class="nav-link" style="color: var(--dark);">Login</a>
-                    <a href="register.html" class="btn btn-primary" style="border-radius: 8px; padding: 0.6rem 1.2rem;">Join Now</a>
-                </div>
+                <div id="auth-links" class="auth-links hidden"></div>
                 <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;"></div>
             </div>
         </div>
@@ -1086,7 +1083,7 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=route-images-1"></script>
     <script>
         lucide.createIcons();
         let selectedFile = null;
@@ -1212,7 +1209,7 @@
                             <p class="post-text">${escapeHtml(post.content)}</p>
                             ${tags ? `<div class="tag-row">${tags}</div>` : ''}
                         </div>
-                        ${post.image_url ? `<img class="post-image" src="${safeImageUrl(post.image_url)}" alt="Post image">` : ''}
+                        ${post.image_url ? `<img class="post-image" src="${safeImageUrl(post.image_url, fallbackImage('community'))}" data-fallback="${fallbackImage('community')}" alt="Post image">` : ''}
                         <div class="post-stats">
                             <span><i data-lucide="thumbs-up" size="14" style="color:#2563eb;fill:#2563eb;"></i> ${post.likes_count || 0} likes</span>
                             <span>${comments.length} comments</span>
@@ -1252,6 +1249,7 @@
                 `;
             }).join('');
             updateProfileStats();
+            applyImageFallbacks(feed);
             lucide.createIcons();
         }
 
@@ -1394,6 +1392,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('token')) return;
+
             updateProfileStats();
             fetchFeed();
             setInterval(() => {

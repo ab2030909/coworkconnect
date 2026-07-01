@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Event fallback image">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#102033"/>
+      <stop offset="1" stop-color="#0e9f6e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <circle cx="1000" cy="140" r="210" fill="#ffffff" opacity=".08"/>
+  <circle cx="210" cy="720" r="230" fill="#2563eb" opacity=".16"/>
+  <rect x="260" y="180" width="680" height="460" rx="42" fill="#ffffff"/>
+  <rect x="260" y="180" width="680" height="110" rx="42" fill="#2563eb"/>
+  <rect x="260" y="250" width="680" height="55" fill="#2563eb"/>
+  <circle cx="410" cy="180" r="34" fill="#102033"/>
+  <circle cx="790" cy="180" r="34" fill="#102033"/>
+  <rect x="350" y="365" width="120" height="90" rx="18" fill="#e8f7f1"/>
+  <rect x="540" y="365" width="120" height="90" rx="18" fill="#eff6ff"/>
+  <rect x="730" y="365" width="120" height="90" rx="18" fill="#fef3c7"/>
+  <rect x="350" y="510" width="500" height="32" rx="16" fill="#dde5ee"/>
+  <rect x="350" y="560" width="380" height="28" rx="14" fill="#dde5ee"/>
+</svg>

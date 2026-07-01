@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -22,10 +22,7 @@
                 <a href="groups.html" class="nav-link">Groups</a>
                 <a href="events.html" class="nav-link active">Events</a>
                 
-                <div id="auth-links" class="auth-links" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
-                    <a href="login.html" class="nav-link">Login</a>
-                    <a href="register.html" class="btn btn-primary" style="border-radius: 50px; padding: 0.6rem 1.5rem;">Join Now</a>
-                </div>
+                <div id="auth-links" class="auth-links hidden"></div>
                 <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
                     <!-- Populated dynamically by app.js -->
                 </div>
@@ -377,17 +374,17 @@
         }
     </style>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=route-images-1"></script>
     <script>
         lucide.createIcons();
 
         const eventImages = [
-            'https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?auto=format&fit=crop&q=80&w=600',
-            'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&q=80&w=600',
-            'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&q=80&w=600',
-            'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&q=80&w=600',
-            'https://images.unsplash.com/photo-1591115765373-5f9cf1da3cb0?auto=format&fit=crop&q=80&w=600',
-            'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=600'
+            fallbackImage('event'),
+            fallbackImage('community'),
+            fallbackImage('workspace'),
+            fallbackImage('event'),
+            fallbackImage('community'),
+            fallbackImage('workspace')
         ];
 
         async function fetchEvents() {
@@ -417,16 +414,16 @@
 
                     // Generate random avatars for dummy attendees
                     const avatars = [
-                        `https://i.pravatar.cc/150?u=${e.id}a`,
-                        `https://i.pravatar.cc/150?u=${e.id}b`,
-                        `https://i.pravatar.cc/150?u=${e.id}c`
+                        fallbackImage('avatar'),
+                        fallbackImage('avatar'),
+                        fallbackImage('avatar')
                     ];
 
                     return `
                     <div class="evt-card" onclick="window.location.href='event-details.html?id=${Number(e.id)}'">
                         <div class="evt-card-img-wrap">
                             <span class="evt-card-free-badge">Free</span>
-                            <img class="evt-card-img" src="${img}" alt="${escapeHtml(e.title)}">
+                            <img class="evt-card-img" src="${img}" data-fallback="${fallbackImage('event')}" alt="${escapeHtml(e.title)}">
                         </div>
                         <div class="evt-card-body">
                             <div style="margin-bottom: 0.5rem;"><span class="evt-card-tag" style="background: #e0f2fe; color: #0284c7;">${escapeHtml(typeDisplay)}</span></div>
@@ -438,9 +435,9 @@
                             <div class="evt-card-footer">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <div class="avatar-stack">
-                                        <img src="${avatars[0]}" class="avatar">
-                                        <img src="${avatars[1]}" class="avatar">
-                                        <img src="${avatars[2]}" class="avatar">
+                                        <img src="${avatars[0]}" class="avatar" data-fallback="${fallbackImage('avatar')}">
+                                        <img src="${avatars[1]}" class="avatar" data-fallback="${fallbackImage('avatar')}">
+                                        <img src="${avatars[2]}" class="avatar" data-fallback="${fallbackImage('avatar')}">
                                     </div>
                                     <span class="evt-card-attendees">${Number(e.participant_count || 0)} attendees</span>
                                 </div>
@@ -448,6 +445,7 @@
                         </div>
                     </div>`;
                 }).join('');
+                applyImageFallbacks(grid);
                 lucide.createIcons();
             } catch (err) {
                 grid.innerHTML = '<p style="text-align: center; color: var(--gray); grid-column: 1/-1; padding: 4rem;">Could not load events. Is the server running?</p>';

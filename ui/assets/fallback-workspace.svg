@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Workspace fallback image">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#e8f7f1"/>
+      <stop offset="0.55" stop-color="#eff6ff"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="desk" x1="0" x2="1">
+      <stop offset="0" stop-color="#0e9f6e"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <circle cx="1040" cy="130" r="170" fill="#0e9f6e" opacity=".12"/>
+  <circle cx="160" cy="670" r="190" fill="#2563eb" opacity=".10"/>
+  <rect x="190" y="500" width="820" height="54" rx="18" fill="#102033"/>
+  <rect x="250" y="550" width="36" height="150" rx="16" fill="#344054"/>
+  <rect x="910" y="550" width="36" height="150" rx="16" fill="#344054"/>
+  <rect x="430" y="245" width="340" height="220" rx="24" fill="#ffffff" stroke="#dde5ee" stroke-width="10"/>
+  <rect x="470" y="285" width="260" height="140" rx="12" fill="url(#desk)" opacity=".92"/>
+  <rect x="530" y="465" width="140" height="35" rx="12" fill="#667085"/>
+  <rect x="330" y="400" width="130" height="100" rx="24" fill="#ffffff" stroke="#dde5ee" stroke-width="8"/>
+  <rect x="765" y="384" width="112" height="116" rx="20" fill="#ffffff" stroke="#dde5ee" stroke-width="8"/>
+  <path d="M812 384c-4-48 30-80 72-94 5 46-28 83-72 94Z" fill="#0e9f6e"/>
+  <path d="M810 392c-34-38-20-85 12-116 28 38 16 88-12 116Z" fill="#2563eb" opacity=".82"/>
+  <rect x="385" y="210" width="430" height="18" rx="9" fill="#102033" opacity=".16"/>
+</svg>

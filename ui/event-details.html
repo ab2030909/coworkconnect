@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -148,7 +148,7 @@
         <!-- Banner and Header -->
         <!-- Banner -->
         <div style="border-radius: 30px; overflow: hidden; margin-bottom: 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
-            <img id="e-banner" src="https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?auto=format&fit=crop&q=80&w=1600" alt="banner" style="width: 100%; height: 400px; object-fit: cover; display: block;">
+            <img id="e-banner" src="assets/fallback-event.svg" data-fallback="assets/fallback-event.svg" alt="banner" style="width: 100%; height: 400px; object-fit: cover; display: block;">
         </div>
 
         <!-- Event Header Info -->
@@ -158,7 +158,7 @@
             
             <div style="display: flex; align-items: center; gap: 2rem;">
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <img src="https://i.pravatar.cc/150?u=host" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                    <img src="assets/fallback-avatar.svg" data-fallback="assets/fallback-avatar.svg" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
                     <div>
                         <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 0.2rem;">Hosted by</p>
                         <p id="e-host" style="font-weight: 700; color: var(--dark); font-size: 1.1rem;">Host Name</p>
@@ -179,7 +179,7 @@
                 <div style="margin-top: 4rem; padding-top: 3rem; border-top: 1px solid #e2e8f0;">
                     <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem;">Meet your host</h3>
                     <div style="background: #f8fafc; padding: 2rem; border-radius: 24px; display: flex; gap: 1.5rem; align-items: flex-start;">
-                        <img src="https://i.pravatar.cc/150?u=host" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+                        <img src="assets/fallback-avatar.svg" data-fallback="assets/fallback-avatar.svg" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
                         <div>
                             <h4 id="e-host-bio" style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--dark);">Host Name</h4>
                             <p style="color: var(--gray); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">A dedicated community leader organizing events for professionals to network, grow, and collaborate.</p>
@@ -197,9 +197,9 @@
                     <h4 style="font-weight: 800; font-size: 1.1rem; margin-bottom: 1rem; color: var(--dark);">Attending</h4>
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div class="avatar-stack" style="display: flex; align-items: center;">
-                            <img src="https://i.pravatar.cc/150?u=1" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; margin-left: -15px; object-fit: cover; position: relative; z-index: 3; margin-left: 0;">
-                            <img src="https://i.pravatar.cc/150?u=2" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; margin-left: -15px; object-fit: cover; position: relative; z-index: 2;">
-                            <img src="https://i.pravatar.cc/150?u=3" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; margin-left: -15px; object-fit: cover; position: relative; z-index: 1;">
+                            <img src="assets/fallback-avatar.svg" data-fallback="assets/fallback-avatar.svg" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; margin-left: -15px; object-fit: cover; position: relative; z-index: 3; margin-left: 0;">
+                            <img src="assets/fallback-avatar.svg" data-fallback="assets/fallback-avatar.svg" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; margin-left: -15px; object-fit: cover; position: relative; z-index: 2;">
+                            <img src="assets/fallback-avatar.svg" data-fallback="assets/fallback-avatar.svg" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; margin-left: -15px; object-fit: cover; position: relative; z-index: 1;">
                             <div style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; margin-left: -15px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: var(--gray); position: relative; z-index: 0;">+25</div>
                         </div>
                         <span style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">Join them</span>
@@ -284,7 +284,7 @@
             </div>
         </div>
     </div>
-<script src="app.js"></script>
+<script src="app.js?v=route-images-1"></script>
     <script>
         lucide.createIcons();
         const urlParams = new URLSearchParams(window.location.search);
@@ -322,9 +322,7 @@
             document.getElementById('e-map-iframe').src = `https://maps.google.com/maps?q=${locationQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
             document.getElementById('e-map-link').href = `https://www.google.com/maps/search/?api=1&query=${locationQuery}`;
             
-            if (event.image_url) {
-                document.getElementById('e-banner').src = safeImageUrl(event.image_url, document.getElementById('e-banner').src);
-            }
+            document.getElementById('e-banner').src = safeImageUrl(event.image_url, fallbackImage('event'));
             
             // Sticky Bar Sync
             const stickyDateStr = new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -340,12 +338,12 @@
 
             // Render Related Events
             const eventImages = [
-                'https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?auto=format&fit=crop&q=80&w=600',
-                'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&q=80&w=600',
-                'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&q=80&w=600',
-                'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&q=80&w=600',
-                'https://images.unsplash.com/photo-1591115765373-5f9cf1da3cb0?auto=format&fit=crop&q=80&w=600',
-                'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=600'
+                fallbackImage('event'),
+                fallbackImage('community'),
+                fallbackImage('workspace'),
+                fallbackImage('event'),
+                fallbackImage('community'),
+                fallbackImage('workspace')
             ];
             
             const relatedEvents = data.data.filter(e => e.id != eventId).slice(0, 3);
@@ -360,16 +358,16 @@
                     const typeDisplay = e.event_type || 'Event';
                     
                     const avatars = [
-                        `https://i.pravatar.cc/150?u=${e.id}a`,
-                        `https://i.pravatar.cc/150?u=${e.id}b`,
-                        `https://i.pravatar.cc/150?u=${e.id}c`
+                        fallbackImage('avatar'),
+                        fallbackImage('avatar'),
+                        fallbackImage('avatar')
                     ];
 
                     return `
                     <div class="evt-card" onclick="window.location.href='event-details.html?id=${Number(e.id)}'">
                         <div class="evt-card-img-wrap">
                             <span class="evt-card-free-badge">Free</span>
-                            <img class="evt-card-img" src="${img}" alt="${escapeHtml(e.title)}">
+                            <img class="evt-card-img" src="${img}" data-fallback="${fallbackImage('event')}" alt="${escapeHtml(e.title)}">
                         </div>
                         <div class="evt-card-body">
                             <div style="margin-bottom: 0.5rem;"><span class="evt-card-tag" style="background: #e0f2fe; color: #0284c7;">${escapeHtml(typeDisplay)}</span></div>
@@ -380,9 +378,9 @@
                             <div class="evt-card-footer">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <div class="avatar-stack">
-                                        <img src="${avatars[0]}" class="avatar">
-                                        <img src="${avatars[1]}" class="avatar">
-                                        <img src="${avatars[2]}" class="avatar">
+                                        <img src="${avatars[0]}" class="avatar" data-fallback="${fallbackImage('avatar')}">
+                                        <img src="${avatars[1]}" class="avatar" data-fallback="${fallbackImage('avatar')}">
+                                        <img src="${avatars[2]}" class="avatar" data-fallback="${fallbackImage('avatar')}">
                                     </div>
                                     <span class="evt-card-attendees">${Number(e.participant_count || 0)} attendees</span>
                                 </div>
@@ -390,6 +388,7 @@
                         </div>
                     </div>`;
                 }).join('');
+                applyImageFallbacks(grid);
                 lucide.createIcons();
             } else {
                 grid.innerHTML = '<p style="color: var(--gray); grid-column: 1/-1;">No other upcoming events.</p>';

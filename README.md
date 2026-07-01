@@ -122,7 +122,6 @@ coworkconnect/
     events.html
     groups.html
     index.html
-    login.html
     profile.html
     register.html
     spaces.html
@@ -402,16 +401,25 @@ python -m pip install -r requirements.txt
 
 ### 2. Configure Environment Variables
 
-Create or update the `.env` file in the project root.
+Create or update the `.env` file in the project root. The Django settings load this file automatically during local development.
 
 ```text
-PORT=5000
+DEBUG=true
+DJANGO_SECRET_KEY=use_a_long_random_secret_here
+JWT_SECRET=use_a_long_random_secret_here
+JWT_EXPIRE=30d
+
+# Recommended for Supabase/Postgres:
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:6543/postgres?sslmode=require
+DB_SSL=true
+
+# Optional local MySQL fallback:
 DB_HOST=localhost
+DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=your_mysql_password
 DB_NAME=coworkconnect
-JWT_SECRET=your_secret_key
-JWT_EXPIRE=30d
+DB_SSL=false
 ```
 
 ### 3. Start MySQL
@@ -499,11 +507,10 @@ This adds sample event data for testing.
 | :--- | :--- |
 | `index.html` | Landing/home page |
 | `register.html` | User registration |
-| `login.html` | User login |
 | `spaces.html` | Browse coworking spaces |
 | `profile.html` | User profile management |
-| `community.html` | Community posts and interactions |
-| `groups.html` | Discussion groups and group messaging |
+| `community.html` | Community posts and inline sign in when needed |
+| `groups.html` | Discussion groups, messaging, and inline sign in when needed |
 | `events.html` | Event listing and creation |
 | `event-details.html` | Event details and registration |
 | `admin.html` | Admin space management |
