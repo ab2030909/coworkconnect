@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = (window.location.protocol === 'file:' || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') ? 'http://localhost:5000/api' : '/api';
 
 // Alpine.js Global Stores & Reactivity
 document.addEventListener('alpine:init', () => {
