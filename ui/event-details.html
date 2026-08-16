@@ -328,7 +328,7 @@
             <div style="padding: 1.25rem 1.75rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
                 <div>
                     <h4 id="gform-modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">Event Registration Form</h4>
-                    <p style="margin: 0; font-size: 0.8rem; color: #059669; font-weight: 700;">Step 1: Fill out the Google Form below</p>
+                    <p style="margin: 0; font-size: 0.8rem; color: #059669; font-weight: 700;">Step 1: Fill out the Google Form</p>
                 </div>
                 <div style="display: flex; gap: 0.75rem; align-items: center;">
                     <a id="gform-external-link" href="#" target="_blank" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.85rem; border-radius: 8px; font-weight: 700;">
@@ -336,6 +336,15 @@
                     </a>
                     <button class="btn-icon-sm" type="button" onclick="closeGoogleFormModal()"><i data-lucide="x" size="18"></i></button>
                 </div>
+            </div>
+
+            <div style="background: #f0fdf4; border-bottom: 1px solid #bbf7d0; padding: 0.75rem 1.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                <div style="font-size: 0.84rem; color: #166534; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                    <i data-lucide="info" size="16"></i> Form requires Google sign-in or not loading below?
+                </div>
+                <a id="gform-direct-btn" href="#" target="_blank" class="btn btn-primary" style="padding: 0.45rem 1.1rem; font-size: 0.84rem; border-radius: 8px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                    Open Form Directly in New Tab <i data-lucide="external-link" size="14"></i>
+                </a>
             </div>
             
             <div style="flex: 1; position: relative; background: #ffffff;">
@@ -438,10 +447,16 @@
                 raw = 'https://' + raw;
             }
             if (raw.includes('docs.google.com/forms')) {
+                if (raw.includes('/edit')) {
+                    raw = raw.replace(/\/edit.*$/, '/viewform');
+                }
+                if (raw.includes('/create')) {
+                    return raw;
+                }
                 if (raw.includes('/viewform')) {
                     return raw.includes('embedded=true') ? raw : raw + (raw.includes('?') ? '&embedded=true' : '?embedded=true');
                 }
-                return raw;
+                return raw.replace(/\/?$/, '/viewform?embedded=true');
             }
             return raw;
         }
@@ -461,6 +476,7 @@
                 const embedUrl = getGoogleEmbedUrl(rawUrl);
                 document.getElementById('gform-modal-title').textContent = `Register for ${activeEventData.title}`;
                 document.getElementById('gform-external-link').href = rawUrl;
+                document.getElementById('gform-direct-btn').href = rawUrl;
                 document.getElementById('gform-iframe').src = embedUrl;
                 document.getElementById('google-form-modal').classList.remove('hidden');
                 if (window.lucide) lucide.createIcons();
