@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | CoWorkConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <i data-lucide="layout" style="color: var(--primary);"></i>
+                <span>CoWork<span style="color: var(--primary);">Connect</span></span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="auth-page" style="background-color: var(--bg-soft);">
+        <div class="auth-card fade-in" style="border: 1px solid var(--border);">
+            <div style="text-align: center; margin-bottom: 2.5rem;">
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: rgba(16, 185, 129, 0.05); border-radius: 16px; color: var(--primary); margin-bottom: 1rem;">
+                    <i data-lucide="lock" size="32"></i>
+                </div>
+                <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--dark); letter-spacing: -0.5px;">Sign In</h2>
+                <p style="color: var(--gray); font-size: 1rem; margin-top: 0.5rem;">Welcome back! Please enter your details.</p>
+            </div>
+
+            <div id="error-message" class="hidden" style="background: #f0fdf4; color: #064e3b; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; font-size: 0.9rem; border: 1px solid #d1fae5; display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="alert-circle" size="18" style="color: #10b981;"></i>
+                <span class="msg-content"></span>
+            </div>
+
+            <form id="login-form">
+                <div class="input-group">
+                    <label style="color: var(--dark);">Email Address</label>
+                    <input type="email" id="email" class="input-field" placeholder="e.g. abdullah@mail.com" required>
+                </div>
+                <div class="input-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label style="color: var(--dark); margin-bottom: 0;">Password</label>
+                        <a href="#" style="font-size: 0.85rem; color: var(--primary); font-weight: 600; text-decoration: none;">Forgot password?</a>
+                    </div>
+                    <input type="password" id="password" class="input-field" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1rem; font-size: 1rem; border-radius: 12px;">
+                    Log In
+                </button>
+            </form>
+
+            <div style="margin: 2rem 0; display: flex; align-items: center; gap: 1rem;">
+                <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                <span style="color: var(--gray); font-size: 0.85rem; font-weight: 500;">OR</span>
+                <div style="flex: 1; height: 1px; background: var(--border);"></div>
+            </div>
+
+            <p style="text-align: center; font-size: 0.95rem; color: var(--gray);">
+                Not a member? <a href="register.html" style="color: var(--primary); font-weight: 700; text-decoration: none;">Join for free</a>
+            </p>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

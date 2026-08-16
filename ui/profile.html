@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | CoWorkConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <style>
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spin { animation: spin 1s linear infinite; }
+    </style>
+</head>
+<body style="background-color: var(--bg-soft);">
+    <!-- Shared Navbar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <i data-lucide="briefcase"></i>
+                <span>CoWorkConnect</span>
+            </a>
+            <div class="nav-links">
+                <a href="spaces.html" class="nav-link">Explore Spaces</a>
+                <a href="community.html" class="nav-link">Networking</a>
+                <a href="groups.html" class="nav-link">Groups</a>
+                <a href="events.html" class="nav-link">Events</a>
+                
+                <div id="auth-links" class="auth-links hidden"></div>
+                <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
+                    <!-- Populated dynamically by app.js -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-top: 140px; padding-bottom: 50px;">
+        <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start;">
+            <!-- Left: Avatar Card -->
+            <div style="background: white; padding: 3rem; border-radius: 24px; border: 1px solid var(--border); text-align: center; box-shadow: var(--shadow);">
+                <div style="position: relative; width: 140px; height: 140px; margin: 0 auto 1.5rem;">
+                    <div id="avatar-preview" style="width: 100%; height: 100%; background: #ecfdf5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 4px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; background-size: cover; background-position: center;">
+                        <i data-lucide="user" size="60" id="avatar-icon"></i>
+                    </div>
+                    <label for="avatar-upload" style="position: absolute; bottom: 0; right: 0; background: var(--primary); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid white; box-shadow: var(--shadow); transition: all 0.2s;">
+                        <i data-lucide="camera" size="18"></i>
+                    </label>
+                    <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                </div>
+                <h2 id="display-name" style="font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem;">User Name</h2>
+                <p id="display-email" style="color: var(--gray); font-weight: 600; font-size: 0.95rem;">user@example.com</p>
+                <div id="avatar-uploading-indicator" style="display: none; margin-top: 1rem; font-size: 0.85rem; color: var(--primary); font-weight: 600;">
+                    <i data-lucide="loader" size="16" class="spin" style="vertical-align: middle; margin-right: 5px;"></i> Uploading...
+                </div>
+            </div>
+
+            <!-- Right: Account Fields -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div style="background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+                    <h3 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.8rem; font-weight: 800;">
+                        <i data-lucide="settings" size="24" color="var(--primary)"></i> Account Portfolio
+                    </h3>
+                    <form id="profile-form">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div class="input-group"><label>Full Name</label><input type="text" id="profile-name" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;"></div>
+                            <div class="input-group"><label>Email Address</label><input type="email" id="profile-email" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;"></div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div class="input-group">
+                                <label>Current Status</label>
+                                <select id="profile-status" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;">
+                                    <option value="Available">Available</option>
+                                    <option value="Busy">Focus Mode</option>
+                                    <option value="Networking">Open to Collab</option>
+                                    <option value="Out">Off-site</option>
+                                </select>
+                            </div>
+                            <div class="input-group"><label>Catchy Bio</label><textarea id="profile-bio" class="input-field" placeholder="Software Engineer @ Apple" style="height: 52px; resize: none; border-radius: 12px; padding: 0.8rem 1rem;"></textarea></div>
+                        </div>
+                        <div class="input-group" style="margin-top: 1rem;">
+                            <label style="font-weight: 800; color: var(--dark);">Headline / Short Description</label>
+                            <input type="text" id="profile-headline" class="input-field" placeholder="Software Engineer @ TechCorp | Open to Collab" style="border-radius: 12px; padding: 0.8rem 1rem;">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+                            <div class="input-group">
+                                <label style="font-weight: 800; color: var(--dark);">GitHub Profile URL</label>
+                                <input type="url" id="profile-github" class="input-field" placeholder="https://github.com/username" style="border-radius: 12px; padding: 0.8rem 1rem;">
+                            </div>
+                            <div class="input-group">
+                                <label style="font-weight: 800; color: var(--dark);">LinkedIn Profile URL</label>
+                                <input type="url" id="profile-linkedin" class="input-field" placeholder="https://linkedin.com/in/username" style="border-radius: 12px; padding: 0.8rem 1rem;">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-weight: 800; border-radius: 12px; margin-top: 1rem;">Update Portfolio</button>
+                    </form>
+                </div>
+                <div style="background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem; font-weight: 800;"><i data-lucide="award" size="24" color="var(--primary)"></i> My Expertise</h3>
+                    <div id="skills-container" style="display: flex; flex-wrap: wrap; gap: 0.7rem; margin-bottom: 1.5rem;"></div>
+                    <div style="display: flex; gap: 1rem;"><input type="text" id="skill-input" class="input-field" placeholder="Add Skill (e.g. React)" style="border-radius: 12px;"><button id="add-skill-btn" class="btn btn-outline" style="padding: 0 2rem; border-radius: 12px; font-weight: 800;">Add</button></div>
+                </div>
+
+                <!-- Friends Card (Facebook style) -->
+                <div style="background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; font-weight: 800;">
+                        <span style="display: flex; align-items: center; gap: 0.8rem;"><i data-lucide="users" size="24" color="var(--primary)"></i> My Friends</span>
+                        <span id="my-friends-badge" style="background:#ecfdf5;color:#059669;padding:0.2rem 0.8rem;border-radius:50px;font-size:0.85rem;font-weight:700;">0 Friends</span>
+                    </h3>
+                    <div id="my-friends-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem;">
+                        <p style="color: #64748b; font-size: 0.9rem;">Loading friends list...</p>
+                    </div>
+                </div>
+
+                <!-- My Activity / Posts Card (LinkedIn style) -->
+                <div style="background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem; font-weight: 800;">
+                        <i data-lucide="message-square" size="24" color="var(--primary)"></i> My Posts & Activity
+                    </h3>
+                    <div id="my-posts-feed" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <p style="color: #64748b; font-size: 0.9rem;">Loading your activity...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+<script src="app.js?v=route-images-1"></script>
+    <script>
+        lucide.createIcons();
+        let avatarUrl = '';
+        const skillsContainer = document.getElementById('skills-container');
+        const skillInput = document.getElementById('skill-input');
+        const addSkillBtn = document.getElementById('add-skill-btn');
+        let skills = [];
+
+        async function loadProfile() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = 'index.html'; return; }
+            try {
+                const res = await fetch('/api/users/profile', { headers: { 'Authorization': `Bearer ${token}` } });
+                const result = await res.json();
+                const user = result.data;
+                document.getElementById('display-name').textContent = user.name;
+                document.getElementById('display-email').textContent = user.email;
+                document.getElementById('profile-name').value = user.name || '';
+                document.getElementById('profile-email').value = user.email || '';
+                document.getElementById('profile-status').value = user.status || 'Available';
+                document.getElementById('profile-bio').value = user.bio || '';
+                document.getElementById('profile-headline').value = user.headline || '';
+                document.getElementById('profile-github').value = user.github_url || '';
+                document.getElementById('profile-linkedin').value = user.linkedin_url || '';
+                
+                if (user.avatar_url) {
+                    avatarUrl = user.avatar_url;
+                    document.getElementById('avatar-preview').style.backgroundImage = `url(${user.avatar_url})`;
+                    document.getElementById('avatar-icon').style.display = 'none';
+                }
+                
+                if (user.expertise) {
+                    skills = user.expertise.split(',').map(s => s.trim()).filter(Boolean);
+                } else {
+                    skills = [];
+                }
+                renderSkills();
+
+                localStorage.setItem('user', JSON.stringify(user));
+                updateNavbar();
+
+                // Load Friends & Posts
+                loadMyFriends();
+                loadMyPosts(user.id);
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadMyFriends() {
+            const token = localStorage.getItem('token');
+            const grid = document.getElementById('my-friends-grid');
+            const badge = document.getElementById('my-friends-badge');
+            if (!token || !grid) return;
+
+            try {
+                const res = await fetch('/api/friends', { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                const friends = data.friends || [];
+                badge.textContent = `${friends.length} Friends`;
+
+                if (!friends.length) {
+                    grid.innerHTML = '<p style="color:#94a3b8;font-size:0.9rem;grid-column:1/-1;">No friends added yet. Connect with members on the Networking feed or Circles!</p>';
+                    return;
+                }
+
+                grid.innerHTML = friends.map(f => `
+                    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:1rem;display:flex;align-items:center;gap:0.75rem;">
+                        <div style="width:42px;height:42px;border-radius:50%;overflow:hidden;background:#ecfdf5;display:flex;align-items:center;justify-content:center;font-weight:800;color:#059669;cursor:pointer;" onclick="openUserProfileModal(${f.id})">
+                            ${f.avatar_url ? `<img src="${safeImageUrl(f.avatar_url)}" style="width:100%;height:100%;object-fit:cover;">` : (f.name || 'F')[0].toUpperCase()}
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <strong style="font-size:0.88rem;color:#0f172a;display:block;cursor:pointer;" onclick="openUserProfileModal(${f.id})">${escapeHtml(f.name)}</strong>
+                            <span style="font-size:0.75rem;color:#64748b;">${escapeHtml(f.status || 'Member')}</span>
+                        </div>
+                        <button type="button" title="Unfriend" style="background:#fff1f2;color:#e11d48;border:1px solid #fecdd3;padding:0.3rem 0.6rem;border-radius:50px;font-size:0.72rem;font-weight:700;cursor:pointer;" onclick="unfriendUser(${f.id})">Remove</button>
+                    </div>
+                `).join('');
+            } catch (e) {
+                grid.innerHTML = '<p style="color:#ef4444;font-size:0.85rem;">Could not load friends list.</p>';
+            }
+        }
+
+        async function unfriendUser(friendId) {
+            if (!confirm('Remove this user from your friends list?')) return;
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch('/api/friends/respond', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ friend_id: friendId, action: 'unfriend' })
+                });
+                const data = await res.json();
+                showToast(data.message || 'Removed');
+                loadMyFriends();
+            } catch (e) {
+                showToast('Error removing friend', 'error');
+            }
+        }
+
+        async function loadMyPosts(userId) {
+            const feed = document.getElementById('my-posts-feed');
+            if (!feed) return;
+
+            try {
+                const res = await fetch(`/api/posts?user_id=${userId}`);
+                const data = await res.json();
+                const posts = data.data || [];
+
+                if (!posts.length) {
+                    feed.innerHTML = '<p style="color:#94a3b8;font-size:0.9rem;">You haven\'t published any posts yet. Share something on the Networking page!</p>';
+                    return;
+                }
+
+                feed.innerHTML = posts.map(p => `
+                    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:1.25rem;">
+                        <p style="margin:0 0 0.5rem;font-size:0.95rem;color:#0f172a;line-height:1.6;white-space:pre-wrap;word-break:break-word;">${escapeHtml(p.content)}</p>
+                        ${p.image_url ? `<img src="${safeImageUrl(p.image_url)}" style="width:100%;max-height:250px;object-fit:cover;border-radius:12px;margin-top:0.5rem;">` : ''}
+                        <div style="margin-top:0.75rem;display:flex;gap:1rem;color:#64748b;font-size:0.8rem;font-weight:700;">
+                            <span>❤️ ${p.likes_count || 0} Likes</span>
+                            <span>💬 ${p.comments_count || 0} Comments</span>
+                            <span style="margin-left:auto;">${new Date(p.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                feed.innerHTML = '<p style="color:#ef4444;font-size:0.85rem;">Could not load posts.</p>';
+            }
+        }
+
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const payload = { 
+                name: document.getElementById('profile-name').value, 
+                email: document.getElementById('profile-email').value, 
+                status: document.getElementById('profile-status').value, 
+                bio: document.getElementById('profile-bio').value,
+                headline: document.getElementById('profile-headline').value,
+                github_url: document.getElementById('profile-github').value,
+                linkedin_url: document.getElementById('profile-linkedin').value,
+                expertise: skills.join(', '),
+                avatar_url: avatarUrl
+            };
+            const res = await fetch('/api/users/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+            if (res.ok) { showToast('Portfolio updated successfully!'); loadProfile(); }
+        });
+
+        // Backend Avatar Upload Logic with Image Compression
+        document.getElementById('avatar-upload').addEventListener('change', async (e) => {
+            let file = e.target.files[0];
+            if (!file) return;
+
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            if (window.compressImageFile) {
+                file = await compressImageFile(file, 800, 800, 0.8);
+            }
+
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            document.getElementById('avatar-uploading-indicator').style.display = 'block';
+
+            try {
+                const response = await fetch('/api/users/profile/avatar', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                if (data.success && data.avatar_url) {
+                    avatarUrl = data.avatar_url;
+                    document.getElementById('avatar-preview').style.backgroundImage = `url(${avatarUrl})`;
+                    document.getElementById('avatar-icon').style.display = 'none';
+                    showToast('Avatar updated!');
+                    updateNavbar();
+                } else {
+                    showToast('Upload failed: ' + (data.message || 'Unknown error'), 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Upload failed.', 'error');
+            } finally {
+                document.getElementById('avatar-uploading-indicator').style.display = 'none';
+            }
+        });
+
+        function renderSkills() {
+            skillsContainer.innerHTML = skills.map(s => `<span style="background: #f0fdf4; color: var(--primary); padding: 0.6rem 1.2rem; border-radius: 50px; font-size: 0.9rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">${escapeHtml(s)} <button type="button" class="btn-icon remove-skill" data-skill="${escapeHtml(s)}" aria-label="Remove ${escapeHtml(s)}"><i data-lucide="x" size="14"></i></button></span>`).join('');
+            skillsContainer.querySelectorAll('.remove-skill').forEach((button) => {
+                button.addEventListener('click', () => removeSkill(button.dataset.skill));
+            });
+            lucide.createIcons();
+        }
+
+        addSkillBtn.addEventListener('click', () => { if(skillInput.value) { skills.push(skillInput.value); skillInput.value = ''; renderSkills(); } });
+        window.removeSkill = (s) => { skills = skills.filter(item => item !== s); renderSkills(); };
+        document.addEventListener('DOMContentLoaded', () => { loadProfile(); renderSkills(); });
+    </script>
+
+    <!-- Footer -->
+        <footer class="footer" style="padding: 2rem 0; background-color: var(--color-surface); border-top: 1px solid var(--color-border); text-align: center; color: var(--color-muted); font-size: 0.85rem; font-weight: 600;">
+        <div class="container">
+            <p>&copy; 2026 CoWorkConnect. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
+
+
+
+

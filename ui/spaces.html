@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Workspaces | CoWorkConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+    <style>
+        .type-btn { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer; transition: all 0.2s ease; color: var(--gray); font-family: var(--font); font-size: 0.75rem; font-weight: 700; }
+        .type-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
+        .type-btn.active { background: #ecfdf5; border-color: var(--primary); color: var(--primary); }
+        
+        /* Modern Compact Space Card Grid */
+        #listing-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 1.5rem;
+            align-items: stretch;
+        }
+
+        .listing-card {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -2px rgba(0,0,0,0.02);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            height: 100%;
+            max-width: 100%;
+        }
+        .listing-card:hover {
+            transform: translateY(-4px);
+            border-color: #cbd5e1;
+            box-shadow: 0 14px 28px -6px rgba(15, 23, 42, 0.09);
+        }
+        
+        .card-cover-wrapper {
+            position: relative;
+            width: 100%;
+            height: 190px;
+            background: #f1f5f9;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .card-cover-image {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.4s ease;
+        }
+        .listing-card:hover .card-cover-image {
+            transform: scale(1.05);
+        }
+        .space-type-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            color: #ffffff;
+            padding: 3px 9px;
+            border-radius: 7px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: capitalize;
+        }
+
+        .listing-body {
+            padding: 1.25rem 1.35rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex: 1;
+            gap: 0.85rem;
+        }
+        .space-title {
+            font-size: 1.16rem;
+            font-weight: 800;
+            color: var(--dark);
+            line-height: 1.3;
+            transition: color 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        .listing-card:hover .space-title {
+            color: var(--primary);
+        }
+        .space-location-meta {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.82rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 0.25rem;
+            margin-bottom: 0.45rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .meta-dot {
+            color: #cbd5e1;
+            font-weight: 900;
+        }
+        .space-desc-preview {
+            font-size: 0.85rem;
+            color: #475569;
+            line-height: 1.45;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            max-height: 2.9em;
+        }
+        .card-footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 0.85rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        .price-label {
+            font-size: 0.68rem;
+            color: #64748b;
+            font-weight: 700;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .price-amount {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--dark);
+        }
+        .card-action-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-view-space {
+            padding: 0.5rem 1rem;
+            font-weight: 800;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+        }
+        .btn-card-delete {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 0.45rem 0.65rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-card-delete:hover {
+            background: #fee2e2;
+            transform: scale(1.05);
+        }
+
+        /* Modal Styles */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.25s ease; }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
+        .modal-card { background: white; border-radius: 24px; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); transform: scale(0.95); transition: 0.25s ease; }
+        .modal-overlay.open .modal-card { transform: scale(1); }
+
+        .img-upload-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 0.5rem; }
+        .img-upload-slot { height: 85px; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background-position: center; background-size: cover; position: relative; overflow: hidden; transition: 0.2s; background-color: #f8fafc; }
+        .img-upload-slot:hover { border-color: var(--primary); background-color: #f1f5f9; }
+        .img-upload-slot span { font-size: 0.68rem; color: var(--gray); font-weight: 700; margin-top: 3px; }
+        
+        .slot-remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            z-index: 10;
+        }
+        .slot-remove-btn:hover {
+            background: #dc2626;
+        }
+
+        .amenity-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .amenity-checkbox-label:hover {
+            border-color: var(--primary);
+            background: #f0fdf4;
+        }
+        .amenity-checkbox-label:has(input:checked) {
+            border-color: var(--primary);
+            background: #ecfdf5;
+            color: #065f46;
+            font-weight: 700;
+        }
+
+        .chip { padding: 0.4rem 0.8rem; border-radius: 50px; background: #f1f5f9; color: #475569; font-size: 0.75rem; font-weight: 700; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+        .chip:hover, .chip.active { background: #e2e8f0; color: var(--dark); border-color: var(--primary); }
+
+        /* Location Autocomplete Dropdown */
+        .location-dropdown-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .location-suggest-panel {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.14);
+            max-height: 230px;
+            overflow-y: auto;
+            z-index: 1200;
+            display: none;
+            padding: 6px;
+        }
+        .location-suggest-panel.open {
+            display: block;
+        }
+        .location-suggest-item {
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: #334155;
+            transition: background 0.15s ease;
+        }
+        .location-suggest-item:hover, .location-suggest-item.selected {
+            background: #f0fdf4;
+            color: var(--primary);
+        }
+        .location-suggest-item .city-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 2px 7px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body style="background-color: #f8fafc;">
+    <!-- Shared Navbar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <i data-lucide="briefcase"></i>
+                <span>CoWorkConnect</span>
+            </a>
+            <div class="nav-links">
+                <a href="spaces.html" class="nav-link active">Explore Spaces</a>
+                <a href="community.html" class="nav-link">Networking</a>
+                <a href="groups.html" class="nav-link">Groups</a>
+                <a href="events.html" class="nav-link">Events</a>
+                
+                <div id="auth-links" class="auth-links hidden"></div>
+                <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
+                    <!-- Populated dynamically by app.js -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Search Bar -->
+    <header style="padding-top: 130px; padding-bottom: 30px; background: white; border-bottom: 1px solid var(--border);">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
+                <div>
+                    <h1 style="font-size: 2rem; margin-bottom: 0.5rem; font-weight: 800; color: var(--dark);">Coworking Spaces in <span id="location-title" style="color: var(--primary);">Anywhere</span></h1>
+                    <p style="color: var(--gray); font-weight: 600; font-size: 0.95rem;">Find and connect directly with verified desks, private offices, and meeting rooms.</p>
+                </div>
+                <button id="open-add-space-btn" class="btn btn-primary" style="border-radius: 12px; padding: 0.75rem 1.5rem; font-weight: 800; display: inline-flex; align-items: center; gap: 8px;">
+                    <i data-lucide="plus-circle" size="18"></i> List Your Space
+                </button>
+            </div>
+
+            <!-- Search Field with Location Auto-Suggestions -->
+            <div style="display: flex; gap: 0.5rem; background: var(--bg-soft); padding: 0.5rem; border-radius: 16px; border: 1px solid var(--border); margin-top: 1.5rem; max-width: 750px; position: relative;">
+                <div class="location-dropdown-wrapper" style="flex: 1; display: flex; align-items: center; padding-left: 1rem; gap: 0.5rem;">
+                    <i data-lucide="map-pin" size="18" color="var(--gray)"></i>
+                    <input type="text" id="location-input" placeholder="Search city or area (e.g. Islamabad, Lahore, Karachi)" autocomplete="off" style="border: none; background: transparent; width: 100%; height: 40px; font-family: var(--font); outline: none; font-size: 0.95rem;">
+                    <div id="search-location-suggestions" class="location-suggest-panel"></div>
+                </div>
+                <button id="main-search-btn" class="btn btn-primary" style="padding: 0 2rem; border-radius: 12px; font-weight: 700;">Search</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="display: grid; grid-template-columns: 280px 1fr; gap: 2rem; padding-top: 2rem; padding-bottom: 5rem;">
+        <!-- Sidebar Filters -->
+        <aside style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Price Range Filter -->
+            <div class="filter-section" style="background: white; padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border);">
+                <h4 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; font-weight: 800; font-size: 0.95rem;">
+                    <i data-lucide="banknote" size="18" color="var(--primary)"></i> Price Range (Rs / day)
+                </h4>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                    <input type="number" id="min-price" min="0" value="0" placeholder="Min" class="input-field" style="padding: 0.5rem 0.75rem; font-weight: 600;">
+                    <span style="color: var(--gray);">-</span>
+                    <input type="number" id="max-price" min="0" placeholder="Max" class="input-field" style="padding: 0.5rem 0.75rem; font-weight: 600;">
+                </div>
+
+                <!-- Quick Presets -->
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.2rem;">
+                    <span class="chip" onclick="setBudgetPreset(0, 5000)">Under 5K</span>
+                    <span class="chip" onclick="setBudgetPreset(0, 15000)">Under 15K</span>
+                    <span class="chip" onclick="setBudgetPreset(0, 35000)">Under 35K</span>
+                </div>
+
+                <button id="apply-price-btn" class="btn btn-outline" style="width: 100%; font-size: 0.85rem; border-radius: 12px; font-weight: 700;">Apply Range</button>
+            </div>
+
+            <!-- Space Type Filter -->
+            <div class="filter-section" style="background: white; padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border);">
+                <h4 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; font-weight: 800; font-size: 0.95rem;">
+                    <i data-lucide="briefcase" size="18" color="var(--primary)"></i> Space Type
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                    <button class="type-btn active" data-type="all">
+                        <i data-lucide="layout-grid" size="16"></i>
+                        <span>All Spaces</span>
+                    </button>
+                    <button class="type-btn" data-type="desk">
+                        <i data-lucide="monitor" size="16"></i>
+                        <span>Desk</span>
+                    </button>
+                    <button class="type-btn" data-type="private_office">
+                        <i data-lucide="door-closed" size="16"></i>
+                        <span>Private Office</span>
+                    </button>
+                    <button class="type-btn" data-type="virtual_office">
+                        <i data-lucide="globe" size="16"></i>
+                        <span>Virtual</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Listings Content -->
+        <section>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <p style="color: var(--gray); font-weight: 600;"><span id="results-count" style="color: var(--primary); font-weight: 800;">0</span> spaces found</p>
+                
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 0.85rem; color: var(--gray); font-weight: 700;">Sort:</span>
+                    <select id="sort-select" class="input-field" style="padding: 0.4rem 0.8rem; width: auto; font-size: 0.85rem; border-radius: 12px; font-weight: 700;">
+                        <option value="latest">Latest Workspaces</option>
+                        <option value="price_asc">Price: Low to High</option>
+                        <option value="price_desc">Price: High to Low</option>
+                        <option value="name">Workspace Name (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Responsive Compact Space Cards Grid -->
+            <div id="listing-container">
+                <div class="skeleton-card" style="height: 360px; border-radius: 18px;"></div>
+                <div class="skeleton-card" style="height: 360px; border-radius: 18px;"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Add New Workspace -->
+    <div id="add-space-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--dark);">List a Workspace</h3>
+                <button id="close-modal-btn" style="background: none; border: none; cursor: pointer; color: var(--gray);"><i data-lucide="x" size="22"></i></button>
+            </div>
+            
+            <form id="add-space-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Workspace Name</label>
+                    <input type="text" id="new-space-name" maxlength="60" placeholder="e.g. Hive Mind Innovation Hub" class="input-field" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Type</label>
+                        <select id="new-space-type" class="input-field" required>
+                            <option value="desk">Dedicated Desk</option>
+                            <option value="private_office">Private Office</option>
+                            <option value="meeting_room">Meeting Room</option>
+                            <option value="virtual_office">Virtual Office</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Location / City</label>
+                        <div class="location-dropdown-wrapper">
+                            <input type="text" id="new-space-location" maxlength="80" placeholder="e.g. F-7 Markaz, Islamabad" autocomplete="off" class="input-field" required>
+                            <div id="modal-location-suggestions" class="location-suggest-panel"></div>
+                        </div>
+                        
+                        <!-- Live Connected Location Map Preview -->
+                        <div id="modal-map-preview-container" style="height: 140px; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; margin-top: 0.6rem; position: relative; background: #f8fafc;">
+                            <iframe id="modal-map-iframe" width="100%" height="100%" frameborder="0" style="border:0;" allowfullscreen="" loading="lazy" src="https://maps.google.com/maps?q=Pakistan&t=&z=10&ie=UTF8&iwloc=&output=embed"></iframe>
+                            <div style="position: absolute; bottom: 6px; right: 8px; background: rgba(15, 23, 42, 0.75); color: white; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; backdrop-filter: blur(4px);">
+                                <i data-lucide="map-pin" size="10" style="vertical-align: middle;"></i> Live Location Map
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Price / Day (Rs)</label>
+                        <input type="number" id="new-space-price" min="0" max="999999" placeholder="e.g. 2500" class="input-field" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Capacity (Seats)</label>
+                        <input type="number" id="new-space-capacity" min="1" max="9999" placeholder="e.g. 15" class="input-field" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Contact Email (Must)</label>
+                        <input type="email" id="new-space-email" placeholder="e.g. contact@workspace.com" class="input-field" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">WhatsApp / Contact (Must)</label>
+                        <input type="tel" id="new-space-phone" maxlength="16" placeholder="e.g. +923001234567 or 03001234567" inputmode="tel" oninput="this.value = this.value.replace(/[^0-9+]/g, '').replace(/(?!^)\+/g, '')" class="input-field" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Official Website Link (Optional)</label>
+                    <input type="url" id="new-space-website" placeholder="e.g. https://mycoworking.com" class="input-field">
+                </div>
+
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Description <span style="font-size: 0.75rem; color: var(--gray); font-weight: 500;">(Max 300 characters)</span></label>
+                    <textarea id="new-space-desc" maxlength="300" rows="3" placeholder="Describe the atmosphere, community, and highlights of this workspace..." class="input-field" style="resize: vertical;"></textarea>
+                </div>
+
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.4rem;">
+                        Included Amenities (Select all available)
+                    </label>
+                    <div class="amenities-checkbox-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; max-height: 200px; overflow-y: auto; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc;">
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="High-Speed Wi-Fi"> <span>High-Speed Wi-Fi</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Dedicated Workstations"> <span>Dedicated Workstations</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Private Offices"> <span>Private Offices</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Meeting Rooms"> <span>Meeting Rooms</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Conference Rooms"> <span>Conference Rooms</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Comfortable Lounge Area"> <span>Comfortable Lounge Area</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Printing & Scanning"> <span>Printing & Scanning</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Free Tea & Coffee"> <span>Free Tea & Coffee</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Air Conditioning"> <span>Air Conditioning</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Power Backup / Generator"> <span>Power Backup / Generator</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="24/7 Access"> <span>24/7 Access</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Reception & Front Desk"> <span>Reception & Front Desk</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Security & CCTV"> <span>Security & CCTV</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Kitchen / Pantry"> <span>Kitchen / Pantry</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Phone Booths"> <span>Phone Booths</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Event & Workshop Space"> <span>Event & Workshop Space</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Community Networking Events"> <span>Community Networking</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Elevator Lift"> <span>Elevator Lift</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Lockers & Storage"> <span>Lockers & Storage</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Parking Facility"> <span>Parking Facility</span></label>
+                        <label class="amenity-checkbox-label"><input type="checkbox" name="amenity" value="Cleaning & Maintenance Services"> <span>Cleaning & Maintenance</span></label>
+                    </div>
+                </div>
+
+                <!-- Custom Workspace Options & Pricing Plans -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <div>
+                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin: 0;">Workspace Options & Passes</label>
+                            <span style="font-size: 0.74rem; color: #64748b; font-weight: 500;">(Optional: specify specific desk/office passes, e.g. Hot Desk, Private Suite)</span>
+                        </div>
+                        <button type="button" onclick="addPricingPlanRow()" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.78rem; border-radius: 8px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;">
+                            <i data-lucide="plus" size="13"></i> Add Option
+                        </button>
+                    </div>
+                    <div id="pricing-plans-container" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Dynamically added plan rows -->
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Workspace Photos (Max 5)</label>
+                    <div class="img-upload-grid">
+                        <div class="img-upload-slot" id="slot-0" onclick="triggerSlotUpload(0)">
+                            <i data-lucide="image-plus" size="18" color="var(--gray)"></i>
+                            <span>Cover</span>
+                            <input type="file" id="file-slot-0" accept="image/*" style="display: none;" onchange="handleSlotImage(0, this)">
+                        </div>
+                        <div class="img-upload-slot" id="slot-1" onclick="triggerSlotUpload(1)">
+                            <i data-lucide="image-plus" size="18" color="var(--gray)"></i>
+                            <span>Photo 2</span>
+                            <input type="file" id="file-slot-1" accept="image/*" style="display: none;" onchange="handleSlotImage(1, this)">
+                        </div>
+                        <div class="img-upload-slot" id="slot-2" onclick="triggerSlotUpload(2)">
+                            <i data-lucide="image-plus" size="18" color="var(--gray)"></i>
+                            <span>Photo 3</span>
+                            <input type="file" id="file-slot-2" accept="image/*" style="display: none;" onchange="handleSlotImage(2, this)">
+                        </div>
+                        <div class="img-upload-slot" id="slot-3" onclick="triggerSlotUpload(3)">
+                            <i data-lucide="image-plus" size="18" color="var(--gray)"></i>
+                            <span>Photo 4</span>
+                            <input type="file" id="file-slot-3" accept="image/*" style="display: none;" onchange="handleSlotImage(3, this)">
+                        </div>
+                        <div class="img-upload-slot" id="slot-4" onclick="triggerSlotUpload(4)">
+                            <i data-lucide="image-plus" size="18" color="var(--gray)"></i>
+                            <span>Photo 5</span>
+                            <input type="file" id="file-slot-4" accept="image/*" style="display: none;" onchange="handleSlotImage(4, this)">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: 1rem; padding: 0.8rem; border-radius: 12px; font-weight: 800;">Publish Space</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-space-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 440px; text-align: center; padding: 2rem;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #fef2f2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+                <i data-lucide="trash-2" size="26"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--dark); margin-bottom: 0.5rem;">Delete Workspace</h3>
+            <p style="font-size: 0.88rem; color: #64748b; font-weight: 600; line-height: 1.5; margin-bottom: 1.5rem;">
+                Are you sure you want to delete <strong id="delete-modal-space-name" style="color: var(--dark);">this workspace</strong>? This action cannot be undone.
+            </p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button type="button" class="btn btn-outline" onclick="closeDeleteSpaceModal()" style="border-radius: 12px; font-weight: 700; padding: 0.75rem;">Cancel</button>
+                <button type="button" id="confirm-delete-space-btn" class="btn" style="background: #dc2626; color: white; border: none; border-radius: 12px; font-weight: 800; padding: 0.75rem;">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=route-images-2"></script>
+    <script>
+        lucide.createIcons();
+
+        let currentFilters = { location: '', type: 'all', minPrice: '0', maxPrice: '', sort: 'latest' };
+        let uploadedImages = ['', '', '', '', ''];
+
+        function setupLocationSuggestions(inputId, panelId, onSelectCallback) {
+            const input = document.getElementById(inputId);
+            const panel = document.getElementById(panelId);
+            if (!input || !panel) return;
+
+            let debounceTimer = null;
+            let currentAbortController = null;
+
+            async function fetchDynamicSuggestions(query = '') {
+                panel.innerHTML = `<div style="padding: 10px; font-size: 0.8rem; color: #94a3b8; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;"><i data-lucide="loader" size="14"></i> Searching registered spaces...</div>`;
+                panel.classList.add('open');
+                if (window.lucide) lucide.createIcons();
+
+                if (currentAbortController) {
+                    currentAbortController.abort();
+                }
+                currentAbortController = new AbortController();
+
+                try {
+                    const res = await fetch(`/api/locations/suggest?q=${encodeURIComponent(query)}`, {
+                        signal: currentAbortController.signal
+                    });
+                    const data = await res.json();
+                    const suggestions = data.data || [];
+
+                    if (!suggestions.length) {
+                        panel.innerHTML = `<div style="padding: 10px; font-size: 0.8rem; color: #94a3b8; text-align: center;">No registered workspaces found</div>`;
+                        panel.classList.add('open');
+                        return;
+                    }
+
+                    panel.innerHTML = suggestions.map(item => `
+                        <div class="location-suggest-item" data-value="${escapeHtml(item.full_name || item.area)}">
+                            <span style="display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                <i data-lucide="building-2" size="14" style="color: #059669; flex-shrink: 0;"></i>
+                                <span style="overflow: hidden; text-overflow: ellipsis;">${escapeHtml(item.full_name || item.area)}</span>
+                            </span>
+                            <span class="city-tag" style="background: #ecfdf5; color: #047857; font-weight: 800;">
+                                ${escapeHtml(item.badge || 'Registered')}
+                            </span>
+                        </div>
+                    `).join('');
+
+                    panel.classList.add('open');
+                    if (window.lucide) lucide.createIcons();
+
+                    panel.querySelectorAll('.location-suggest-item').forEach(item => {
+                        item.addEventListener('mousedown', (e) => {
+                            e.preventDefault();
+                            const val = item.dataset.value;
+                            input.value = val;
+                            panel.classList.remove('open');
+                            if (onSelectCallback) onSelectCallback(val);
+                        });
+                    });
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        panel.innerHTML = `<div style="padding: 10px; font-size: 0.8rem; color: #94a3b8; text-align: center;">Type to search registered locations</div>`;
+                    }
+                }
+            }
+
+            input.addEventListener('focus', () => {
+                fetchDynamicSuggestions(input.value);
+            });
+
+            input.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    fetchDynamicSuggestions(input.value);
+                }, 220);
+            });
+
+            input.addEventListener('blur', () => {
+                setTimeout(() => panel.classList.remove('open'), 250);
+            });
+        }
+
+        function setupRealPlaceSuggestions(inputId, panelId, onSelectCallback) {
+            const input = document.getElementById(inputId);
+            const panel = document.getElementById(panelId);
+            if (!input || !panel) return;
+
+            let debounceTimer = null;
+            let currentAbortController = null;
+
+            async function fetchRealPlaces(query = '') {
+                const trimmed = query.trim();
+                if (trimmed.length < 2) {
+                    panel.classList.remove('open');
+                    return;
+                }
+
+                panel.innerHTML = `<div style="padding: 10px; font-size: 0.8rem; color: #94a3b8; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;"><i data-lucide="loader" size="14"></i> Searching map places...</div>`;
+                panel.classList.add('open');
+                if (window.lucide) lucide.createIcons();
+
+                if (currentAbortController) {
+                    currentAbortController.abort();
+                }
+                currentAbortController = new AbortController();
+
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(trimmed)}&format=json&limit=5`, {
+                        signal: currentAbortController.signal
+                    });
+                    const data = await res.json();
+
+                    if (!data || !data.length) {
+                        panel.innerHTML = `<div style="padding: 10px; font-size: 0.8rem; color: #94a3b8; text-align: center;">No matching map places found. You can still type your exact address.</div>`;
+                        panel.classList.add('open');
+                        return;
+                    }
+
+                    panel.innerHTML = data.map(item => `
+                        <div class="location-suggest-item" data-value="${escapeHtml(item.display_name)}">
+                            <span style="display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                <i data-lucide="map-pin" size="14" style="color: var(--primary); flex-shrink: 0;"></i>
+                                <span style="overflow: hidden; text-overflow: ellipsis;">${escapeHtml(item.display_name)}</span>
+                            </span>
+                            <span class="city-tag" style="background: #eff6ff; color: #1d4ed8; font-weight: 800;">
+                                Map Place
+                            </span>
+                        </div>
+                    `).join('');
+
+                    panel.classList.add('open');
+                    if (window.lucide) lucide.createIcons();
+
+                    panel.querySelectorAll('.location-suggest-item').forEach(item => {
+                        item.addEventListener('mousedown', (e) => {
+                            e.preventDefault();
+                            const val = item.dataset.value;
+                            input.value = val;
+                            panel.classList.remove('open');
+                            if (onSelectCallback) onSelectCallback(val);
+                        });
+                    });
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        panel.innerHTML = `<div style="padding: 10px; font-size: 0.8rem; color: #94a3b8; text-align: center;">Type address to search places</div>`;
+                    }
+                }
+            }
+
+            input.addEventListener('focus', () => {
+                if (input.value.trim().length >= 2) {
+                    fetchRealPlaces(input.value);
+                }
+            });
+
+            input.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    fetchRealPlaces(input.value);
+                    const mapIframe = document.getElementById('modal-map-iframe');
+                    if (mapIframe) {
+                        const query = encodeURIComponent(input.value.trim() || 'Pakistan');
+                        mapIframe.src = `https://maps.google.com/maps?q=${query}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+                    }
+                }, 300);
+            });
+
+            input.addEventListener('blur', () => {
+                setTimeout(() => panel.classList.remove('open'), 250);
+            });
+        }
+
+        // Initialize Location Suggestions on search input (Registered Spaces) and modal input (Real Google Map Places)
+        setupLocationSuggestions('location-input', 'search-location-suggestions', (selectedLoc) => {
+            currentFilters.location = selectedLoc;
+            fetchResults();
+        });
+
+        setupRealPlaceSuggestions('new-space-location', 'modal-location-suggestions', (selectedLoc) => {
+            const mapIframe = document.getElementById('modal-map-iframe');
+            if (mapIframe) {
+                const query = encodeURIComponent(selectedLoc || 'Pakistan');
+                mapIframe.src = `https://maps.google.com/maps?q=${query}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+            }
+        });
+
+        // Enforce Non-Negative Budget Validation
+        document.getElementById('min-price').addEventListener('input', function() {
+            if (this.value < 0) this.value = 0;
+            currentFilters.minPrice = this.value;
+        });
+        document.getElementById('max-price').addEventListener('input', function() {
+            if (this.value !== '' && this.value < 0) this.value = 0;
+            currentFilters.maxPrice = this.value;
+        });
+
+        function setBudgetPreset(min, max) {
+            document.getElementById('min-price').value = min;
+            document.getElementById('max-price').value = max;
+            currentFilters.minPrice = min;
+            currentFilters.maxPrice = max;
+            fetchResults();
+        }
+
+        // Multi Image Slot Upload Handler
+        function triggerSlotUpload(slotIdx) {
+            document.getElementById(`file-slot-${slotIdx}`).click();
+        }
+
+        function removeSlotImage(event, slotIdx) {
+            event.stopPropagation();
+            uploadedImages[slotIdx] = '';
+            const slot = document.getElementById(`slot-${slotIdx}`);
+            slot.style.backgroundImage = 'none';
+            slot.innerHTML = `
+                <i data-lucide="image-plus" size="18" color="var(--gray)"></i>
+                <span>${slotIdx === 0 ? 'Cover' : `Photo ${slotIdx + 1}`}</span>
+                <input type="file" id="file-slot-${slotIdx}" accept="image/*" style="display: none;" onchange="handleSlotImage(${slotIdx}, this)">
+            `;
+            lucide.createIcons();
+        }
+
+        async function handleSlotImage(slotIdx, inputEl) {
+            const file = inputEl.files[0];
+            if (!file) return;
+
+            const token = localStorage.getItem('token');
+            const slotDiv = document.getElementById(`slot-${slotIdx}`);
+            slotDiv.style.opacity = '0.5';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await res.json();
+                const uploadedUrl = data.url || data.avatar_url;
+                if (data.success && uploadedUrl) {
+                    uploadedImages[slotIdx] = uploadedUrl;
+                    slotDiv.style.backgroundImage = `url(${uploadedUrl})`;
+                    slotDiv.innerHTML = `
+                        <button type="button" class="slot-remove-btn" onclick="removeSlotImage(event, ${slotIdx})" title="Remove Photo">
+                            <i data-lucide="x" size="12"></i>
+                        </button>
+                        <input type="file" id="file-slot-${slotIdx}" accept="image/*" style="display: none;" onchange="handleSlotImage(${slotIdx}, this)">
+                    `;
+                    lucide.createIcons();
+                    showToast(`Photo ${slotIdx + 1} uploaded!`, 'success');
+                } else {
+                    showToast(data.message || 'Image upload failed', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to upload photo', 'error');
+            } finally {
+                slotDiv.style.opacity = '1';
+            }
+        }
+
+        // Dynamic Pricing Plans Row Controls
+        let pricingPlanCounter = 0;
+        function addPricingPlanRow(defaultName = '', defaultPrice = '', defaultPeriod = 'per day', defaultDesc = '') {
+            pricingPlanCounter++;
+            const container = document.getElementById('pricing-plans-container');
+            const rowId = `plan-row-${pricingPlanCounter}`;
+            const rowDiv = document.createElement('div');
+            rowDiv.id = rowId;
+            rowDiv.className = 'pricing-plan-row';
+            rowDiv.style.cssText = 'background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; position: relative;';
+            
+            rowDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.78rem; font-weight: 800; color: var(--primary);">Pass / Option #${pricingPlanCounter}</span>
+                    <button type="button" onclick="removePricingPlanRow('${rowId}')" style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
+                        <i data-lucide="trash-2" size="12"></i> Remove
+                    </button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 8px;">
+                    <input type="text" placeholder="Plan Name (e.g. Hot Desk)" value="${escapeHtml(defaultName)}" class="input-field plan-input-name" style="padding: 6px 10px; font-size: 0.82rem;" required>
+                    <input type="number" min="0" placeholder="Price (Rs)" value="${escapeHtml(defaultPrice)}" class="input-field plan-input-price" style="padding: 6px 10px; font-size: 0.82rem;" required>
+                    <select class="input-field plan-input-period" style="padding: 6px 10px; font-size: 0.82rem;">
+                        <option value="per day" ${defaultPeriod === 'per day' ? 'selected' : ''}>per day</option>
+                        <option value="per month" ${defaultPeriod === 'per month' ? 'selected' : ''}>per month</option>
+                        <option value="per hour" ${defaultPeriod === 'per hour' ? 'selected' : ''}>per hour</option>
+                    </select>
+                </div>
+                <input type="text" placeholder="Brief description of perks included (optional)" value="${escapeHtml(defaultDesc)}" class="input-field plan-input-desc" style="padding: 6px 10px; font-size: 0.82rem;">
+            `;
+            container.appendChild(rowDiv);
+            lucide.createIcons();
+        }
+
+        function removePricingPlanRow(rowId) {
+            const el = document.getElementById(rowId);
+            if (el) el.remove();
+        }
+
+        // Form Submission
+        document.getElementById('add-space-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const emailVal = document.getElementById('new-space-email').value.trim();
+            const phoneVal = document.getElementById('new-space-phone').value.trim();
+
+            if (!isValidEmailAddress(emailVal)) {
+                showToast('Please enter a valid contact email format (e.g. contact@workspace.com)', 'error');
+                return;
+            }
+
+            const cleanPhone = phoneVal.replace(/[\s-]/g, '');
+            if (!/^\+?[0-9]{7,15}$/.test(cleanPhone)) {
+                showToast('Please enter a valid numeric WhatsApp / Contact number (e.g. 03001234567 or +923001234567)', 'error');
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.dataset.origText = submitBtn.innerHTML;
+                submitBtn.innerHTML = 'Publishing Space...';
+            }
+
+            const selectedAmenities = Array.from(document.querySelectorAll('input[name="amenity"]:checked')).map(cb => cb.value);
+            const validImages = uploadedImages.filter(Boolean);
+
+            // Read Pricing Plans Rows
+            const planRows = document.querySelectorAll('#pricing-plans-container .pricing-plan-row');
+            const customPricingPlans = [];
+            planRows.forEach(row => {
+                const name = (row.querySelector('.plan-input-name')?.value || '').trim();
+                const price = (row.querySelector('.plan-input-price')?.value || '').trim();
+                const period = (row.querySelector('.plan-input-period')?.value || 'per day').trim();
+                const desc = (row.querySelector('.plan-input-desc')?.value || '').trim();
+                if (name && price) {
+                    customPricingPlans.push({
+                        name: name,
+                        price: price,
+                        period: period,
+                        description: desc
+                    });
+                }
+            });
+
+            const payload = {
+                name: document.getElementById('new-space-name').value.trim(),
+                type: document.getElementById('new-space-type').value,
+                location: document.getElementById('new-space-location').value.trim(),
+                price_per_day: document.getElementById('new-space-price').value,
+                capacity: document.getElementById('new-space-capacity').value,
+                contact_email: emailVal,
+                contact_phone: phoneVal,
+                website_url: document.getElementById('new-space-website').value.trim(),
+                description: document.getElementById('new-space-desc').value.trim(),
+                amenities: selectedAmenities,
+                images: validImages,
+                image_url: validImages[0] || '',
+                pricing_plans: customPricingPlans
+            };
+
+            try {
+                const res = await fetch('/api/spaces', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast('Workspace published successfully!', 'success');
+                    modal.classList.remove('open');
+                    document.getElementById('add-space-form').reset();
+                    document.getElementById('pricing-plans-container').innerHTML = '';
+                    uploadedImages = ['', '', '', '', ''];
+                    [0, 1, 2, 3, 4].forEach(i => {
+                        const slot = document.getElementById(`slot-${i}`);
+                        slot.style.backgroundImage = 'none';
+                        slot.innerHTML = `
+                            <i data-lucide="image-plus" size="18" color="var(--gray)"></i>
+                            <span>${i === 0 ? 'Cover' : `Photo ${i + 1}`}</span>
+                            <input type="file" id="file-slot-${i}" accept="image/*" style="display: none;" onchange="handleSlotImage(${i}, this)">
+                        `;
+                    });
+                    lucide.createIcons();
+                    fetchResults();
+                } else {
+                    showToast(data.message || 'Failed to publish workspace', 'error');
+                }
+            } catch (err) {
+                showToast('Error submitting form', 'error');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    if (submitBtn.dataset.origText) submitBtn.innerHTML = submitBtn.dataset.origText;
+                    lucide.createIcons();
+                }
+            }
+        });
+
+        // Whole Card Click Handler
+        function handleCardClick(event, spaceId) {
+            if (event.target.closest('button') || event.target.closest('a') || event.target.closest('input')) {
+                return;
+            }
+            window.location.href = `space-details.html?id=${spaceId}`;
+        }
+
+        async function fetchResults() {
+            const container = document.getElementById('listing-container');
+            const queryParams = new URLSearchParams(currentFilters).toString();
+            const cacheKey = `/spaces?${queryParams}`;
+
+            // Check if we have cached data before showing skeletons
+            const hasCached = sessionStorage.getItem(`cc_swr_${cacheKey}`);
+            if (!hasCached) {
+                const skeletonCardHtml = `
+                    <div class="skeleton-space-card">
+                        <div class="skeleton-shimmer" style="height: 190px; width: 100%;"></div>
+                        <div style="padding: 1.1rem; display: flex; flex-direction: column; gap: 10px;">
+                            <div class="skeleton-shimmer skeleton-line-lg" style="width: 75%;"></div>
+                            <div class="skeleton-shimmer skeleton-line-sm" style="width: 50%;"></div>
+                            <div class="skeleton-shimmer skeleton-line-md" style="width: 90%; margin-top: 4px;"></div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; pt-2;">
+                                <div class="skeleton-shimmer" style="height: 20px; width: 65px; border-radius: 6px;"></div>
+                                <div class="skeleton-shimmer skeleton-btn" style="height: 34px; width: 95px; border-radius: 10px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = Array(6).fill(skeletonCardHtml).join('');
+            }
+
+            try {
+                await swrFetch(cacheKey, (data, isCached) => {
+                    document.getElementById('results-count').textContent = data.count || (data.data ? data.data.length : 0);
+                    document.getElementById('location-title').textContent = currentFilters.location || 'Anywhere';
+
+                    if (!data.data || data.data.length === 0) {
+                        container.innerHTML = `
+                            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; border: 1px solid var(--border);">
+                                <i data-lucide="search-x" size="40" color="var(--gray)" style="margin-bottom: 1rem;"></i>
+                                <p style="color: var(--gray); font-weight: 700;">No spaces found matching your range or location.</p>
+                            </div>`;
+                        lucide.createIcons();
+                        return;
+                    }
+
+                    const currentUser = getCurrentUser();
+
+                    container.innerHTML = data.data.map((space) => {
+                        const coverImg = (space.images_list && space.images_list.length > 0) 
+                            ? safeImageUrl(space.images_list[0], fallbackImage('workspace'))
+                            : safeImageUrl(space.image_url, fallbackImage('workspace'));
+                        const isCreatorOrAdmin = currentUser && (currentUser.role === 'admin' || (space.user_id && Number(currentUser.id) === Number(space.user_id)));
+                        const typeLabel = (space.type || 'Desk').replace('_', ' ');
+
+                        return `
+                            <div class="listing-card fade-in" onclick="handleCardClick(event, ${space.id})">
+                                <!-- Compact 1 Cover Photo -->
+                                <div class="card-cover-wrapper">
+                                    <div class="card-cover-image image-surface" style="background-image: url('${coverImg}');"></div>
+                                    <span class="space-type-badge">${escapeHtml(typeLabel)}</span>
+                                </div>
+
+                                <!-- Info Body with Bounded Compact Dimensions -->
+                                <div class="listing-body">
+                                    <div>
+                                        <h3 class="space-title" title="${escapeHtml(space.name)}">${escapeHtml(space.name)}</h3>
+                                        <p class="space-location-meta" title="${escapeHtml(space.location || 'General Area')}">
+                                            <i data-lucide="map-pin" size="13" color="var(--primary)" style="flex-shrink: 0;"></i>
+                                            <span style="overflow: hidden; text-overflow: ellipsis;">${escapeHtml(space.location || 'General Area')}</span>
+                                            <span class="meta-dot">•</span>
+                                            <span style="flex-shrink: 0;">${escapeHtml(space.capacity || 10)} seats</span>
+                                        </p>
+                                        <p class="space-desc-preview">
+                                            ${escapeHtml(space.description || 'Modern flexible workspace with high-speed internet, ergonomic desks, and community access.')}
+                                        </p>
+                                    </div>
+
+                                    <div class="card-footer-row">
+                                        <div>
+                                            <span class="price-label">Per Day</span>
+                                            <span class="price-amount">Rs ${escapeHtml(space.price_per_day)}</span>
+                                        </div>
+                                        <div class="card-action-group">
+                                            ${isCreatorOrAdmin ? `
+                                                <button onclick="deleteCardSpace(event, ${space.id}, '${escapeHtml(space.name)}')" class="btn-card-delete" title="Delete Workspace">
+                                                    <i data-lucide="trash-2" size="15"></i>
+                                                </button>
+                                            ` : ''}
+                                            <a class="btn btn-primary btn-view-space" href="space-details.html?id=${space.id}" onclick="event.stopPropagation()">
+                                                View Space <i data-lucide="arrow-up-right" size="14"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    lucide.createIcons();
+                });
+            } catch (err) {
+                container.innerHTML = '<p style="color: var(--gray); text-align: center; grid-column: 1 / -1;">Error loading results.</p>';
+            }
+        }
+
+        let pendingDeleteSpaceId = null;
+
+        function deleteCardSpace(event, id, name) {
+            if (event) event.stopPropagation();
+            pendingDeleteSpaceId = id;
+            document.getElementById('delete-modal-space-name').textContent = `"${name}"`;
+            document.getElementById('delete-space-modal').classList.add('open');
+            lucide.createIcons();
+        }
+
+        function closeDeleteSpaceModal() {
+            pendingDeleteSpaceId = null;
+            document.getElementById('delete-space-modal').classList.remove('open');
+        }
+
+        document.getElementById('confirm-delete-space-btn').addEventListener('click', async () => {
+            if (!pendingDeleteSpaceId) return;
+            const token = localStorage.getItem('token');
+            const deleteBtn = document.getElementById('confirm-delete-space-btn');
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = 'Deleting...';
+
+            try {
+                const res = await fetch(`/api/spaces/${pendingDeleteSpaceId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast('Workspace deleted successfully!', 'success');
+                    closeDeleteSpaceModal();
+                    fetchResults();
+                } else {
+                    showToast(data.message || 'Failed to delete workspace.', 'error');
+                }
+            } catch (err) {
+                showToast('Error deleting workspace.', 'error');
+            } finally {
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = 'Delete';
+            }
+        });
+
+        // Modal Controls & Live Connected Map Listener
+        const modal = document.getElementById('add-space-modal');
+        let mapDebounceTimer = null;
+
+        document.getElementById('new-space-location').addEventListener('input', (e) => {
+            clearTimeout(mapDebounceTimer);
+            const locVal = e.target.value.trim();
+            mapDebounceTimer = setTimeout(() => {
+                const mapIframe = document.getElementById('modal-map-iframe');
+                if (mapIframe) {
+                    const query = encodeURIComponent(locVal || 'Pakistan');
+                    mapIframe.src = `https://maps.google.com/maps?q=${query}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+                }
+            }, 300);
+        });
+
+        document.getElementById('open-add-space-btn').addEventListener('click', () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showToast('Please sign in to list a workspace.', 'error');
+                setTimeout(() => window.location.href = 'login.html', 1200);
+                return;
+            }
+            modal.classList.add('open');
+        });
+        document.getElementById('close-modal-btn').addEventListener('click', () => modal.classList.remove('open'));
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); });
+
+        // Event Listeners
+        document.getElementById('main-search-btn').addEventListener('click', () => { 
+            currentFilters.location = document.getElementById('location-input').value; 
+            fetchResults(); 
+        });
+        
+        document.getElementById('apply-price-btn').addEventListener('click', () => { 
+            currentFilters.minPrice = document.getElementById('min-price').value; 
+            currentFilters.maxPrice = document.getElementById('max-price').value; 
+            fetchResults(); 
+        });
+
+        document.getElementById('sort-select').addEventListener('change', (e) => {
+            currentFilters.sort = e.target.value;
+            fetchResults();
+        });
+
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilters.type = this.dataset.type;
+                fetchResults();
+            });
+        });
+
+        // Initialize immediately
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fetchResults);
+        } else {
+            fetchResults();
+        }
+    </script>
+</body>
+</html>

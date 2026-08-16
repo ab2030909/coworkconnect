@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Networking | CoWorkConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+    <style>
+        body {
+            background: #eef2f7;
+            overflow-x: hidden;
+        }
+
+        .networking-page {
+            min-height: 100vh;
+            padding: 96px 1rem 2rem;
+            background:
+                #eef2f7;
+        }
+
+        .network-shell {
+            width: min(1440px, calc(100vw - 2rem));
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 290px minmax(420px, 1fr) 320px;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .panel,
+        .feed-card,
+        .post-card,
+        .modal-card {
+            background: #ffffff;
+            border: 1px solid #dbe5ef;
+            border-radius: 8px;
+            box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
+        }
+
+        .left-stack,
+        .right-stack,
+        .feed-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .profile-cover {
+            height: 88px;
+            background:
+                rgba(13, 77, 61, 0.85),
+                url("https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&q=80&w=900");
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .profile-card-body {
+            padding: 0 1.2rem 1.15rem;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 74px;
+            height: 74px;
+            margin: -37px auto 0.8rem;
+            border: 4px solid white;
+            border-radius: 8px;
+            background: #ecfdf5;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.45rem;
+            font-weight: 800;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+        }
+
+        .profile-card h3 {
+            color: #0f172a;
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-card p {
+            color: #64748b;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .profile-stats {
+            border-top: 1px solid #e2e8f0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .profile-stat {
+            padding: 0.9rem;
+            text-align: center;
+        }
+
+        .profile-stat + .profile-stat {
+            border-left: 1px solid #e2e8f0;
+        }
+
+        .profile-stat strong {
+            display: block;
+            color: #0f172a;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .profile-stat span {
+            color: #64748b;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .panel-section {
+            padding: 1rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #0f172a;
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            margin-bottom: 0.8rem;
+        }
+
+        .topic-list,
+        .event-list,
+        .people-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .topic-chip,
+        .event-item {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 0.65rem;
+            color: #475569;
+            text-decoration: none;
+            border-radius: 8px;
+            padding: 0.65rem;
+            transition: 0.18s;
+            border: 1px solid transparent;
+        }
+
+        .topic-chip:hover,
+        .event-item:hover {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        .topic-chip i,
+        .event-item i {
+            color: var(--primary);
+        }
+
+        .topic-chip strong,
+        .event-item strong {
+            display: block;
+            color: #0f172a;
+            font-size: 0.86rem;
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .topic-chip span,
+        .event-item span {
+            display: block;
+            color: #64748b;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Discover Professionals Cards */
+        .person-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0.85rem;
+            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .person-item:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+        }
+
+        .person-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #ecfdf5;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+        }
+
+        .person-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .person-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .person-name {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .person-headline {
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .person-btn {
+            background: #f1f5f9;
+            border: none;
+            color: var(--primary);
+            font-size: 0.76rem;
+            font-weight: 800;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .person-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Category Filter Chips in Feed & Modal */
+        .category-chip {
+            padding: 0.35rem 0.85rem;
+            border-radius: 50px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1.5px solid transparent;
+            transition: all 0.15s ease;
+        }
+
+        .category-chip:hover, .category-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .post-cat-badge {
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 0.2rem 0.6rem;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .post-cat-badge.general {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .post-cat-badge.questions {
+            background: #f5f3ff;
+            color: #7c3aed;
+        }
+
+        .post-cat-badge.collabs {
+            background: #ecfdf5;
+            color: #059669;
+        }
+
+        .feed-header {
+            overflow: hidden;
+        }
+
+        .feed-hero {
+            min-height: 190px;
+            padding: 1.4rem;
+            background:
+                rgba(15, 23, 42, 0.90),
+                url("https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=1400");
+            background-size: cover;
+            background-position: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .hero-kicker {
+            display: inline-flex;
+            width: fit-content;
+            align-items: center;
+            gap: 0.45rem;
+            border: 1px solid rgba(255,255,255,0.24);
+            background: rgba(255,255,255,0.12);
+            border-radius: 999px;
+            padding: 0.38rem 0.75rem;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .feed-hero h1 {
+            font-size: 2.25rem;
+            line-height: 1.05;
+            letter-spacing: 0;
+            margin: 1rem 0 0.6rem;
+            color: white;
+        }
+
+        .feed-hero p {
+            max-width: 640px;
+            color: rgba(255,255,255,0.82);
+            font-size: 0.98rem;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        .hero-metrics {
+            display: flex;
+            gap: 0.7rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .hero-metric {
+            border: 1px solid rgba(255,255,255,0.22);
+            background: rgba(255,255,255,0.12);
+            border-radius: 8px;
+            padding: 0.55rem 0.75rem;
+        }
+
+        .hero-metric strong {
+            display: block;
+            color: white;
+            font-size: 0.98rem;
+            font-weight: 800;
+        }
+
+        .hero-metric span {
+            display: block;
+            color: rgba(255,255,255,0.72);
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .composer-card {
+            padding: 1rem;
+        }
+
+        .composer-top {
+            display: grid;
+            grid-template-columns: 48px minmax(0, 1fr);
+            gap: 0.85rem;
+            align-items: center;
+        }
+
+        .avatar-box,
+        .small-avatar,
+        .search-avatar {
+            background: #ecfdf5;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            border: 1px solid #bbf7d0;
+            flex-shrink: 0;
+        }
+
+        .avatar-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+        }
+
+        .small-avatar,
+        .search-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+        }
+
+        .composer-trigger {
+            width: 100%;
+            border: 1px solid #dbe5ef;
+            background: #f8fafc;
+            color: #64748b;
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            text-align: left;
+            font-family: var(--font);
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.18s;
+        }
+
+        .composer-trigger:hover {
+            border-color: var(--primary);
+            background: white;
+            color: #0f172a;
+        }
+
+        .composer-tools {
+            border-top: 1px solid #e2e8f0;
+            margin-top: 0.85rem;
+            padding-top: 0.85rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+        }
+
+        .tool-btn {
+            border: 1px solid transparent;
+            border-radius: 8px;
+            background: white;
+            color: #475569;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.65rem 0.45rem;
+            font-family: var(--font);
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .tool-btn:hover {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        .feed-tabs {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding: 0.95rem 1rem;
+        }
+
+        .feed-tab {
+            white-space: nowrap;
+            border: 1px solid #dbe5ef;
+            background: white;
+            color: #64748b;
+            border-radius: 999px;
+            padding: 0.5rem 0.85rem;
+            font-family: var(--font);
+            font-size: 0.78rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .feed-tab.active {
+            background: #0f172a;
+            border-color: #0f172a;
+            color: white;
+        }
+
+        .posts-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .post-card {
+            overflow: hidden;
+        }
+
+        .post-body {
+            padding: 1rem;
+        }
+
+        .post-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 0.95rem;
+        }
+
+        .post-author {
+            display: grid;
+            grid-template-columns: 44px minmax(0, 1fr);
+            gap: 0.75rem;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .post-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            background: #ecfdf5;
+            color: var(--primary);
+            border: 1px solid #bbf7d0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        .post-author h4 {
+            color: #0f172a;
+            font-size: 0.96rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .post-author p {
+            color: #64748b;
+            font-size: 0.74rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .post-text {
+            color: #1e293b;
+            font-size: 0.98rem;
+            line-height: 1.65;
+            margin-bottom: 0.85rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            max-width: 100%;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .tag-row {
+            display: flex;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.8rem;
+        }
+
+        .tag {
+            color: #047857;
+            background: #d1fae5;
+            border-radius: 999px;
+            padding: 0.24rem 0.55rem;
+            font-size: 0.74rem;
+            font-weight: 800;
+        }
+
+        .post-image {
+            width: 100%;
+            max-height: 520px;
+            height: auto;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #f1f5f9;
+            display: block;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .post-stats {
+            padding: 0.65rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            color: #64748b;
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+
+        .post-actions {
+            padding: 0.35rem 0.65rem;
+            border-top: 1px solid #e2e8f0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.35rem;
+        }
+
+        .post-action {
+            border: 0;
+            background: white;
+            color: #64748b;
+            border-radius: 8px;
+            padding: 0.7rem 0.5rem;
+            font-family: var(--font);
+            font-size: 0.84rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+        }
+
+        .post-action:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .post-action.liked {
+            color: var(--primary);
+        }
+
+        .action-count {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 0.15rem 0.45rem;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-weight: 800;
+        }
+
+        .post-action.liked .action-count {
+            background: #dbeafe;
+            color: var(--primary);
+        }
+
+        .comments-section {
+            padding: 1rem;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .comment-input-row {
+            display: grid;
+            grid-template-columns: 34px minmax(0, 1fr);
+            gap: 0.65rem;
+            align-items: center;
+            margin-bottom: 0.9rem;
+        }
+
+        .comment-input-row textarea {
+            width: 100%;
+            border: 1px solid #dbe5ef;
+            border-radius: 8px;
+            padding: 0.68rem 0.85rem;
+            font-family: var(--font);
+            outline: 0;
+            background: white;
+            resize: none;
+            box-sizing: border-box;
+            min-height: 42px;
+            overflow: hidden;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            margin-top: 0.25rem;
+        }
+
+        .comment-content-wrap {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .comment-header h5 {
+            color: #0f172a;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .comment-header span {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .comment-body {
+            color: #1e293b;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            hyphens: auto;
+        }
+
+        .comment-body.collapsed {
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .read-more-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 0;
+            margin-top: 0.15rem;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.4rem;
+            font-size: 0.8rem;
+            align-items: center;
+        }
+
+        .comment-action {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .comment-action:hover {
+            color: #0f172a;
+        }
+
+        .comment-action.liked {
+            color: var(--primary);
+        }
+
+        .replies-container {
+            margin-left: 2.8rem;
+            padding-left: 1rem;
+            border-left: 2px solid #e2e8f0;
+            margin-top: 0.25rem;
+        }
+
+        .toggle-replies-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0;
+            border-radius: 4px;
+        }
+
+        .toggle-replies-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .empty-feed {
+            text-align: center;
+            padding: 3.5rem 1.5rem;
+        }
+
+        .empty-feed i {
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+
+        .empty-feed h3 {
+            color: #0f172a;
+            font-size: 1.2rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .empty-feed p {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            border: 1px solid #dbe5ef;
+            border-radius: 8px;
+            padding: 0.72rem 0.85rem 0.72rem 2.5rem;
+            font-family: var(--font);
+            outline: 0;
+            color: #0f172a;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 0.85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+
+        .trend-item {
+            grid-template-columns: 34px minmax(0, 1fr);
+        }
+
+        .trend-rank {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: #0f172a;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.78rem;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.62);
+            z-index: 2200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            width: min(640px, 95vw);
+            max-height: min(85vh, 720px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.24);
+            border-radius: 12px;
+        }
+
+        .modal-head,
+        .modal-footer {
+            padding: 1rem 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .modal-head {
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .modal-head h3 {
+            color: #0f172a;
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .modal-body {
+            padding: 1.15rem;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .modal-author {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .audience-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            color: #64748b;
+            border: 1px solid #dbe5ef;
+            border-radius: 999px;
+            padding: 0.2rem 0.55rem;
+            font-size: 0.72rem;
+            font-weight: 800;
+            margin-top: 0.18rem;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            min-height: 160px;
+            border: 0;
+            outline: 0;
+            resize: none;
+            font-family: var(--font);
+            color: #0f172a;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .image-preview-wrap {
+            position: relative;
+            margin-top: 1rem;
+            border: 1px solid #dbe5ef;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #0f172a;
+        }
+
+        .editor-viewport {
+            position: relative;
+            overflow: hidden;
+            max-height: 360px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0f172a;
+        }
+
+        .editor-viewport img {
+            max-width: 100%;
+            max-height: 360px;
+            object-fit: contain;
+            display: block;
+            transition: transform 0.15s ease-out;
+            transform-origin: center center;
+        }
+
+        .remove-image-btn {
+            position: absolute;
+            top: 0.7rem;
+            right: 0.7rem;
+            width: 34px;
+            height: 34px;
+            border: 0;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.75);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .btn-xs-tool {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0.3rem 0.55rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: 0.15s ease;
+        }
+
+        .btn-xs-tool:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            color: #0f172a;
+        }
+
+        .ratio-chip {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #475569;
+            cursor: pointer;
+            transition: 0.15s ease;
+        }
+
+        .ratio-chip.active, .ratio-chip:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spin {
+            animation: spin 0.8s linear infinite;
+        }
+
+        .see-more-comments-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.82rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            margin-top: 0.4rem;
+            transition: 0.15s ease;
+        }
+
+        .see-more-comments-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .feed-sentinel {
+            text-align: center;
+            padding: 1.25rem;
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .feed-end-badge {
+            text-align: center;
+            padding: 1.25rem 1rem;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .tag-input {
+            width: 100%;
+            border: 1px solid #dbe5ef;
+            border-radius: 8px;
+            padding: 0.72rem 0.85rem;
+            font-family: var(--font);
+            outline: 0;
+            color: #047857;
+            font-weight: 800;
+        }
+
+        .icon-button {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #dbe5ef;
+            border-radius: 8px;
+            background: white;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .icon-button:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #ecfdf5;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 1.2rem;
+            right: 1.2rem;
+            z-index: 2600;
+            background: #0f172a;
+            color: white;
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 800;
+            box-shadow: 0 16px 38px rgba(15, 23, 42, 0.22);
+        }
+
+        .toast.error {
+            background: #dc2626;
+        }
+
+        #user-menu-trigger {
+            color: var(--primary) !important;
+            border-color: rgba(16, 185, 129, 0.35) !important;
+            background: rgba(16, 185, 129, 0.06) !important;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+
+        @media (max-width: 1180px) {
+            .network-shell {
+                grid-template-columns: 250px minmax(420px, 1fr);
+            }
+            .right-stack {
+                display: none;
+            }
+        }
+
+        @media (max-width: 860px) {
+            .networking-page {
+                padding: 82px 0.75rem 1rem;
+            }
+            .network-shell {
+                width: 100%;
+                grid-template-columns: 1fr;
+            }
+            .left-stack {
+                display: none;
+            }
+            .feed-hero h1 {
+                font-size: 1.85rem;
+            }
+        }
+
+        @media (max-width: 620px) {
+            .composer-tools,
+            .post-actions {
+                grid-template-columns: 1fr 1fr;
+            }
+            .tool-btn span,
+            .post-action span {
+                display: none;
+            }
+            .hero-metrics {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+            .modal-footer {
+                align-items: stretch;
+                flex-direction: column;
+            }
+        }
+    </style>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+    <nav class="navbar" style="background: white; border-bottom: 1px solid #e2e8f0; height: 80px;">
+        <div class="container nav-container">
+            <a href="index.html" class="logo" style="color: var(--dark);">
+                <i data-lucide="briefcase"></i>
+                <span>CoWorkConnect</span>
+            </a>
+            <div class="nav-links">
+                <a href="spaces.html" class="nav-link" style="color: var(--dark);">Explore Spaces</a>
+                <a href="community.html" class="nav-link active" style="color: var(--primary);">Networking</a>
+                <a href="groups.html" class="nav-link" style="color: var(--dark);">Groups</a>
+                <a href="events.html" class="nav-link" style="color: var(--dark);">Events</a>
+                <div id="auth-links" class="auth-links hidden"></div>
+                <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;"></div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="networking-page">
+        <div class="network-shell">
+            <aside class="left-stack">
+                <section class="panel profile-card">
+                    <div class="profile-cover"></div>
+                    <div class="profile-card-body">
+                        <div id="profile-avatar" class="profile-avatar">U</div>
+                        <h3 id="profile-name">Member</h3>
+                        <p>CoWorkConnect Member</p>
+                    </div>
+                </section>
+            </aside>
+
+            <section class="feed-stack">
+                <section class="feed-card composer-card">
+                    <div class="composer-top">
+                        <div id="composer-avatar" class="avatar-box">U</div>
+                        <button id="trigger-composer" class="composer-trigger" type="button">Start a professional post, question, or collaboration request...</button>
+                    </div>
+                    <div class="composer-tools">
+                        <button class="tool-btn" type="button" onclick="document.getElementById('post-image-input').click()">
+                            <i data-lucide="image" size="18" style="color:#2563eb;"></i><span>Photo</span>
+                        </button>
+                        <button class="tool-btn" type="button" onclick="openComposerWithCategory('General')">
+                            <i data-lucide="edit-3" size="18" style="color:var(--primary);"></i><span>General</span>
+                        </button>
+                        <button class="tool-btn" type="button" onclick="openComposerWithCategory('Questions')">
+                            <i data-lucide="help-circle" size="18" style="color:#7c3aed;"></i><span>Question</span>
+                        </button>
+                        <button class="tool-btn" type="button" onclick="openComposerWithCategory('Collabs')">
+                            <i data-lucide="users" size="18" style="color:#059669;"></i><span>Collab</span>
+                        </button>
+                    </div>
+                    <input type="file" id="post-image-input" hidden accept="image/*">
+                </section>
+
+                <section class="feed-card feed-tabs no-scrollbar">
+                    <button class="feed-tab active" data-filter="all" type="button">All Posts</button>
+                    <button class="feed-tab" data-filter="general" type="button">General</button>
+                    <button class="feed-tab" data-filter="questions" type="button">Questions</button>
+                    <button class="feed-tab" data-filter="collabs" type="button">Collabs</button>
+                </section>
+
+                <section id="posts-feed" class="posts-feed">
+                    <div class="feed-card empty-feed">
+                        <i data-lucide="loader-circle" size="42"></i>
+                        <h3>Fetching your professional network</h3>
+                        <p>Loading posts, comments, and community updates.</p>
+                    </div>
+                </section>
+            </section>
+
+            <aside class="right-stack">
+                <section class="panel panel-section">
+                    <div class="section-title">
+                        <span>Discover Professionals</span>
+                        <i data-lucide="users" size="16" style="color:var(--primary);"></i>
+                    </div>
+                    <div class="search-box" style="display:flex;align-items:center;gap:0.5rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:0.55rem 0.8rem;">
+                        <i data-lucide="search" size="15" style="color:#94a3b8;"></i>
+                        <input type="text" id="profile-search-input" placeholder="Search by name, skill, or role..." style="border:none;outline:none;background:transparent;width:100%;font-family:inherit;font-size:0.84rem;font-weight:600;color:#0f172a;" oninput="handleProfileSearchInput(event)">
+                    </div>
+                    <div id="search-results" class="people-list" style="margin-top:0.85rem;display:flex;flex-direction:column;gap:0.5rem;">
+                        <div class="skeleton-box" style="height:55px;border-radius:12px;"></div>
+                        <div class="skeleton-box" style="height:55px;border-radius:12px;"></div>
+                        <div class="skeleton-box" style="height:55px;border-radius:12px;"></div>
+                    </div>
+                </section>
+
+                <section class="panel panel-section">
+                    <div class="section-title">
+                        <span>Quick Explore</span>
+                        <i data-lucide="compass" size="16" style="color:var(--primary);"></i>
+                    </div>
+                    <div class="event-list">
+                        <a class="event-item" href="groups.html">
+                            <i data-lucide="messages-square" size="17"></i>
+                            <span><strong>Join a Circle</strong><span>Chat with members & admins</span></span>
+                            <i data-lucide="arrow-up-right" size="15"></i>
+                        </a>
+                        <a class="event-item" href="spaces.html">
+                            <i data-lucide="building-2" size="17"></i>
+                            <span><strong>Explore Spaces</strong><span>Find verified desks & offices</span></span>
+                            <i data-lucide="arrow-up-right" size="15"></i>
+                        </a>
+                        <a class="event-item" href="events.html">
+                            <i data-lucide="calendar" size="17"></i>
+                            <span><strong>Community Events</strong><span>Attend workshops & meetups</span></span>
+                            <i data-lucide="arrow-up-right" size="15"></i>
+                        </a>
+                    </div>
+                </section>
+            </aside>
+        </div>
+    </main>
+
+    <div id="composer-modal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3>Create a post</h3>
+                <button onclick="toggleComposer(false)" class="icon-button" type="button" title="Close"><i data-lucide="x" size="20"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-author">
+                    <div class="user-avatar-small small-avatar">U</div>
+                    <div>
+                        <h4 class="user-name-small" style="font-size:0.95rem;font-weight:800;color:#0f172a;margin:0;">User Name</h4>
+                        <div class="audience-pill"><i data-lucide="globe" size="12"></i> Public</div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.5rem; margin: 0.75rem 0; flex-wrap:wrap;">
+                    <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.5px;">Category:</span>
+                    <div class="composer-category-chips" style="display:flex; gap:0.4rem;">
+                        <button type="button" class="category-chip active" data-cat="General" onclick="setPostCategory('General', this)">General</button>
+                        <button type="button" class="category-chip" data-cat="Questions" onclick="setPostCategory('Questions', this)">Questions</button>
+                        <button type="button" class="category-chip" data-cat="Collabs" onclick="setPostCategory('Collabs', this)">Collabs</button>
+                    </div>
+                </div>
+                <textarea id="modal-post-content" class="modal-textarea" placeholder="What do you want to talk about?"></textarea>
+                <div id="image-preview-container" class="image-preview-wrap hidden">
+                    <div class="editor-viewport">
+                        <img id="image-preview" src="" alt="Selected post image">
+                        <button onclick="clearImage()" class="remove-image-btn" type="button" title="Remove image"><i data-lucide="x" size="16"></i></button>
+                    </div>
+                    <div class="image-edit-toolbar" style="padding:0.75rem; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; flex-direction:column; gap:0.6rem;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+                            <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.8rem; font-weight:700; color:#475569;">
+                                <i data-lucide="zoom-in" size="16"></i>
+                                <span>Zoom</span>
+                                <input type="range" id="image-zoom-slider" min="1" max="3" step="0.05" value="1" style="width:90px; accent-color:var(--primary);" oninput="updateImageTransform()">
+                            </div>
+                            <div style="display:flex; align-items:center; gap:0.4rem;">
+                                <button type="button" class="btn-xs-tool" onclick="rotateImage(-90)" title="Rotate Left"><i data-lucide="rotate-ccw" size="13"></i> -90°</button>
+                                <button type="button" class="btn-xs-tool" onclick="rotateImage(90)" title="Rotate Right"><i data-lucide="rotate-cw" size="13"></i> +90°</button>
+                                <button type="button" class="btn-xs-tool" onclick="resetImageTransform()" title="Reset Editor"><i data-lucide="refresh-cw" size="13"></i> Reset</button>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.78rem; font-weight:700; color:#475569; flex-wrap:wrap;">
+                            <span>Aspect Ratio:</span>
+                            <div class="ratio-chips" style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+                                <button type="button" class="ratio-chip active" onclick="setAspectRatio('free', this)">Original</button>
+                                <button type="button" class="ratio-chip" onclick="setAspectRatio('1:1', this)">1:1 Square</button>
+                                <button type="button" class="ratio-chip" onclick="setAspectRatio('16:9', this)">16:9 Landscape</button>
+                                <button type="button" class="ratio-chip" onclick="setAspectRatio('4:3', this)">4:3 Photo</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top:1rem;">
+                    <input type="text" id="modal-post-tags" class="tag-input" placeholder="Add hashtags, e.g. #startup #coworking">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div style="display:flex;gap:0.45rem;">
+                    <button class="icon-button" type="button" onclick="document.getElementById('post-image-input-modal').click()" title="Add image"><i data-lucide="image" size="19"></i></button>
+                    <button class="icon-button" type="button" title="Add event"><i data-lucide="calendar" size="19"></i></button>
+                    <button class="icon-button" type="button" title="More"><i data-lucide="more-horizontal" size="19"></i></button>
+                </div>
+                <button id="submit-post" class="btn btn-primary" type="button" style="border-radius:8px;font-weight:800;">
+                    <i data-lucide="send" size="17"></i> Post
+                </button>
+            </div>
+            <input type="file" id="post-image-input-modal" hidden accept="image/*">
+        </div>
+    </div>
+
+    <script src="app.js?v=route-images-1"></script>
+    <script>        lucide.createIcons();
+        let selectedFile = null;
+        let currentPosts = [];
+        let isPosting = false;
+        const pendingComments = new Set();
+        const pendingReplies = new Set();
+        const pendingLikes = new Set();
+
+        let currentZoom = 1;
+        let currentRotation = 0;
+        let currentAspectRatio = 'free';
+
+        function getUser() {
+            try {
+                return JSON.parse(localStorage.getItem('user'));
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function escapeHtml(value = '') {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function showToast(message, type = 'success') {
+            const oldToast = document.querySelector('.toast');
+            if (oldToast) oldToast.remove();
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2800);
+        }
+        function updateProfileStats() {
+            const user = getUser();
+            if (!user) return;
+            const initial = user.name ? user.name[0].toUpperCase() : 'U';
+            document.getElementById('profile-name').textContent = user.name;
+            
+            const profileAv = document.getElementById('profile-avatar');
+            if (profileAv) {
+                if (user.avatar_url) {
+                    profileAv.innerHTML = `<img src="${safeImageUrl(user.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+                } else {
+                    profileAv.textContent = initial;
+                }
+            }
+
+            const compAv = document.getElementById('composer-avatar');
+            if (compAv) {
+                if (user.avatar_url) {
+                    compAv.innerHTML = `<img src="${safeImageUrl(user.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+                } else {
+                    compAv.textContent = initial;
+                }
+            }
+
+            document.querySelectorAll('.user-avatar-small').forEach((item) => {
+                if (user.avatar_url) {
+                    item.innerHTML = `<img src="${safeImageUrl(user.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+                } else {
+                    item.textContent = initial;
+                }
+            });
+            document.querySelectorAll('.user-name-small').forEach((item) => item.textContent = user.name);
+        }
+
+        function toggleComposer(show) {
+            document.getElementById('composer-modal').classList.toggle('hidden', !show);
+            if (show) {
+                updateProfileStats();
+                setTimeout(() => document.getElementById('modal-post-content').focus(), 80);
+            }
+        }
+
+        function quickCompose(text) {
+            toggleComposer(true);
+            const contentEl = document.getElementById('modal-post-content');
+            contentEl.value = text;
+            contentEl.focus();
+        }
+
+        function clearImage() {
+            selectedFile = null;
+            resetImageTransform();
+            document.getElementById('image-preview').src = '';
+            document.getElementById('image-preview-container').classList.add('hidden');
+            document.getElementById('post-image-input').value = '';
+            document.getElementById('post-image-input-modal').value = '';
+        }
+
+        const handleFile = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            selectedFile = file;
+            resetImageTransform();
+            const reader = new FileReader();
+            reader.onload = (readerEvent) => {
+                const img = document.getElementById('image-preview');
+                img.src = readerEvent.target.result;
+                img.onload = () => {
+                    const aspect = img.naturalWidth / img.naturalHeight;
+                    const viewport = document.querySelector('.editor-viewport');
+                    if (viewport) {
+                        if (aspect > 1.3) {
+                            viewport.style.aspectRatio = '16 / 9';
+                        } else if (aspect < 0.8) {
+                            viewport.style.aspectRatio = '4 / 5';
+                        } else {
+                            viewport.style.aspectRatio = '1 / 1';
+                        }
+                    }
+                };
+                document.getElementById('image-preview-container').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+            if (document.getElementById('composer-modal').classList.contains('hidden')) {
+                toggleComposer(true);
+            }
+        };
+
+        function updateImageTransform() {
+            const slider = document.getElementById('image-zoom-slider');
+            currentZoom = parseFloat(slider.value) || 1;
+            const img = document.getElementById('image-preview');
+            if (img) img.style.transform = `scale(${currentZoom}) rotate(${currentRotation}deg)`;
+        }
+
+        function rotateImage(deg) {
+            currentRotation = (currentRotation + deg) % 360;
+            updateImageTransform();
+        }
+
+        function setAspectRatio(ratio, btnEl) {
+            currentAspectRatio = ratio;
+            document.querySelectorAll('.ratio-chip').forEach(c => c.classList.remove('active'));
+            if (btnEl) btnEl.classList.add('active');
+
+            const viewport = document.querySelector('.editor-viewport');
+            if (!viewport) return;
+
+            switch (ratio) {
+                case '1:1':
+                    viewport.style.aspectRatio = '1 / 1';
+                    viewport.style.maxHeight = '300px';
+                    break;
+                case '16:9':
+                    viewport.style.aspectRatio = '16 / 9';
+                    viewport.style.maxHeight = '280px';
+                    break;
+                case '4:3':
+                    viewport.style.aspectRatio = '4 / 3';
+                    viewport.style.maxHeight = '300px';
+                    break;
+                default:
+                    viewport.style.aspectRatio = 'unset';
+                    viewport.style.maxHeight = '360px';
+                    break;
+            }
+        }
+
+        function resetImageTransform() {
+            currentZoom = 1;
+            currentRotation = 0;
+            currentAspectRatio = 'free';
+            const slider = document.getElementById('image-zoom-slider');
+            if (slider) slider.value = 1;
+            const img = document.getElementById('image-preview');
+            if (img) img.style.transform = 'scale(1) rotate(0deg)';
+            const defaultBtn = document.querySelector('.ratio-chip');
+            if (defaultBtn) setAspectRatio('free', defaultBtn);
+        }
+
+        async function getEditedImageBlob() {
+            if (!selectedFile) return null;
+            const img = document.getElementById('image-preview');
+            if (!img || !img.src || (currentZoom === 1 && currentRotation === 0 && currentAspectRatio === 'free')) {
+                return selectedFile;
+            }
+
+            return new Promise((resolve) => {
+                const imageObj = new Image();
+                imageObj.crossOrigin = 'anonymous';
+                imageObj.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    let width = imageObj.width;
+                    let height = imageObj.height;
+
+                    if (currentAspectRatio === '1:1') {
+                        const side = Math.min(width, height);
+                        width = side;
+                        height = side;
+                    } else if (currentAspectRatio === '16:9') {
+                        height = Math.round(width * 9 / 16);
+                    } else if (currentAspectRatio === '4:3') {
+                        height = Math.round(width * 3 / 4);
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate((currentRotation * Math.PI) / 180);
+                    ctx.scale(currentZoom, currentZoom);
+                    ctx.drawImage(
+                        imageObj,
+                        -imageObj.width / 2,
+                        -imageObj.height / 2,
+                        imageObj.width,
+                        imageObj.height
+                    );
+
+                    canvas.toBlob((blob) => {
+                        resolve(blob || selectedFile);
+                    }, selectedFile.type || 'image/jpeg', 0.92);
+                };
+                imageObj.onerror = () => resolve(selectedFile);
+                imageObj.src = img.src;
+            });
+        }
+
+        function renderEmptyFeed() {
+            document.getElementById('posts-feed').innerHTML = `
+                <div class="feed-card empty-feed">
+                    <i data-lucide="messages-square" size="42"></i>
+                    <h3>Your network is quiet</h3>
+                    <p>Be the first to share an insight with the community.</p>
+                    <button class="btn btn-primary" type="button" onclick="toggleComposer(true)" style="margin-top:1rem;border-radius:8px;">Create Post</button>
+                </div>
+            `;
+            lucide.createIcons();
+        } 
+
+        function renderSinglePostCard(post) {
+            const userName = post.user_name || 'Member';
+            const initial = userName[0].toUpperCase();
+            const avatarContent = post.user_avatar
+                ? `<img src="${safeImageUrl(post.user_avatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`
+                : escapeHtml(initial);
+            const timeStr = post.created_at
+                ? new Date(post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : 'Just now';
+            const tags = post.tags
+                ? post.tags.split(' ').filter(Boolean).map((tag) => `<span class="tag">#${escapeHtml(tag.replace('#', ''))}</span>`).join('')
+                : '';
+            const comments = post.comments || [];
+
+            let postCategory = '';
+            const tagsLower = (post.tags || '').toLowerCase();
+            const contentLower = (post.content || '').toLowerCase();
+            if (tagsLower.includes('question') || contentLower.includes('?')) {
+                postCategory = 'Questions';
+            } else if (tagsLower.includes('collab') || contentLower.includes('collaborat') || contentLower.includes('looking for') || contentLower.includes('partner') || contentLower.includes('team')) {
+                postCategory = 'Collabs';
+            }
+
+            const authorHeadline = (post.user_headline && post.user_headline.trim() && post.user_headline.trim().toLowerCase() !== 'general')
+                ? post.user_headline.trim()
+                : ((post.user_bio && post.user_bio.trim() && post.user_bio.trim().toLowerCase() !== 'general') 
+                    ? (post.user_bio.trim().length > 45 ? post.user_bio.trim().slice(0, 42) + '...' : post.user_bio.trim()) 
+                    : 'CoWorkConnect Member');
+
+            return `
+                <article class="post-card" id="post-${post.id}">
+                    <div class="post-body">
+                        <div class="post-head">
+                            <div class="post-author">
+                                <div class="post-avatar" style="cursor:pointer;" onclick="openUserProfileModal(${post.user_id})" title="View Profile">${avatarContent}</div>
+                                <div style="min-width:0;">
+                                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                        <h4 style="cursor:pointer;margin:0;font-size:0.98rem;font-weight:800;color:var(--dark);" onclick="openUserProfileModal(${post.user_id})">${escapeHtml(userName)}</h4>
+                                        ${postCategory ? `
+                                            <span class="post-cat-badge ${postCategory.toLowerCase()}">
+                                                <i data-lucide="${postCategory === 'Questions' ? 'help-circle' : 'users'}" size="11"></i>
+                                                ${postCategory === 'Questions' ? 'Question' : 'Collab'}
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                    <p style="color:#64748b;font-size:0.78rem;font-weight:600;margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+                                        <span style="color:#059669;font-weight:700;">${escapeHtml(authorHeadline)}</span>
+                                        <span>•</span>
+                                        <span>${timeStr}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <button class="icon-button" type="button" title="More"><i data-lucide="more-horizontal" size="19"></i></button>
+                        </div>
+                        <p class="post-text">${escapeHtml(post.content)}</p>
+                        ${tags ? `<div class="tag-row">${tags}</div>` : ''}
+                    </div>
+                    ${post.image_url ? `<img class="post-image" loading="lazy" decoding="async" src="${safeImageUrl(post.image_url, fallbackImage('community'))}" data-fallback="${fallbackImage('community')}" alt="Post image">` : ''}
+                    <div class="post-actions" style="margin-top: 0.5rem;">
+                        <button onclick="toggleLike(${post.id})" class="post-action ${post.liked_by_me ? 'liked' : ''}" type="button">
+                            <i data-lucide="thumbs-up" size="18"></i><span>Like</span>${post.likes_count ? `<span class="action-count">${post.likes_count}</span>` : ''}
+                        </button>
+                        <button onclick="focusComment(${post.id})" class="post-action" type="button">
+                            <i data-lucide="message-circle" size="18"></i><span>Comment</span>${comments.length > 0 ? `<span class="action-count">${comments.length}</span>` : ''}
+                        </button>
+                        <button onclick="sharePost(${post.id})" class="post-action" type="button">
+                            <i data-lucide="share-2" size="18"></i><span>Share</span>
+                        </button>
+                    </div>
+                    <div class="comments-section">
+                        <div class="comment-input-row">
+                            <div class="small-avatar user-avatar-small">U</div>
+                            <textarea id="comment-input-${post.id}" rows="1" placeholder="Add a useful comment..." oninput="autoResize(this)" onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); addComment(${post.id}); }"></textarea>
+                        </div>
+                        <div id="comments-container-${post.id}" class="comments-tree-wrapper">
+                            ${renderCommentsTree(comments, post.id)}
+                        </div>
+                    </div>
+                </article>
+            `;
+        }
+
+        const POSTS_PER_PAGE = 4;
+        let filteredPostsList = [];
+        let visiblePostCount = 0;
+        let isLoadingMore = false;
+        let feedObserver = null;
+
+        function renderPosts(posts) {
+            filteredPostsList = posts || [];
+            applyFeedFilter();
+        }
+
+        function loadNextPostBatch() {
+            if (isLoadingMore || visiblePostCount >= filteredPostsList.length) return;
+            isLoadingMore = true;
+
+            const sentinel = document.getElementById('feed-sentinel');
+            if (sentinel) sentinel.remove();
+
+            const batch = filteredPostsList.slice(visiblePostCount, visiblePostCount + POSTS_PER_PAGE);
+            const htmlSlice = batch.map(renderSinglePostCard).join('');
+            const feed = document.getElementById('posts-feed');
+
+            if (visiblePostCount === 0) {
+                feed.innerHTML = htmlSlice;
+            } else {
+                feed.insertAdjacentHTML('beforeend', htmlSlice);
+            }
+
+            visiblePostCount += batch.length;
+
+            if (visiblePostCount < filteredPostsList.length) {
+                feed.insertAdjacentHTML('beforeend', `
+                    <div id="feed-sentinel" class="feed-sentinel">
+                        <i data-lucide="loader-circle" class="spin" size="20"></i> Loading more posts...
+                    </div>
+                `);
+
+                if (feedObserver) feedObserver.disconnect();
+                feedObserver = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting) {
+                        loadNextPostBatch();
+                    }
+                }, { rootMargin: '200px' });
+
+                const sentinelEl = document.getElementById('feed-sentinel');
+                if (sentinelEl) feedObserver.observe(sentinelEl);
+            } else if (filteredPostsList.length > 0) {
+                feed.insertAdjacentHTML('beforeend', `
+                    <div id="feed-end-badge" class="feed-end-badge">
+                        <i data-lucide="check-circle-2" size="18"></i> You've viewed all ${filteredPostsList.length} posts
+                    </div>
+                `);
+            }
+
+            updateProfileStats();
+            applyImageFallbacks(feed);
+            lucide.createIcons();
+
+            document.querySelectorAll('.comment-body.collapsed').forEach(el => {
+                if (el.scrollHeight > el.clientHeight && (!el.nextElementSibling || !el.nextElementSibling.classList.contains('read-more-btn'))) {
+                    const btn = document.createElement('button');
+                    btn.className = 'read-more-btn';
+                    btn.innerText = 'See more';
+                    btn.onclick = () => {
+                        el.classList.remove('collapsed');
+                        btn.remove();
+                    };
+                    el.parentNode.insertBefore(btn, el.nextSibling);
+                }
+            });
+
+            isLoadingMore = false;
+        }
+
+        function autoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
+
+        function renderCommentsTree(comments, postId) {
+            const map = {};
+            const roots = [];
+            comments.forEach(c => { map[c.id] = { ...c, replies: [] }; });
+            comments.forEach(c => {
+                if (c.parent_id && map[c.parent_id]) {
+                    map[c.parent_id].replies.push(map[c.id]);
+                } else {
+                    roots.push(map[c.id]);
+                }
+            });
+
+            function renderNode(node) {
+                return `
+                    ${renderComment(node, postId)}
+                    ${node.replies.length > 0 ? `
+                        <div class="replies-container">
+                            <button class="toggle-replies-btn" onclick="toggleReplies(this)" type="button">
+                                <i data-lucide="chevron-down" size="14"></i> Show ${node.replies.length} ${node.replies.length === 1 ? 'reply' : 'replies'}
+                            </button>
+                            <div class="replies-list hidden">
+                                ${node.replies.map(renderNode).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+            }
+
+            if (roots.length <= 1) {
+                return roots.map(renderNode).join('');
+            }
+
+            const firstComment = renderNode(roots[0]);
+            const remainingComments = roots.slice(1).map(renderNode).join('');
+
+            return `
+                ${firstComment}
+                <button type="button" class="see-more-comments-btn" onclick="toggleMoreComments(this)">
+                    <i data-lucide="message-square" size="14"></i> View all ${roots.length} comments
+                </button>
+                <div class="more-comments-wrapper hidden">
+                    ${remainingComments}
+                </div>
+            `;
+        }
+
+        function toggleMoreComments(btn) {
+            const wrapper = btn.nextElementSibling;
+            if (wrapper) {
+                wrapper.classList.remove('hidden');
+                btn.remove();
+                lucide.createIcons();
+            }
+        }
+
+        function toggleReplies(btn) {
+            const list = btn.nextElementSibling;
+            if (list.classList.contains('hidden')) {
+                list.classList.remove('hidden');
+                btn.innerHTML = `<i data-lucide="chevron-up" size="14"></i> Hide replies`;
+                
+                list.querySelectorAll('.comment-body.collapsed').forEach(el => {
+                    if (el.scrollHeight > el.clientHeight && (!el.nextElementSibling || !el.nextElementSibling.classList.contains('read-more-btn'))) {
+                        const readMoreBtn = document.createElement('button');
+                        readMoreBtn.className = 'read-more-btn';
+                        readMoreBtn.innerText = 'See more';
+                        readMoreBtn.onclick = () => {
+                            el.classList.remove('collapsed');
+                            readMoreBtn.remove();
+                        };
+                        el.parentNode.insertBefore(readMoreBtn, el.nextSibling);
+                    }
+                });
+            } else {
+                list.classList.add('hidden');
+                btn.innerHTML = `<i data-lucide="chevron-down" size="14"></i> Show replies`;
+            }
+            lucide.createIcons();
+        }
+
+        function renderComment(comment, postId) {
+            const commentAvatarContent = comment.user_avatar
+                ? `<img src="${safeImageUrl(comment.user_avatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+                : escapeHtml((comment.user_name || 'M')[0].toUpperCase());
+
+            return `
+                <div class="comment-item">
+                    <div class="small-avatar" style="cursor:pointer;width:34px;height:34px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;overflow:hidden;" onclick="openUserProfileModal(${comment.user_id})" title="View Profile">
+                        ${commentAvatarContent}
+                    </div>
+                    <div class="comment-content-wrap">
+                        <div class="comment-header">
+                            <h5 style="cursor:pointer;" onclick="openUserProfileModal(${comment.user_id})">${escapeHtml(comment.user_name || 'Member')}</h5>
+                            <span>${comment.created_at ? new Date(comment.created_at).toLocaleDateString() : ''}</span>
+                        </div>
+                        <p class="comment-body collapsed">${escapeHtml(comment.content)}</p>
+                        <div class="comment-actions">
+                            <span class="comment-action ${comment.liked_by_me ? 'liked' : ''}" onclick="toggleCommentLike(${comment.id})">
+                                <i data-lucide="thumbs-up" size="14"></i> ${comment.likes_count || 0}
+                            </span>
+                            <span class="comment-action" onclick="showReplyInput(${postId}, ${comment.id})">Reply</span>
+                        </div>
+                        <div id="reply-input-container-${comment.id}" style="display:none; margin-top: 0.75rem; margin-bottom: 0.5rem; margin-left: 2.8rem;">
+                            <div class="comment-input-row" style="margin-bottom:0; display:flex; align-items:flex-start; gap:0.6rem;">
+                                <div class="small-avatar user-avatar-small" style="width:28px; height:28px; font-size:0.75rem;">U</div>
+                                <div style="flex:1; display:flex; gap:0.5rem; align-items:flex-start;">
+                                    <textarea id="reply-input-${comment.id}" rows="1" placeholder="Add a reply..." style="flex:1; font-size:0.85rem; padding:0.5rem 0.8rem; border-radius:18px; border:1px solid #cbd5e1; background:white; outline:none; resize:none; min-height:36px; box-sizing:border-box; overflow:hidden;" oninput="autoResize(this)" onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); addReply(${postId}, ${comment.id}); }"></textarea>
+                                    <button onclick="addReply(${postId}, ${comment.id})" style="background:var(--primary); color:white; border:none; border-radius:20px; padding:0.5rem 1rem; font-size:0.8rem; font-weight:600; cursor:pointer;">Reply</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showReplyInput(postId, commentId) {
+            const container = document.getElementById(`reply-input-container-${commentId}`);
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                document.getElementById(`reply-input-${commentId}`).focus();
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        async function addReply(postId, parentId) {
+            if (pendingReplies.has(parentId)) return;
+            const input = document.getElementById(`reply-input-${parentId}`);
+            const content = input.value.trim();
+            const token = localStorage.getItem('token');
+            if (!content) return;
+            if (!token) {
+                showToast('Please login to reply.', 'error');
+                return;
+            }
+
+            pendingReplies.add(parentId);
+            input.disabled = true;
+
+            try {
+                const response = await fetch(`/api/posts/${postId}/comments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ content, parentId: parentId }),
+                });
+                if (response.ok) {
+                    const resData = await response.json();
+                    input.value = '';
+                    const replyInputContainer = document.getElementById(`reply-input-container-${parentId}`);
+                    if (replyInputContainer) replyInputContainer.style.display = 'none';
+
+                    // Append reply in-place to replies container
+                    const commentItem = replyInputContainer ? replyInputContainer.closest('.comment-item') : null;
+                    if (commentItem) {
+                        let repliesContainer = commentItem.querySelector('.replies-container');
+                        if (!repliesContainer) {
+                            repliesContainer = document.createElement('div');
+                            repliesContainer.className = 'replies-container';
+                            repliesContainer.innerHTML = `
+                                <button class="toggle-replies-btn" onclick="toggleReplies(this)" type="button">
+                                    <i data-lucide="chevron-up" size="14"></i> Hide replies
+                                </button>
+                                <div class="replies-list"></div>
+                            `;
+                            commentItem.appendChild(repliesContainer);
+                        }
+                        const repliesList = repliesContainer.querySelector('.replies-list');
+                        if (repliesList) {
+                            repliesList.classList.remove('hidden');
+                            repliesList.insertAdjacentHTML('beforeend', renderComment(resData.data, postId));
+                            lucide.createIcons();
+                        }
+                    }
+
+                    // Increment post comment counter in-place
+                    const commentBtn = document.querySelector(`#post-${postId} button[onclick*="focusComment"]`);
+                    if (commentBtn) {
+                        let countSpan = commentBtn.querySelector('.action-count');
+                        let currentCount = countSpan ? parseInt(countSpan.textContent) || 0 : 0;
+                        if (!countSpan) {
+                            countSpan = document.createElement('span');
+                            countSpan.className = 'action-count';
+                            commentBtn.appendChild(countSpan);
+                        }
+                        countSpan.textContent = currentCount + 1;
+                    }
+                    showToast('Reply added!', 'success');
+                } else {
+                    const errData = await response.json().catch(() => ({}));
+                    showToast(errData.message || 'Reply could not be posted.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error while replying.', 'error');
+            } finally {
+                pendingReplies.delete(parentId);
+                input.disabled = false;
+            }
+        }
+
+        async function toggleCommentLike(commentId) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showToast('Please login to like comments.', 'error');
+                return;
+            }
+
+            // In-place UI toggle
+            const actionSpan = event?.currentTarget || document.querySelector(`[onclick="toggleCommentLike(${commentId})"]`);
+            if (actionSpan) {
+                const isLiked = actionSpan.classList.contains('liked');
+                actionSpan.classList.toggle('liked', !isLiked);
+                let text = actionSpan.textContent.trim();
+                let count = parseInt(text) || 0;
+                let newCount = !isLiked ? count + 1 : Math.max(0, count - 1);
+                actionSpan.innerHTML = `<i data-lucide="thumbs-up" size="14"></i> ${newCount}`;
+                lucide.createIcons();
+            }
+
+            try {
+                await fetch(`/api/comments/${commentId}/like`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            } catch (e) {
+                showToast('Network error.', 'error');
+            }
+        }
+
+        async function fetchFeed({ silent = false } = {}) {
+            const hasCached = sessionStorage.getItem('cc_swr_/posts');
+            if (!silent && !currentPosts.length && !hasCached) {
+                const skeletonPostHtml = `
+                    <div class="skeleton-post-card">
+                        <div style="display:flex; gap:0.75rem; align-items:center; margin-bottom: 12px;">
+                            <div class="skeleton-avatar skeleton-shimmer"></div>
+                            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                                <div class="skeleton-shimmer skeleton-line-sm" style="width:140px; height: 14px;"></div>
+                                <div class="skeleton-shimmer skeleton-line-sm" style="width:85px; height: 10px;"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-shimmer skeleton-line-md" style="width:96%; margin-bottom: 8px;"></div>
+                        <div class="skeleton-shimmer skeleton-line-md" style="width:88%; margin-bottom: 8px;"></div>
+                        <div class="skeleton-shimmer skeleton-line-sm" style="width:65%; margin-bottom: 14px;"></div>
+                        <div style="display: flex; gap: 12px; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+                            <div class="skeleton-shimmer skeleton-pill" style="width: 70px; height: 28px;"></div>
+                            <div class="skeleton-shimmer skeleton-pill" style="width: 85px; height: 28px;"></div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('posts-feed').innerHTML = Array(3).fill(skeletonPostHtml).join('');
+            }
+            try {
+                await swrFetch('/posts', (data) => {
+                    currentPosts = data.data || [];
+                    const totalComments = currentPosts.reduce((total, post) => total + ((post.comments || []).length), 0);
+                    const profilePosts = document.getElementById('profile-posts');
+                    const profileComments = document.getElementById('profile-comments');
+                    if (profilePosts) profilePosts.textContent = currentPosts.length;
+                    if (profileComments) profileComments.textContent = totalComments;
+                    applyFeedFilter();
+                });
+            } catch (error) {
+                console.error('Feed fetch error:', error);
+                if (!silent && !currentPosts.length) {
+                    document.getElementById('posts-feed').innerHTML = `
+                        <div class="feed-card empty-feed">
+                            <i data-lucide="wifi-off" size="42"></i>
+                            <h3>Feed is not available</h3>
+                            <p>Please refresh or try again in a moment.</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        let activeFilter = 'all';
+
+        function applyFeedFilter() {
+            let filtered = [...currentPosts];
+            switch (activeFilter) {
+                case 'questions':
+                    filtered = filtered.filter(p => {
+                        const text = ((p.content || '') + ' ' + (p.tags || '')).toLowerCase();
+                        return text.includes('?') || text.includes('question');
+                    });
+                    break;
+                case 'collabs':
+                    filtered = filtered.filter(p => {
+                        const text = ((p.content || '') + ' ' + (p.tags || '')).toLowerCase();
+                        return text.includes('collab') || text.includes('collaborat') || text.includes('partner') || text.includes('team') || text.includes('looking for');
+                    });
+                    break;
+                case 'general':
+                    filtered = filtered.filter(p => {
+                        const text = ((p.content || '') + ' ' + (p.tags || '')).toLowerCase();
+                        const isQuestion = text.includes('?') || text.includes('question');
+                        const isCollab = text.includes('collab') || text.includes('collaborat') || text.includes('partner') || text.includes('team') || text.includes('looking for');
+                        return !isQuestion && !isCollab;
+                    });
+                    break;
+                case 'all':
+                default:
+                    filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    break;
+            }
+
+            filteredPostsList = filtered;
+            visiblePostCount = 0;
+            const feed = document.getElementById('posts-feed');
+            if (feed) feed.innerHTML = '';
+
+            if (feedObserver) {
+                feedObserver.disconnect();
+                feedObserver = null;
+            }
+
+            if (!filteredPostsList.length) {
+                renderEmptyFeed();
+                return;
+            }
+
+            loadNextPostBatch();
+        }
+
+        async function toggleLike(postId) {
+            if (pendingLikes.has(`p_${postId}`)) return;
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showToast('Please login to like posts.', 'error');
+                return;
+            }
+
+            pendingLikes.add(`p_${postId}`);
+
+            // Optimistic instant 0ms UI update
+            const postCard = document.getElementById(`post-${postId}`);
+            if (postCard) {
+                const likeBtn = postCard.querySelector('.post-action');
+                if (likeBtn) {
+                    const isLiked = likeBtn.classList.contains('liked');
+                    likeBtn.classList.toggle('liked', !isLiked);
+                    let countSpan = likeBtn.querySelector('.action-count');
+                    let currentCount = countSpan ? parseInt(countSpan.textContent) || 0 : 0;
+                    let newCount = !isLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+                    if (newCount > 0) {
+                        if (!countSpan) {
+                            countSpan = document.createElement('span');
+                            countSpan.className = 'action-count';
+                            likeBtn.appendChild(countSpan);
+                        }
+                        countSpan.textContent = newCount;
+                    } else if (countSpan) {
+                        countSpan.remove();
+                    }
+                }
+            }
+
+            try {
+                await fetch(`/api/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            } catch (e) {
+                showToast('Network error.', 'error');
+            } finally {
+                pendingLikes.delete(`p_${postId}`);
+            }
+        }
+
+        function sharePost(postId) {
+            const url = `${window.location.origin}/community.html#post-${postId}`;
+            navigator.clipboard.writeText(url)
+                .then(() => showToast('Post link copied.'))
+                .catch(() => showToast('Copy failed.', 'error'));
+        }
+
+        async function addComment(postId) {
+            if (pendingComments.has(postId)) return;
+            const input = document.getElementById(`comment-input-${postId}`);
+            const content = input.value.trim();
+            const token = localStorage.getItem('token');
+            if (!content) return;
+            if (!token) {
+                showToast('Please login to comment.', 'error');
+                return;
+            }
+
+            pendingComments.add(postId);
+            input.disabled = true;
+
+            try {
+                const response = await fetch(`/api/posts/${postId}/comments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ content }),
+                });
+                if (response.ok) {
+                    const resData = await response.json();
+                    input.value = '';
+                    input.style.height = 'auto';
+
+                    // Append comment in-place
+                    const commentsContainer = document.getElementById(`comments-container-${postId}`);
+                    if (commentsContainer) {
+                        commentsContainer.insertAdjacentHTML('beforeend', renderComment(resData.data, postId));
+                        lucide.createIcons();
+                    }
+
+                    // Increment comment counter on post card
+                    const commentBtn = document.querySelector(`#post-${postId} button[onclick*="focusComment"]`);
+                    if (commentBtn) {
+                        let countSpan = commentBtn.querySelector('.action-count');
+                        let currentCount = countSpan ? parseInt(countSpan.textContent) || 0 : 0;
+                        if (!countSpan) {
+                            countSpan = document.createElement('span');
+                            countSpan.className = 'action-count';
+                            commentBtn.appendChild(countSpan);
+                        }
+                        countSpan.textContent = currentCount + 1;
+                    }
+                    showToast('Comment posted!', 'success');
+                } else {
+                    const errData = await response.json().catch(() => ({}));
+                    showToast(errData.message || 'Comment could not be posted.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error while commenting.', 'error');
+            } finally {
+                pendingComments.delete(postId);
+                input.disabled = false;
+            }
+        }
+
+        function focusComment(postId) {
+            document.getElementById(`comment-input-${postId}`).focus();
+        }
+
+        async function submitPost() {
+            if (isPosting) return;
+            const submitBtn = document.getElementById('submit-post');
+            const content = document.getElementById('modal-post-content').value.trim();
+            const tags = document.getElementById('modal-post-tags').value.trim();
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showToast('Please login to create a post.', 'error');
+                return;
+            }
+            if (!content) {
+                showToast('Write something before posting.', 'error');
+                return;
+            }
+
+            isPosting = true;
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.innerHTML = `<i data-lucide="loader-2" class="spin" size="17"></i> Publishing...`;
+            lucide.createIcons();
+
+            try {
+                let finalTags = tags;
+                if (selectedPostCategory === 'Questions' && !finalTags.toLowerCase().includes('question')) {
+                    finalTags = (finalTags + ' #question').trim();
+                } else if (selectedPostCategory === 'Collabs' && !finalTags.toLowerCase().includes('collab')) {
+                    finalTags = (finalTags + ' #collab').trim();
+                }
+
+                const formData = new FormData();
+                formData.append('content', content);
+                formData.append('tags', finalTags);
+
+                if (selectedFile) {
+                    const editedBlob = await getEditedImageBlob();
+                    formData.append('image', editedBlob, selectedFile.name);
+                }
+
+                const response = await fetch('/api/posts', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    toggleComposer(false);
+                    document.getElementById('modal-post-content').value = '';
+                    document.getElementById('modal-post-tags').value = '';
+                    clearImage();
+                    showToast('Post published!');
+                    fetchFeed();
+                } else {
+                    const data = await response.json().catch(() => ({}));
+                    showToast(data.message || 'Post could not be shared.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error while publishing post.', 'error');
+            } finally {
+                isPosting = false;
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.innerHTML = `<i data-lucide="send" size="17"></i> Post`;
+                lucide.createIcons();
+            }
+        }
+
+        let selectedPostCategory = 'General';
+
+        function setPostCategory(category, element) {
+            selectedPostCategory = category;
+            document.querySelectorAll('.category-chip').forEach(btn => btn.classList.remove('active'));
+            if (element) element.classList.add('active');
+        }
+
+        function openComposerWithCategory(category) {
+            selectedPostCategory = category;
+            toggleComposer(true);
+            document.querySelectorAll('.category-chip').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.cat.toLowerCase() === category.toLowerCase());
+            });
+            const textarea = document.getElementById('modal-post-content');
+            if (category.toLowerCase() === 'questions') {
+                textarea.placeholder = "Ask a question to the community (e.g. Can anyone advise on...?)";
+            } else if (category.toLowerCase() === 'collabs') {
+                textarea.placeholder = "Describe what kind of partner or collaborator you're looking for...";
+            } else {
+                textarea.placeholder = "What do you want to talk about?";
+            }
+            textarea.focus();
+        }
+
+        async function fetchSuggestedProfiles() {
+            const resultsContainer = document.getElementById('search-results');
+            if (!resultsContainer) return;
+
+            try {
+                const response = await fetch('/api/users/search');
+                const data = await response.json();
+                const users = data.data || [];
+                renderProfessionalsList(users);
+            } catch (e) {
+                console.error("Error loading suggested professionals:", e);
+            }
+        }
+
+        let profileSearchTimeout = null;
+
+        function handleProfileSearchInput(event) {
+            clearTimeout(profileSearchTimeout);
+            const query = event.target.value.trim();
+            profileSearchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/users/search?query=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    const users = data.data || [];
+                    renderProfessionalsList(users, query);
+                } catch (e) {
+                    console.error(e);
+                }
+            }, 300);
+        }
+
+        function renderProfessionalsList(users, query = '') {
+            const resultsContainer = document.getElementById('search-results');
+            if (!resultsContainer) return;
+
+            if (!users.length) {
+                resultsContainer.innerHTML = query 
+                    ? '<p style="font-size:0.8rem;color:#64748b;text-align:center;font-weight:700;padding:1rem 0.5rem;">No professionals found matching your search.</p>'
+                    : '<p style="font-size:0.8rem;color:#64748b;text-align:center;font-weight:700;padding:1rem 0.5rem;">No professionals found.</p>';
+                return;
+            }
+
+            resultsContainer.innerHTML = users.map((user) => {
+                const initial = (user.name || 'M')[0].toUpperCase();
+                const avatarHtml = user.avatar_url 
+                    ? `<img src="${safeImageUrl(user.avatar_url)}" alt="${escapeHtml(user.name)}" data-fallback="${fallbackImage('avatar')}">`
+                    : escapeHtml(initial);
+                const headline = user.headline || user.status || user.bio || 'CoWorkConnect Professional';
+
+                return `
+                    <div class="person-item" onclick="openUserProfileModal(${user.id})" title="View Profile">
+                        <div class="person-avatar">${avatarHtml}</div>
+                        <div class="person-info">
+                            <div class="person-name">${escapeHtml(user.name)}</div>
+                            <div class="person-headline">${escapeHtml(headline)}</div>
+                        </div>
+                        <button class="person-btn" type="button">Connect</button>
+                    </div>
+                `;
+            }).join('');
+
+            applyImageFallbacks(resultsContainer);
+            lucide.createIcons();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateProfileStats();
+            fetchFeed();
+            fetchSuggestedProfiles();
+            document.getElementById('trigger-composer').addEventListener('click', () => toggleComposer(true));
+            document.getElementById('post-image-input').addEventListener('change', handleFile);
+            document.getElementById('post-image-input-modal').addEventListener('change', handleFile);
+            document.getElementById('submit-post').addEventListener('click', submitPost);
+
+            document.querySelectorAll('.feed-tab').forEach((tab) => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.feed-tab').forEach((item) => item.classList.remove('active'));
+                    tab.classList.add('active');
+                    activeFilter = tab.dataset.filter || 'all';
+                    applyFeedFilter();
+                });
+            });
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

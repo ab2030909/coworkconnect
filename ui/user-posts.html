@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Activity & Posts - CoWorkConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body style="background-color: var(--bg-soft, #f8fafc);">
+    <!-- Shared Navbar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <i data-lucide="briefcase"></i>
+                <span>CoWorkConnect</span>
+            </a>
+            <div class="nav-links">
+                <a href="spaces.html" class="nav-link">Explore Spaces</a>
+                <a href="community.html" class="nav-link">Networking</a>
+                <a href="groups.html" class="nav-link">Groups</a>
+                <a href="events.html" class="nav-link">Events</a>
+                
+                <div id="auth-links" class="auth-links hidden"></div>
+                <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
+                    <!-- Populated dynamically by app.js -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width: 900px; margin: 0 auto; padding-top: 100px; padding-bottom: 3rem;">
+        <!-- Header Banner -->
+        <div style="background: white; border-radius: 24px; border: 1px solid var(--border); padding: 2rem 2.5rem; margin-bottom: 2rem; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1.25rem;">
+                <div id="author-avatar" style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; background: #ecfdf5; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; color: #059669; border: 3px solid #a7f3d0;">
+                    U
+                </div>
+                <div>
+                    <h1 id="author-name" style="margin: 0 0 0.2rem; font-size: 1.8rem; font-weight: 800; color: var(--dark);">Member Posts</h1>
+                    <p id="author-headline" style="margin: 0; color: #64748b; font-size: 0.95rem; font-weight: 700;">CoWorkConnect Network Activity</p>
+                </div>
+            </div>
+            <div>
+                <a id="back-to-profile-btn" href="community.html" class="btn btn-outline" style="border-radius: 50px; font-weight: 800; padding: 0.6rem 1.4rem;">← Back to Profile</a>
+            </div>
+        </div>
+
+        <!-- Skeleton Loader -->
+        <div id="user-posts-skeleton" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div class="skeleton-card" style="height: 180px;"></div>
+            <div class="skeleton-card" style="height: 180px;"></div>
+        </div>
+
+        <!-- Feed List -->
+        <div id="user-posts-list" style="display: flex; flex-direction: column; gap: 1.5rem;"></div>
+    </main>
+
+    <footer class="footer" style="padding: 2rem 0; background-color: var(--color-surface); border-top: 1px solid var(--color-border); text-align: center; color: var(--color-muted); font-size: 0.85rem; font-weight: 600; margin-top: 4rem;">
+        <div class="container">
+            <p>&copy; 2026 CoWorkConnect. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="app.js?v=route-images-2"></script>
+    <script>
+        lucide.createIcons();
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUserId = urlParams.get('user_id') || urlParams.get('id');
+
+        async function loadUserPostsPage() {
+            if (!targetUserId) {
+                window.location.href = 'community.html';
+                return;
+            }
+
+            document.getElementById('back-to-profile-btn').href = `user-profile.html?id=${targetUserId}`;
+
+            try {
+                // Fetch User Details
+                const userRes = await fetch(`/api/users/${targetUserId}`);
+                const userData = await userRes.json();
+                if (userRes.ok && userData.data) {
+                    const u = userData.data;
+                    document.getElementById('author-name').textContent = `Posts by ${u.name || 'Member'}`;
+                    document.getElementById('author-headline').textContent = u.headline || 'CoWorkConnect Community Member';
+                    
+                    const avatarEl = document.getElementById('author-avatar');
+                    if (u.avatar_url) {
+                        avatarEl.innerHTML = `<img src="${safeImageUrl(u.avatar_url)}" style="width:100%;height:100%;object-fit:cover;">`;
+                    } else {
+                        avatarEl.textContent = (u.name || 'U')[0].toUpperCase();
+                    }
+                }
+
+                // Fetch Posts
+                const postsRes = await fetch(`/api/posts?user_id=${targetUserId}`);
+                const postsData = await postsRes.json();
+                const posts = postsData.data || [];
+
+                document.getElementById('user-posts-skeleton').style.display = 'none';
+                const feed = document.getElementById('user-posts-list');
+
+                if (!posts.length) {
+                    feed.innerHTML = `
+                        <div style="background: white; border-radius: 20px; border: 1px solid var(--border); padding: 3rem; text-align: center; color: #64748b;">
+                            <i data-lucide="message-square" size="42"></i>
+                            <h3 style="margin-top: 1rem; font-weight: 800; color: var(--dark);">No Posts Published</h3>
+                            <p>This member has not shared any public community posts yet.</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    return;
+                }
+
+                feed.innerHTML = posts.map(p => `
+                    <div style="background: white; border-radius: 20px; border: 1px solid var(--border); padding: 2rem; box-shadow: var(--shadow-sm);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 42px; height: 42px; border-radius: 50%; overflow: hidden; background: #ecfdf5; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #059669;">
+                                    ${p.user_avatar ? `<img src="${safeImageUrl(p.user_avatar)}" style="width:100%;height:100%;object-fit:cover;">` : (p.user_name || 'U')[0].toUpperCase()}
+                                </div>
+                                <div>
+                                    <strong style="font-size: 0.95rem; color: var(--dark); display: block;">${escapeHtml(p.user_name)}</strong>
+                                    <span style="font-size: 0.78rem; color: #059669; font-weight: 700;">${escapeHtml(p.user_headline || p.user_bio || 'CoWorkConnect Member')}</span>
+                                    <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-left: 6px;">• ${new Date(p.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="margin: 0 0 1rem; color: #0f172a; font-size: 1.02rem; line-height: 1.65; white-space: pre-wrap; word-break: break-word;">${escapeHtml(p.content)}</p>
+                        ${p.image_url ? `<img src="${safeImageUrl(p.image_url)}" class="post-image" style="width: 100%; max-height: 450px; object-fit: cover; border-radius: 14px; margin-bottom: 1rem; cursor: zoom-in;" onclick="openImageLightbox('${safeImageUrl(p.image_url)}')">` : ''}
+                        
+                        <div style="display: flex; gap: 1.5rem; color: #64748b; font-size: 0.88rem; font-weight: 700; border-top: 1px solid #f1f5f9; padding-top: 1rem;">
+                            <span>❤️ ${p.likes_count || 0} Likes</span>
+                            <span>💬 ${p.comments_count || 0} Comments</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                lucide.createIcons();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                loadUserPostsPage();
+            });
+        } else {
+            loadUserPostsPage();
+        }
+    </script>
+</body>
+</html>

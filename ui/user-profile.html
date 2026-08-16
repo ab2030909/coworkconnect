@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Profile - CoWorkConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body style="background-color: var(--bg-soft, #f8fafc);">
+    <!-- Shared Navbar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <i data-lucide="briefcase"></i>
+                <span>CoWorkConnect</span>
+            </a>
+            <div class="nav-links">
+                <a href="spaces.html" class="nav-link">Explore Spaces</a>
+                <a href="community.html" class="nav-link">Networking</a>
+                <a href="groups.html" class="nav-link">Groups</a>
+                <a href="events.html" class="nav-link">Events</a>
+                
+                <div id="auth-links" class="auth-links hidden"></div>
+                <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
+                    <!-- Populated dynamically by app.js -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width: 1200px; margin: 0 auto; padding-top: 100px; padding-bottom: 3rem;">
+        <!-- Hero Header -->
+        <div style="background: white; border-radius: 24px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); margin-bottom: 2.5rem;">
+            <div style="height: 180px; background: linear-gradient(135deg, #059669, #10b981, #0f172a); position: relative;"></div>
+            
+            <div style="padding: 0 2.5rem 2.5rem; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem; margin-top: -60px; margin-bottom: 1.5rem;">
+                    <div id="u-avatar-wrap" style="width: 130px; height: 130px; border-radius: 50%; border: 5px solid white; overflow: hidden; background: #ecfdf5; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; font-weight: 800; color: #059669; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+                        U
+                    </div>
+                    <div id="friend-action-container">
+                        <!-- Friend Action Button -->
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.3rem;">
+                            <h1 id="u-name" style="margin: 0; font-size: 2.2rem; font-weight: 800; color: var(--dark);">Member Name</h1>
+                            <span id="u-status" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 0.3rem 0.9rem; border-radius: 50px; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Available</span>
+                        </div>
+                        
+                        <p id="u-headline" style="margin: 0 0 0.8rem; font-size: 1.05rem; font-weight: 700; color: #475569;">CoWorkConnect Community Member</p>
+                        
+                        <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; color: #64748b; font-size: 0.9rem; font-weight: 700;">
+                            <span id="u-friends-count">0 Friends</span>
+                            <span id="u-joined-date">Joined 2026</span>
+                        </div>
+
+                        <!-- Social Links (GitHub & LinkedIn) -->
+                        <div id="u-socials" style="display: flex; gap: 0.75rem; margin-top: 1rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout Grid -->
+        <div style="display: grid; grid-template-columns: 380px 1fr; gap: 2rem;">
+            <!-- Left Sidebar -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <!-- About Card -->
+                <div style="background: white; padding: 2rem; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+                    <h3 style="margin: 0 0 1rem; font-size: 1.2rem; font-weight: 800; color: var(--dark);">About</h3>
+                    <p id="u-bio" style="margin: 0; color: #475569; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap;">No bio details provided yet.</p>
+                </div>
+
+                <!-- Expertise Card -->
+                <div style="background: white; padding: 2rem; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+                    <h3 style="margin: 0 0 1rem; font-size: 1.2rem; font-weight: 800; color: var(--dark);">Skills & Expertise</h3>
+                    <div id="u-expertise-container" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <span style="background: #f1f5f9; color: #475569; padding: 0.4rem 0.8rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700;">Co-working</span>
+                    </div>
+                </div>
+
+                <!-- Friends Card -->
+                <div style="background: white; padding: 2rem; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+                    <h3 style="margin: 0 0 1rem; font-size: 1.2rem; font-weight: 800; color: var(--dark); display: flex; justify-content: space-between; align-items: center;">
+                        <span>Friends</span>
+                        <span id="u-friends-badge-count" style="font-size: 0.82rem; background: #f1f5f9; color: #475569; padding: 0.2rem 0.6rem; border-radius: 50px;">0</span>
+                    </h3>
+                    <div id="u-friends-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <p style="color: #94a3b8; font-size: 0.85rem;">Loading friends...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area: LinkedIn Style User Activity & Posts -->
+            <div>
+                <div style="background: white; padding: 2rem; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="margin: 0; font-size: 1.4rem; font-weight: 800; color: var(--dark);">Activity & Posts</h3>
+                        <a id="u-all-posts-link" href="community.html" class="btn btn-outline" style="border-radius: 50px; font-size: 0.82rem; font-weight: 700; padding: 0.35rem 0.9rem;">View in Network Feed ↗</a>
+                    </div>
+                    
+                    <div id="u-posts-feed" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <p style="color: #94a3b8; font-size: 0.9rem; text-align: center; padding: 2rem;">Loading activity...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer" style="padding: 2rem 0; background-color: var(--color-surface); border-top: 1px solid var(--color-border); text-align: center; color: var(--color-muted); font-size: 0.85rem; font-weight: 600;">
+        <div class="container">
+            <p>&copy; 2026 CoWorkConnect. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="app.js?v=route-images-1"></script>
+    <script>
+        lucide.createIcons();
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUserId = urlParams.get('id') || urlParams.get('user_id');
+
+        async function loadUserProfile() {
+            if (!targetUserId) {
+                window.location.href = 'community.html';
+                return;
+            }
+
+            try {
+                const token = getToken();
+                const res = await fetch(`/api/users/${targetUserId}`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                });
+                const data = await res.json();
+                if (!res.ok || !data.data) {
+                    alert('User profile not found.');
+                    window.location.href = 'community.html';
+                    return;
+                }
+
+                const u = data.data;
+                document.getElementById('u-name').textContent = u.name || 'Member';
+                document.getElementById('u-headline').textContent = u.headline || 'CoWorkConnect Community Member';
+                document.getElementById('u-status').textContent = u.status || 'Available';
+                document.getElementById('u-bio').textContent = u.bio || 'No bio details provided yet.';
+                document.getElementById('u-friends-count').textContent = `${u.friends_count || 0} Friends`;
+                document.getElementById('u-friends-badge-count').textContent = u.friends_count || 0;
+                document.getElementById('u-joined-date').textContent = u.created_at ? `Joined ${new Date(u.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}` : 'Joined 2026';
+                document.getElementById('u-all-posts-link').href = `user-posts.html?user_id=${targetUserId}`;
+
+                const avatarWrap = document.getElementById('u-avatar-wrap');
+                if (u.avatar_url) {
+                    avatarWrap.innerHTML = `<img src="${safeImageUrl(u.avatar_url)}" style="width:100%;height:100%;object-fit:cover;">`;
+                } else {
+                    avatarWrap.textContent = (u.name || 'U')[0].toUpperCase();
+                }
+
+                // Social Links (GitHub & LinkedIn)
+                const socialsWrap = document.getElementById('u-socials');
+                let socialsHtml = '';
+                if (u.github_url) {
+                    socialsHtml += `<a href="${escapeHtml(u.github_url)}" target="_blank" class="btn" style="background:#0f172a;color:white;padding:0.4rem 0.9rem;border-radius:50px;font-size:0.8rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">GitHub Profile ↗</a>`;
+                }
+                if (u.linkedin_url) {
+                    socialsHtml += `<a href="${escapeHtml(u.linkedin_url)}" target="_blank" class="btn" style="background:#0a66c2;color:white;padding:0.4rem 0.9rem;border-radius:50px;font-size:0.8rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">LinkedIn Profile ↗</a>`;
+                }
+                socialsWrap.innerHTML = socialsHtml;
+
+                // Expertise
+                const expContainer = document.getElementById('u-expertise-container');
+                if (u.expertise) {
+                    const skills = u.expertise.split(',').map(s => s.trim()).filter(Boolean);
+                    expContainer.innerHTML = skills.map(s => `<span style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 0.35rem 0.8rem; border-radius: 50px; font-size: 0.82rem; font-weight: 700;">${escapeHtml(s)}</span>`).join('');
+                } else {
+                    expContainer.innerHTML = '<span style="color:#94a3b8;font-size:0.85rem;">No skills specified yet.</span>';
+                }
+
+                // Friend Action Button
+                renderFriendActionButton(u);
+
+                // Load Friends & Posts Preview
+                loadUserFriendsList(targetUserId);
+                loadUserPostsFeed(targetUserId);
+
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderFriendActionButton(targetUser) {
+            const container = document.getElementById('friend-action-container');
+            if (!container) return;
+
+            const st = targetUser.friendship_status;
+            if (st === 'self') {
+                container.innerHTML = `<a href="profile.html" class="btn btn-outline" style="border-radius:50px;font-weight:800;padding:0.6rem 1.4rem;">Edit Profile</a>`;
+                return;
+            }
+
+            if (st === 'friends') {
+                container.innerHTML = `<button type="button" class="btn" style="background:#f1f5f9;color:#0f172a;border:1px solid #cbd5e1;border-radius:50px;font-weight:800;padding:0.6rem 1.4rem;" onclick="handleFriendAction(${targetUser.id}, 'unfriend')">Friends ✓ (Unfriend)</button>`;
+            } else if (st === 'pending_sent') {
+                container.innerHTML = `<button type="button" class="btn" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;border-radius:50px;font-weight:800;padding:0.6rem 1.4rem;" onclick="handleFriendAction(${targetUser.id}, 'cancel')">⏳ Request Sent (Cancel)</button>`;
+            } else if (st === 'pending_received') {
+                container.innerHTML = `<button type="button" class="btn btn-primary" style="border-radius:50px;font-weight:800;padding:0.6rem 1.4rem;" onclick="handleFriendAction(${targetUser.id}, 'accept')">✓ Accept Friend Request</button>`;
+            } else {
+                container.innerHTML = `<button type="button" class="btn btn-primary" style="border-radius:50px;font-weight:800;padding:0.6rem 1.4rem;" onclick="handleFriendAction(${targetUser.id}, 'request')">+ Add Friend</button>`;
+            }
+        }
+
+        async function handleFriendAction(userId, action) {
+            const token = getToken();
+            if (!token) {
+                showToast('Please sign in to manage friends.', 'error');
+                return;
+            }
+            try {
+                let res;
+                if (action === 'request') {
+                    res = await fetch('/api/friends/request', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ friend_id: userId })
+                    });
+                } else {
+                    res = await fetch('/api/friends/respond', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ friend_id: userId, action: action })
+                    });
+                }
+                const data = await res.json();
+                showToast(data.message || 'Updated');
+                loadUserProfile();
+            } catch (e) {
+                showToast('Error updating friend status', 'error');
+            }
+        }
+
+        async function loadUserFriendsList(userId) {
+            const list = document.getElementById('u-friends-list');
+            try {
+                const res = await fetch(`/api/users/${userId}/friends`);
+                const data = await res.json();
+                const friends = data.data || [];
+                if (!friends.length) {
+                    list.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem;">No public friends list yet.</p>';
+                    return;
+                }
+                list.innerHTML = friends.map(f => `
+                    <div style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;" onclick="window.location.href='user-profile.html?id=${f.id}'">
+                        <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#ecfdf5;display:flex;align-items:center;justify-content:center;font-weight:800;color:#059669;">
+                            ${f.avatar_url ? `<img src="${safeImageUrl(f.avatar_url)}" style="width:100%;height:100%;object-fit:cover;">` : (f.name || 'F')[0].toUpperCase()}
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <strong style="font-size:0.85rem;color:#0f172a;display:block;">${escapeHtml(f.name)}</strong>
+                            <span style="font-size:0.75rem;color:#64748b;">${escapeHtml(f.status || 'Member')}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                list.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem;">Could not load friends.</p>';
+            }
+        }
+
+        async function loadUserPostsFeed(userId) {
+            const feed = document.getElementById('u-posts-feed');
+            try {
+                const res = await fetch(`/api/posts?user_id=${userId}`);
+                const data = await res.json();
+                const posts = data.data || [];
+                if (!posts.length) {
+                    feed.innerHTML = '<p style="color:#94a3b8;font-size:0.9rem;text-align:center;padding:2rem;">No posts published by this member yet.</p>';
+                    return;
+                }
+
+                // Display recent 2 posts preview
+                const previewPosts = posts.slice(0, 2);
+                let postsHtml = previewPosts.map(p => `
+                    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:1.5rem;">
+                        <p style="margin:0 0 0.6rem;font-size:0.98rem;color:#0f172a;line-height:1.65;white-space:pre-wrap;word-break:break-word;">${escapeHtml(p.content)}</p>
+                        ${p.image_url ? `<img src="${safeImageUrl(p.image_url)}" class="post-image" style="width:100%;max-height:350px;object-fit:cover;border-radius:12px;margin-top:0.6rem;">` : ''}
+                        <div style="margin-top:0.85rem;display:flex;gap:1.2rem;color:#64748b;font-size:0.82rem;font-weight:700;">
+                            <span>❤️ ${p.likes_count || 0} Likes</span>
+                            <span>💬 ${p.comments_count || 0} Comments</span>
+                            <span style="margin-left:auto;">${new Date(p.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                if (posts.length > 0) {
+                    postsHtml += `
+                        <div style="text-align:center;margin-top:1rem;">
+                            <a href="user-posts.html?user_id=${userId}" class="btn btn-primary" style="width:100%;padding:0.9rem;border-radius:12px;font-weight:800;font-size:0.95rem;text-decoration:none;display:inline-block;">
+                                View All ${posts.length} Posts by Member →
+                            </a>
+                        </div>
+                    `;
+                }
+
+                feed.innerHTML = postsHtml;
+            } catch (e) {
+                feed.innerHTML = '<p style="color:#ef4444;font-size:0.88rem;">Could not load posts.</p>';
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                loadUserProfile();
+            });
+        } else {
+            loadUserProfile();
+        }
+    </script>
+</body>
+</html>
