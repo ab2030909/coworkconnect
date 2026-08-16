@@ -219,57 +219,68 @@ function updateNavbar() {
         });
     }
 
-    if (user && authLinks && userLinks) {
-        authLinks.classList.add('hidden');
-        userLinks.classList.remove('hidden');
+    try {
+        if (user && authLinks && userLinks) {
+            authLinks.classList.add('hidden');
+            authLinks.style.display = 'none';
+            
+            userLinks.classList.remove('hidden');
+            userLinks.style.display = 'flex';
 
-        const isAdmin = user.role === 'admin';
-        const displayName = user.name || 'Member';
-        const initial = displayName[0].toUpperCase();
-        const avatarContent = user.avatar_url 
-            ? `<img src="${safeImageUrl(user.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
-            : escapeHtml(initial);
+            const isAdmin = user.role === 'admin';
+            const displayName = user.name || 'Member';
+            const initial = displayName[0].toUpperCase();
+            const avatarContent = user.avatar_url 
+                ? `<img src="${safeImageUrl(user.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
+                : escapeHtml(initial);
 
-        userLinks.innerHTML = `
-            <div class="user-menu" id="user-menu-trigger">
-                <div class="user-avatar" style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#ecfdf5;display:flex;align-items:center;justify-content:center;font-weight:800;color:#059669;">${avatarContent}</div>
-                <span id="user-name">${escapeHtml(displayName)}</span>
-                <i data-lucide="chevron-down" size="14"></i>
-                <div class="dropdown-menu">
-                    <a href="profile.html" class="dropdown-item">
-                        <i data-lucide="user" size="18"></i> Profile
-                    </a>
-                    <button class="dropdown-item logout" id="logout-trigger" type="button">
-                        <i data-lucide="log-out" size="18"></i> Logout
-                    </button>
+            userLinks.innerHTML = `
+                <div class="user-menu" id="user-menu-trigger">
+                    <div class="user-avatar" style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#ecfdf5;display:flex;align-items:center;justify-content:center;font-weight:800;color:#059669;">${avatarContent}</div>
+                    <span id="user-name">${escapeHtml(displayName)}</span>
+                    <i data-lucide="chevron-down" size="14"></i>
+                    <div class="dropdown-menu">
+                        <a href="profile.html" class="dropdown-item">
+                            <i data-lucide="user" size="18"></i> Profile
+                        </a>
+                        <button class="dropdown-item logout" id="logout-trigger" type="button">
+                            <i data-lucide="log-out" size="18"></i> Logout
+                        </button>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
 
-        const trigger = document.getElementById('user-menu-trigger');
-        trigger?.addEventListener('click', (event) => {
-            event.stopPropagation();
-            trigger.classList.toggle('active');
-        });
+            const trigger = document.getElementById('user-menu-trigger');
+            trigger?.addEventListener('click', (event) => {
+                event.stopPropagation();
+                trigger.classList.toggle('active');
+            });
 
-        document.getElementById('logout-trigger')?.addEventListener('click', () => {
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
-            window.location.href = 'index.html';
-        });
+            document.getElementById('logout-trigger')?.addEventListener('click', () => {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+            });
 
-        document.addEventListener('click', () => trigger?.classList.remove('active'));
-    } else if (authLinks && userLinks) {
-        userLinks.classList.add('hidden');
-        authLinks.classList.remove('hidden');
-        authLinks.innerHTML = `
-            <a href="login.html" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
-            <a href="register.html" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
-        `;
+            document.addEventListener('click', () => trigger?.classList.remove('active'));
+        } else if (authLinks && userLinks) {
+            userLinks.classList.add('hidden');
+            userLinks.style.display = 'none';
+            
+            authLinks.classList.remove('hidden');
+            authLinks.style.display = 'flex';
+            
+            authLinks.innerHTML = `
+                <a href="login.html" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
+                <a href="register.html" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
+            `;
+        }
+
+        setActiveNav();
+        if (window.lucide) lucide.createIcons();
+    } catch (e) {
+        console.error('Error in updateNavbar:', e);
     }
-
-    setActiveNav();
-    if (window.lucide) lucide.createIcons();
 }
 
 async function apiFetch(path, options = {}) {
