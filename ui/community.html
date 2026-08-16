@@ -1697,7 +1697,7 @@
                         <button onclick="focusComment(${post.id})" class="post-action" type="button">
                             <i data-lucide="message-circle" size="18"></i><span>Comment</span>${comments.length > 0 ? `<span class="action-count">${comments.length}</span>` : ''}
                         </button>
-                        <button onclick="sharePost(${post.id})" class="post-action" type="button">
+                        <button id="share-btn-${post.id}" onclick="sharePost(${post.id}, this)" class="post-action" type="button" title="Copy link to post">
                             <i data-lucide="share-2" size="18"></i><span>Share</span>
                         </button>
                     </div>
@@ -1771,6 +1771,7 @@
             updateProfileStats();
             applyImageFallbacks(feed);
             lucide.createIcons();
+            checkPostHashScroll();
 
             document.querySelectorAll('.comment-body.collapsed').forEach(el => {
                 if (el.scrollHeight > el.clientHeight && (!el.nextElementSibling || !el.nextElementSibling.classList.contains('read-more-btn'))) {
@@ -1786,6 +1787,25 @@
             });
 
             isLoadingMore = false;
+        }
+
+        function checkPostHashScroll() {
+            const hash = window.location.hash;
+            if (hash && hash.startsWith('#post-')) {
+                const targetPost = document.querySelector(hash);
+                if (targetPost) {
+                    setTimeout(() => {
+                        targetPost.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        targetPost.style.transition = 'all 0.4s ease';
+                        targetPost.style.borderColor = '#059669';
+                        targetPost.style.boxShadow = '0 0 0 4px rgba(5, 150, 105, 0.25)';
+                        setTimeout(() => {
+                            targetPost.style.borderColor = '';
+                            targetPost.style.boxShadow = '';
+                        }, 3000);
+                    }, 200);
+                }
+            }
         }
 
         function autoResize(el) {
@@ -2164,11 +2184,54 @@
             }
         }
 
-        function sharePost(postId) {
-            const url = `${window.location.origin}/community.html#post-${postId}`;
-            navigator.clipboard.writeText(url)
-                .then(() => showToast('Post link copied.'))
-                .catch(() => showToast('Copy failed.', 'error'));
+        function sharePost(postId, btnEl) {
+            const url = `${window.location.origin}/community#post-${postId}`;
+            const btn = btnEl || document.getElementById(`share-btn-${postId}`);
+            const originalHtml = btn ? btn.innerHTML : null;
+
+            const copySuccess = () => {
+                if (btn) {
+                    btn.innerHTML = `<i data-lucide="check" size="18" style="color:#059669;"></i><span style="color:#059669;font-weight:800;">Copied!</span>`;
+                    if (window.lucide) lucide.createIcons();
+                    setTimeout(() => {
+                        if (btn && originalHtml) {
+                            btn.innerHTML = originalHtml;
+                            if (window.lucide) lucide.createIcons();
+                        }
+                    }, 2200);
+                }
+                showToast('Post link copied to clipboard!', 'success');
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url)
+                    .then(copySuccess)
+                    .catch(() => fallbackCopy(url, copySuccess));
+            } else {
+                fallbackCopy(url, copySuccess);
+            }
+        }
+
+        function fallbackCopy(text, callback) {
+            try {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (successful) {
+                    if (callback) callback();
+                    else showToast('Post link copied to clipboard!', 'success');
+                } else {
+                    showToast('Could not copy link.', 'error');
+                }
+            } catch (err) {
+                showToast('Could not copy link.', 'error');
+            }
         }
 
         async function addComment(postId) {
