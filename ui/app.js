@@ -342,8 +342,9 @@ function bindLoginForm(form) {
 
             const data = await response.json();
             if (data.success) {
+                const userObj = data.user || { email: email, name: email.split('@')[0], role: 'user' };
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.setItem('user', JSON.stringify(userObj));
                 window.location.href = 'index.html';
             } else {
                 if (errorMsg) {
@@ -363,7 +364,6 @@ function bindLoginForm(form) {
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = defaultLabel;
-            if (window.lucide) lucide.createIcons();
         }
     });
 }
@@ -404,14 +404,15 @@ if (registerForm) {
 
             const data = await response.json();
             if (data.success) {
+                const userObj = data.user || { id: data.userId, name: name, email: email, role: 'user' };
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.setItem('user', JSON.stringify(userObj));
                 successMsg.querySelector('.msg-content').textContent = 'Account created. Opening your workspace...';
                 successMsg.classList.remove('hidden');
                 errorMsg.classList.add('hidden');
                 setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 500);
+                    window.location.href = 'index.html';
+                }, 300);
             } else {
                 errorMsg.querySelector('.msg-content').textContent = data.message || 'Could not create account.';
                 errorMsg.classList.remove('hidden');
