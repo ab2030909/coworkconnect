@@ -385,7 +385,7 @@
                 const typeDisplay = e.event_type || 'Event';
 
                 return `
-                <div class="evt-card" onclick="window.location.href="event-details?id=${Number(e.id)}"">
+                <div class="evt-card" onclick="window.location.href='event-details?id=${Number(e.id)}'">
                     <div class="evt-card-img-wrap">
                         <span class="evt-card-free-badge">Free</span>
                         <img class="evt-card-img" src="${img}" data-fallback="${fallbackImage('event')}" alt="${escapeHtml(e.title)}">
