@@ -499,7 +499,7 @@
             
             venueTimeout = setTimeout(async () => {
                 try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5`);
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=pk&format=json&limit=6`);
                     const data = await res.json();
                     
                     if (data && data.length > 0) {
@@ -515,7 +515,7 @@
                         venueSuggestions.querySelectorAll('[data-venue-index]').forEach((element) => {
                             element.addEventListener('click', () => selectVenue(data[Number(element.dataset.venueIndex)].display_name));
                         });
-                        lucide.createIcons();
+                        if (window.lucide) lucide.createIcons();
                         venueSuggestions.style.display = 'block';
                     } else {
                         venueSuggestions.style.display = 'none';
@@ -523,7 +523,7 @@
                 } catch (err) {
                     console.error("Geocoding error:", err);
                 }
-            }, 600);
+            }, 500);
         });
         
         window.selectVenue = function(name) {

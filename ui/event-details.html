@@ -447,19 +447,61 @@
         }
 
         function openGoogleFormModal() {
-            if (!activeEventData || !activeEventData.google_form_url) {
-                alert('No Google Form URL attached to this event.');
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showToast('Please sign in first to attend this event.', 'error');
+                setTimeout(() => { window.location.href = 'login'; }, 1000);
                 return;
             }
-            const rawUrl = activeEventData.google_form_url;
-            const embedUrl = getGoogleEmbedUrl(rawUrl);
-            
-            document.getElementById('gform-modal-title').textContent = `Register for ${activeEventData.title}`;
-            document.getElementById('gform-external-link').href = rawUrl;
-            document.getElementById('gform-iframe').src = embedUrl;
-            
-            document.getElementById('google-form-modal').classList.remove('hidden');
-            lucide.createIcons();
+
+            if (!activeEventData) return;
+            const rawUrl = (activeEventData.google_form_url || '').trim();
+
+            if (rawUrl) {
+                const embedUrl = getGoogleEmbedUrl(rawUrl);
+                document.getElementById('gform-modal-title').textContent = `Register for ${activeEventData.title}`;
+                document.getElementById('gform-external-link').href = rawUrl;
+                document.getElementById('gform-iframe').src = embedUrl;
+                document.getElementById('google-form-modal').classList.remove('hidden');
+                if (window.lucide) lucide.createIcons();
+                
+                // Open direct window as well in case iframe is blocked by Google policy
+                try {
+                    window.open(rawUrl, '_blank');
+                } catch (err) {}
+            } else {
+                // If host didn't specify an external form URL, directly complete registration!
+                submitDirectRegistration();
+            }
+        }
+
+        async function submitDirectRegistration() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showToast('Please sign in to register.', 'error');
+                setTimeout(() => { window.location.href = 'login'; }, 1000);
+                return;
+            }
+
+            const attendBtn = document.getElementById('attend-btn');
+            if (attendBtn) {
+                attendBtn.disabled = true;
+                attendBtn.textContent = 'Submitting...';
+            }
+
+            try {
+                const res = await fetch(`/api/events/${eventId}/register`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+                showToast(data.message || 'Registration submitted for host approval!', 'success');
+                await loadEventDetails();
+            } catch (e) {
+                showToast('Connection error while registering.', 'error');
+            } finally {
+                if (attendBtn) attendBtn.disabled = false;
+            }
         }
 
         function closeGoogleFormModal() {
@@ -470,14 +512,15 @@
         async function submitGoogleFormRegistration() {
             const token = localStorage.getItem('token');
             if (!token) {
-                alert('Please sign in to register.');
+                showToast('Please sign in to register.', 'error');
+                setTimeout(() => { window.location.href = 'login'; }, 1000);
                 return;
             }
 
             const btn = document.getElementById('gform-submit-app-btn');
             btn.disabled = true;
             btn.innerHTML = `<i data-lucide="loader-2" class="spin" size="16"></i> Submitting...`;
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
 
             try {
                 const res = await fetch(`/api/events/${eventId}/register`, {
@@ -486,10 +529,10 @@
                 });
                 const data = await res.json();
                 closeGoogleFormModal();
-                alert(data.message || 'Registration submitted for host approval.');
-                loadEventDetails();
+                showToast(data.message || 'Registration submitted for host approval!', 'success');
+                await loadEventDetails();
             } catch (e) {
-                alert('Connection error while registering.');
+                showToast('Connection error while registering.', 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i data-lucide="check-circle-2" size="16"></i> I Have Submitted Form — Complete Application`;
@@ -766,10 +809,10 @@
             document.getElementById('e-details').textContent = event.description;
             document.getElementById('e-full-date').textContent = `${dateStr} \n${timeDisplay}`;
             
-            const venueName = event.space_name || event.venue || event.city || 'Pakistan';
+            const venueName = event.space_name || event.venue || event.city || 'Islamabad, Pakistan';
             document.getElementById('e-location').textContent = venueName;
             
-            const locationQuery = encodeURIComponent(venueName);
+            const locationQuery = encodeURIComponent(venueName.toLowerCase().includes('pakistan') ? venueName : `${venueName}, Pakistan`);
             document.getElementById('e-map-iframe').src = `https://maps.google.com/maps?q=${locationQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
             document.getElementById('e-map-link').href = `https://www.google.com/maps/search/?api=1&query=${locationQuery}`;
             
