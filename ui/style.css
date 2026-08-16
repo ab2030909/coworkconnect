@@ -1153,6 +1153,14 @@ h1 {
     display: inline-flex;
   }
   
+  .auth-card {
+    padding: 2rem 1.5rem !important;
+  }
+  
+  .auth-page {
+    padding: calc(var(--nav-height) + 1.5rem) 1rem 2rem !important;
+  }
+  
   .hero h1 {
     font-size: 2.5rem !important;
   }

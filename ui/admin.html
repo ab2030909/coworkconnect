@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | CoWorkConnect</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 </head>
+
 <body style="background-color: var(--bg-soft);">
     <!-- Shared Navbar -->
     <nav class="navbar" style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.8);">
@@ -23,9 +26,10 @@
                 <a href="community.html" class="nav-link">Networking</a>
                 <a href="groups.html" class="nav-link">Groups</a>
                 <a href="events.html" class="nav-link">Events</a>
-                
+
                 <div id="auth-links" class="auth-links hidden"></div>
-                <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
+                <div id="user-links" class="user-links hidden"
+                    style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
                     <!-- Populated dynamically by app.js -->
                 </div>
             </div>
@@ -35,22 +39,35 @@
     <main class="container" style="padding-top: 140px; padding-bottom: 50px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
             <div>
-                <h1 style="font-size: 2.2rem; font-weight: 800;">Ecosystem <span class="gradient-text">Inventory</span></h1>
+                <h1 style="font-size: 2.2rem; font-weight: 800;">Ecosystem <span class="gradient-text">Inventory</span>
+                </h1>
                 <p style="color: var(--gray); font-weight: 600;">Control your availability and workspace inventory.</p>
             </div>
-            <button class="btn btn-primary" style="padding: 1rem 2rem; border-radius: 12px; font-weight: 800;" onclick="toggleModal(true)">+ Add New Space</button>
+            <button class="btn btn-primary" style="padding: 1rem 2rem; border-radius: 12px; font-weight: 800;"
+                onclick="toggleModal(true)">+ Add New Space</button>
         </div>
 
         <!-- Space Management Table -->
-        <div style="background: white; border-radius: 24px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow);">
+        <div
+            style="background: white; border-radius: 24px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow);">
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
                 <thead>
                     <tr style="background: #f8fafc; border-bottom: 1px solid var(--border);">
-                        <th style="padding: 1.5rem; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Name</th>
-                        <th style="padding: 1.5rem; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Category</th>
-                        <th style="padding: 1.5rem; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Location</th>
-                        <th style="padding: 1.5rem; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Price</th>
-                        <th style="padding: 1.5rem; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Actions</th>
+                        <th
+                            style="padding: 1.5rem; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">
+                            Name</th>
+                        <th
+                            style="padding: 1.5rem; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">
+                            Category</th>
+                        <th
+                            style="padding: 1.5rem; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">
+                            Location</th>
+                        <th
+                            style="padding: 1.5rem; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">
+                            Price</th>
+                        <th
+                            style="padding: 1.5rem; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">
+                            Actions</th>
                     </tr>
                 </thead>
                 <tbody id="admin-spaces-list">
@@ -61,22 +78,34 @@
     </main>
 
     <!-- Modal -->
-    <div id="space-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
-        <div style="background: white; width: 500px; border-radius: 24px; padding: 3rem; box-shadow: 0 30px 60px rgba(0,0,0,0.2);">
+    <div id="space-modal" class="hidden"
+        style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+        <div
+            style="background: white; width: 500px; border-radius: 24px; padding: 3rem; box-shadow: 0 30px 60px rgba(0,0,0,0.2);">
             <h3 style="margin-bottom: 2rem; font-weight: 800; font-size: 1.6rem;">Onboard New Workspace</h3>
             <form id="add-space-form">
-                <div class="input-group"><label>Space Name</label><input type="text" id="s-name" class="input-field" placeholder="e.g. Skyline Meeting Suite" required></div>
+                <div class="input-group"><label>Space Name</label><input type="text" id="s-name" class="input-field"
+                        placeholder="e.g. Skyline Meeting Suite" required></div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="input-group"><label>Space Type</label><select id="s-type" class="input-field" required><option value="desk">Hot Desk</option><option value="private_office">Private Office</option><option value="meeting_room">Meeting Room</option></select></div>
-                    <div class="input-group"><label>Daily Price (Rs)</label><input type="number" id="s-price" class="input-field" required></div>
+                    <div class="input-group"><label>Space Type</label><select id="s-type" class="input-field" required>
+                            <option value="desk">Hot Desk</option>
+                            <option value="private_office">Private Office</option>
+                            <option value="meeting_room">Meeting Room</option>
+                        </select></div>
+                    <div class="input-group"><label>Daily Price (Rs)</label><input type="number" id="s-price"
+                            class="input-field" required></div>
                 </div>
-                <div class="input-group"><label>Location</label><input type="text" id="s-location" class="input-field" placeholder="e.g. DHA Phase 5" required></div>
-                <div class="input-group"><label>Capacity (Persons)</label><input type="number" id="s-capacity" class="input-field" required></div>
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;"><button type="button" class="btn btn-outline" style="flex: 1;" onclick="toggleModal(false)">Cancel</button><button type="submit" class="btn btn-primary" style="flex: 1; font-weight: 800;">Save Resource</button></div>
+                <div class="input-group"><label>Location</label><input type="text" id="s-location" class="input-field"
+                        placeholder="e.g. DHA Phase 5" required></div>
+                <div class="input-group"><label>Capacity (Persons)</label><input type="number" id="s-capacity"
+                        class="input-field" required></div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;"><button type="button" class="btn btn-outline"
+                        style="flex: 1;" onclick="toggleModal(false)">Cancel</button><button type="submit"
+                        class="btn btn-primary" style="flex: 1; font-weight: 800;">Save Resource</button></div>
             </form>
         </div>
     </div>
-<script src="app.js?v=route-images-1"></script>
+    <script src="app.js?v=route-images-1"></script>
     <script>
         lucide.createIcons();
         function toggleModal(show) { document.getElementById('space-modal').classList.toggle('hidden', !show); }
@@ -127,7 +156,7 @@
         });
 
         async function deleteSpace(id) {
-            if(!confirm('Delete this workspace forever?')) return;
+            if (!confirm('Delete this workspace forever?')) return;
             const token = localStorage.getItem('token');
             await fetch(`/api/spaces/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
             fetchAdminSpaces();
@@ -143,14 +172,12 @@
     </script>
 
     <!-- Footer -->
-        <footer class="footer" style="padding: 2rem 0; background-color: var(--color-surface); border-top: 1px solid var(--color-border); text-align: center; color: var(--color-muted); font-size: 0.85rem; font-weight: 600;">
+    <footer class="footer"
+        style="padding: 2rem 0; background-color: var(--color-surface); border-top: 1px solid var(--color-border); text-align: center; color: var(--color-muted); font-size: 0.85rem; font-weight: 600;">
         <div class="container">
             <p>&copy; 2026 CoWorkConnect. All rights reserved.</p>
         </div>
     </footer>
 </body>
+
 </html>
-
-
-
-
