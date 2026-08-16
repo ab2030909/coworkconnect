@@ -236,16 +236,8 @@ function updateNavbar() {
                 <span id="user-name">${escapeHtml(displayName)}</span>
                 <i data-lucide="chevron-down" size="14"></i>
                 <div class="dropdown-menu">
-                    <div class="dropdown-header">Workspace Account</div>
-                    ${isAdmin ? `
-                    <a href="admin.html" class="dropdown-item">
-                        <i data-lucide="shield" size="18"></i> Admin Hub
-                    </a>` : ''}
                     <a href="profile.html" class="dropdown-item">
                         <i data-lucide="user" size="18"></i> Profile
-                    </a>
-                    <a href="community.html" class="dropdown-item">
-                        <i data-lucide="users" size="18"></i> Network
                     </a>
                     <button class="dropdown-item logout" id="logout-trigger" type="button">
                         <i data-lucide="log-out" size="18"></i> Logout
@@ -271,8 +263,8 @@ function updateNavbar() {
         userLinks.classList.add('hidden');
         authLinks.classList.remove('hidden');
         authLinks.innerHTML = `
-            <a href="login.html" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Sign In</a>
-            <a href="register.html" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Join Free</a>
+            <a href="login.html" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
+            <a href="register.html" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
         `;
     }
 
