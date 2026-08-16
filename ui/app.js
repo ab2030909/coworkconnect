@@ -338,7 +338,7 @@ function bindLoginForm(form) {
             if (data.success) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
-                window.location.reload();
+                window.location.href = 'index.html';
             } else {
                 if (errorMsg) {
                     errorMsg.querySelector('.msg-content').textContent = data.message || 'Could not sign in.';
@@ -569,6 +569,14 @@ document.addEventListener('DOMContentLoaded', () => {
     applyImageFallbacks();
     updateNavbar();
     if (!authChecked) enforceAuth();
+    
+    // Redirect logged-in users away from auth pages
+    const page = currentPage();
+    if ((page === 'login.html' || page === 'register.html') && getToken()) {
+        window.location.href = 'index.html';
+        return;
+    }
+
     renderInlineLoginGate();
 });
 
