@@ -2406,6 +2406,13 @@
                 });
             });
             lucide.createIcons();
+
+            // Real-time silent background polling for new posts/comments
+            setInterval(() => {
+                if (document.visibilityState !== 'hidden') {
+                    fetchFeed({ silent: true });
+                }
+            }, 4500);
         });
     </script>
 </body>

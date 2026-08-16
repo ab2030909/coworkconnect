@@ -1107,6 +1107,7 @@
             lucide.createIcons();
             await fetchGroupMessages(groupId);
             await fetchGroupMembers(groupId);
+            startGroupPolling(groupId);
         }
 
         function renderSingleMessageRow(m, me, isMeAdmin) {
@@ -1153,9 +1154,15 @@
             `;
         }
 
-        async function fetchGroupMessages(groupId) {
+        let activeGroupMessagesHash = '';
+        let messagesPollingInterval = null;
+
+        async function fetchGroupMessages(groupId, isBackground = false) {
             const container = document.getElementById('messages-feed-container');
-            if (container) {
+            if (!container) return;
+
+            if (!isBackground) {
+                activeGroupMessagesHash = '';
                 container.innerHTML = `
                     <div class="chat-skeleton-container" style="display:flex;flex-direction:column;gap:1.25rem;padding:1.75rem 1.5rem;">
                         <div style="display:flex;gap:10px;align-items:flex-start;max-width:70%;">
@@ -1193,6 +1200,9 @@
             try {
                 const res = await fetch(`/api/groups/${groupId}/messages`, { headers });
                 const data = await res.json();
+
+                if (!activeGroup || activeGroup.id !== groupId) return;
+
                 if (!res.ok) {
                     if (composer) composer.style.display = 'none';
                     if (res.status === 401 || !token) {
@@ -1222,7 +1232,7 @@
                             </div>
                         `;
                     }
-                    lucide.createIcons();
+                    if (window.lucide) lucide.createIcons();
                     return;
                 }
 
@@ -1232,6 +1242,12 @@
                 const me = getStoredUser();
                 const isMeAdmin = activeGroup && (activeGroup.is_admin || activeGroup.created_by === (me && me.id) || (me && me.role === 'admin') || activeGroup.my_role === 'admin' || activeGroup.my_role === 'co-admin');
 
+                const newHash = JSON.stringify(messages.map(m => [m.id, m.content, m.image_url, m.updated_at, (m.reactions || []).map(r => [r.emoji, r.count, r.reacted_by_me])]));
+                if (isBackground && newHash === activeGroupMessagesHash) {
+                    return;
+                }
+                activeGroupMessagesHash = newHash;
+
                 if (!messages.length) {
                     container.innerHTML = `
                         <div style="text-align:center;padding:4rem 1rem;color:#64748b;font-weight:700;">
@@ -1239,15 +1255,29 @@
                             <p style="margin-top:0.5rem;">No messages yet. Send a message to start chatting!</p>
                         </div>
                     `;
-                    lucide.createIcons();
+                    if (window.lucide) lucide.createIcons();
                     return;
                 }
 
+                const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 160;
                 container.innerHTML = messages.map(m => renderSingleMessageRow(m, me, isMeAdmin)).join('');
-                container.scrollTop = container.scrollHeight;
+                if (window.lucide) lucide.createIcons();
+
+                if (!isBackground || isNearBottom) {
+                    container.scrollTop = container.scrollHeight;
+                }
             } catch (e) {
                 console.error(e);
             }
+        }
+
+        function startGroupPolling(groupId) {
+            if (messagesPollingInterval) clearInterval(messagesPollingInterval);
+            messagesPollingInterval = setInterval(() => {
+                if (activeGroup && activeGroup.id === groupId && document.visibilityState !== 'hidden') {
+                    fetchGroupMessages(groupId, true);
+                }
+            }, 1800);
         }
 
         async function joinCurrentCircle(groupId) {
