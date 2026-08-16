@@ -270,19 +270,19 @@
     <!-- Shared Navbar -->
     <nav class="navbar">
         <div class="container nav-container">
-            <a href="index.html" class="logo">
+            <a href="/" class="logo">
                 <i data-lucide="briefcase"></i>
                 <span>CoWorkConnect</span>
             </a>
             <div class="nav-links">
-                <a href="spaces.html" class="nav-link active">Explore Spaces</a>
-                <a href="community.html" class="nav-link">Networking</a>
-                <a href="groups.html" class="nav-link">Groups</a>
-                <a href="events.html" class="nav-link">Events</a>
+                <a href="spaces" class="nav-link active">Explore Spaces</a>
+                <a href="community" class="nav-link">Networking</a>
+                <a href="groups" class="nav-link">Groups</a>
+                <a href="events" class="nav-link">Events</a>
                 
                 <div id="auth-links" class="auth-links">
-                    <a href="login.html" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
-                    <a href="register.html" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
+                    <a href="login" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
+                    <a href="register" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
                 </div>
                 <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
                     <!-- Populated dynamically by app.js -->
@@ -295,7 +295,7 @@
     <header class="sp-header">
         <div class="container">
             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--gray); font-weight: 600; margin-bottom: 0.75rem;">
-                <a href="spaces.html" style="color: var(--gray); text-decoration: none;">Workspaces</a>
+                <a href="spaces" style="color: var(--gray); text-decoration: none;">Workspaces</a>
                 <i data-lucide="chevron-right" size="14"></i>
                 <span id="breadcrumb-title" style="color: var(--dark); font-weight: 700; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block;">Loading...</span>
             </div>
@@ -571,7 +571,7 @@
                 if (res.ok && data.success) {
                     showToast('Workspace deleted successfully!', 'success');
                     closeDeleteSpaceModal();
-                    setTimeout(() => window.location.href = 'spaces.html', 800);
+                    setTimeout(() => window.location.href = 'spaces', 800);
                 } else {
                     showToast(data.message || 'Failed to delete workspace.', 'error');
                 }
@@ -648,7 +648,7 @@
 
             if (!spaceId) {
                 showToast('No workspace specified', 'error');
-                setTimeout(() => window.location.href = 'spaces.html', 1500);
+                setTimeout(() => window.location.href = 'spaces', 1500);
                 return;
             }
 
@@ -657,7 +657,7 @@
                 const data = await res.json();
                 if (!res.ok || !data.data) {
                     showToast('Workspace not found', 'error');
-                    setTimeout(() => window.location.href = 'spaces.html', 1500);
+                    setTimeout(() => window.location.href = 'spaces', 1500);
                     return;
                 }
 

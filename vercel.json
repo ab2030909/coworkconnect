@@ -1,3 +1,23 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/uploads/(.*)", "destination": "/uploads/$1" },
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/register", "destination": "/register.html" },
+    { "source": "/spaces", "destination": "/spaces.html" },
+    { "source": "/space-details", "destination": "/space-details.html" },
+    { "source": "/community", "destination": "/community.html" },
+    { "source": "/groups", "destination": "/groups.html" },
+    { "source": "/events", "destination": "/events.html" },
+    { "source": "/event-details", "destination": "/event-details.html" },
+    { "source": "/profile", "destination": "/profile.html" },
+    { "source": "/user-profile", "destination": "/user-profile.html" },
+    { "source": "/user-posts", "destination": "/user-posts.html" },
+    { "source": "/admin", "destination": "/admin.html" }
+  ]
 }

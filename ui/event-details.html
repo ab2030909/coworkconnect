@@ -136,15 +136,15 @@
     <!-- Navbar -->
     <nav class="navbar" style="background: white; border-bottom: 1px solid #f1f5f9;">
         <div class="container nav-container">
-            <a href="index.html" class="logo">
+            <a href="/" class="logo">
                 <i data-lucide="calendar" style="color: var(--primary);"></i>
                 <span>CoWorkConnect</span>
             </a>
             <div class="nav-links">
-                <a href="events.html" class="nav-link">Back to Events</a>
+                <a href="events" class="nav-link">Back to Events</a>
                 <div id="auth-links" class="auth-links">
-                    <a href="login.html" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
-                    <a href="register.html" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
+                    <a href="login" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
+                    <a href="register" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
                 </div>
                 <div id="user-links" class="user-links hidden">
                     <!-- Populated dynamically by app.js -->
@@ -728,7 +728,7 @@
                 const data = await res.json();
                 if (res.ok && data.success) {
                     alert('Event deleted successfully.');
-                    window.location.href = 'events.html';
+                    window.location.href = 'events';
                 } else {
                     alert(data.message || 'Failed to delete event');
                 }
@@ -741,7 +741,7 @@
         }
 
         async function loadEventDetails() {
-            if(!eventId) { window.location.href = 'events.html'; return; }
+            if(!eventId) { window.location.href = 'events'; return; }
             
             const res = await fetch(`/api/events`);
             const data = await res.json();
@@ -840,7 +840,7 @@
                     ];
 
                     return `
-                    <div class="evt-card" onclick="window.location.href='event-details.html?id=${Number(e.id)}'">
+                    <div class="evt-card" onclick="window.location.href="event-details?id=${Number(e.id)}"">
                         <div class="evt-card-img-wrap">
                             <span class="evt-card-free-badge">Free</span>
                             <img class="evt-card-img" src="${img}" data-fallback="${fallbackImage('event')}" alt="${escapeHtml(e.title)}">

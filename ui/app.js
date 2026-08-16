@@ -20,7 +20,7 @@ document.addEventListener('alpine:init', () => {
                 localStorage.removeItem('user');
                 this.user = null;
                 this.token = null;
-                window.location.href = 'index.html';
+                window.location.href = '/';
             }
         });
 
@@ -33,7 +33,7 @@ document.addEventListener('alpine:init', () => {
     }
 });
 
-const PROTECTED_PAGES = new Set(['community.html']);
+const PROTECTED_PAGES = new Set(['community', 'community.html']);
 const FALLBACK_IMAGES = {
     workspace: 'assets/fallback-workspace.svg',
     community: 'assets/fallback-community.svg',
@@ -44,8 +44,9 @@ const FALLBACK_IMAGES = {
 let authChecked = false;
 
 function currentPage() {
-    const page = window.location.pathname.split('/').pop() || 'index.html';
-    return page === 'login.html' ? 'index.html' : page;
+    let page = (window.location.pathname.split('/').pop() || 'index').replace(/\.html$/, '');
+    if (!page || page === '') page = 'index';
+    return page;
 }
 
 function getStoredUser() {
@@ -176,9 +177,11 @@ function renderInlineLoginGate(message = '') {
                     </div>
                     <button type="submit" class="btn btn-primary inline-auth-submit">
                         <i data-lucide="arrow-right" size="18"></i> Sign in
+                    <button type="submit" class="btn btn-primary inline-auth-submit">
+                        <i data-lucide="arrow-right" size="18"></i> Sign in
                     </button>
                 </form>
-                <p class="inline-auth-footer">New here? <a href="register.html">Create an account</a></p>
+                <p class="inline-auth-footer">New here? <a href="register">Create an account</a></p>
             </div>
         </section>
     `;
@@ -192,8 +195,9 @@ function renderInlineLoginGate(message = '') {
 function setActiveNav() {
     const page = currentPage();
     document.querySelectorAll('.nav-link').forEach((link) => {
-        const href = link.getAttribute('href') || '';
-        link.classList.toggle('active', href === page || (page === 'index.html' && href === 'index.html'));
+        const rawHref = link.getAttribute('href') || '';
+        const cleanHref = rawHref.split('?')[0].split('#')[0].replace(/^\//, '').replace(/\.html$/, '') || 'index';
+        link.classList.toggle('active', cleanHref === page);
     });
 }
 
@@ -240,10 +244,10 @@ function updateNavbar() {
                     <span id="user-name">${escapeHtml(displayName)}</span>
                     <i data-lucide="chevron-down" size="14"></i>
                     <div class="dropdown-menu">
-                        <a href="login.html" class="dropdown-item">
+                        <a href="login" class="dropdown-item">
                             <i data-lucide="log-in" size="18"></i> Login
                         </a>
-                        <a href="profile.html" class="dropdown-item">
+                        <a href="profile" class="dropdown-item">
                             <i data-lucide="user" size="18"></i> Profile
                         </a>
                         <button class="dropdown-item logout" id="logout-trigger" type="button">
@@ -262,7 +266,7 @@ function updateNavbar() {
             document.getElementById('logout-trigger')?.addEventListener('click', () => {
                 localStorage.removeItem('user');
                 localStorage.removeItem('token');
-                window.location.href = 'index.html';
+                window.location.href = '/';
             });
 
             document.addEventListener('click', () => trigger?.classList.remove('active'));
@@ -274,8 +278,8 @@ function updateNavbar() {
             authLinks.style.display = 'flex';
             
             authLinks.innerHTML = `
-                <a href="login.html" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
-                <a href="register.html" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
+                <a href="login" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
+                <a href="register" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
             `;
         }
 
@@ -345,7 +349,7 @@ function bindLoginForm(form) {
                 const userObj = data.user || { email: email, name: email.split('@')[0], role: 'user' };
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(userObj));
-                window.location.href = 'index.html';
+                window.location.href = '/';
             } else {
                 if (errorMsg) {
                     errorMsg.querySelector('.msg-content').textContent = data.message || 'Could not sign in.';
@@ -411,7 +415,7 @@ if (registerForm) {
                 successMsg.classList.remove('hidden');
                 errorMsg.classList.add('hidden');
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = '/';
                 }, 300);
             } else {
                 errorMsg.querySelector('.msg-content').textContent = data.message || 'Could not create account.';
@@ -490,7 +494,7 @@ async function compressImageFile(file, maxWidth = 1920, maxHeight = 1920, qualit
 // Open User Profile Page (Page Navigation)
 function openUserProfileModal(userId) {
     if (!userId) return;
-    window.location.href = `user-profile.html?id=${userId}`;
+    window.location.href = `user-profile?id=${userId}`;
 }
 
 function closeUserProfileModal() {
@@ -596,8 +600,8 @@ function initApp() {
     
     // Redirect logged-in users away from auth pages
     const page = currentPage();
-    if ((page === 'login.html' || page === 'register.html') && getToken()) {
-        window.location.href = 'index.html';
+    if ((page === 'login' || page === 'register' || page === 'login.html' || page === 'register.html') && getToken()) {
+        window.location.href = '/';
         return;
     }
 

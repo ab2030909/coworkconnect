@@ -625,19 +625,19 @@
     <!-- Shared Navbar -->
     <nav class="navbar">
         <div class="container nav-container">
-            <a href="index.html" class="logo">
+            <a href="/" class="logo">
                 <i data-lucide="briefcase"></i>
                 <span>CoWorkConnect</span>
             </a>
             <div class="nav-links">
-                <a href="spaces.html" class="nav-link">Explore Spaces</a>
-                <a href="community.html" class="nav-link">Networking</a>
-                <a href="groups.html" class="nav-link active">Groups</a>
-                <a href="events.html" class="nav-link">Events</a>
+                <a href="spaces" class="nav-link">Explore Spaces</a>
+                <a href="community" class="nav-link">Networking</a>
+                <a href="groups" class="nav-link active">Groups</a>
+                <a href="events" class="nav-link">Events</a>
                 
                 <div id="auth-links" class="auth-links">
-                    <a href="login.html" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
-                    <a href="register.html" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
+                    <a href="login" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
+                    <a href="register" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
                 </div>
                 <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
                     <!-- Populated dynamically by app.js -->
@@ -991,7 +991,7 @@
                     }
                 }
             } else {
-                if (nameEl) nameEl.innerHTML = `<a href="login.html" style="color:var(--primary);text-decoration:none;font-weight:800;font-size:0.92rem;">Sign In</a>`;
+                if (nameEl) nameEl.innerHTML = `<a href="login" style="color:var(--primary);text-decoration:none;font-weight:800;font-size:0.92rem;">Sign In</a>`;
                 if (statusWrap) statusWrap.innerHTML = `<span style="font-size:0.75rem;color:#64748b;font-weight:600;">Guest Visitor</span>`;
                 if (avatarEl) {
                     avatarEl.innerHTML = `<i data-lucide="user" size="18" style="color:var(--primary);"></i>`;
@@ -1213,7 +1213,7 @@
                                 </div>
                                 <h4 style="margin:0 0 0.4rem; font-size:1.2rem; font-weight:800; color:#0f172a;">Sign In to Join Circles</h4>
                                 <p style="margin:0 0 1.25rem; font-size:0.88rem; color:#64748b; font-weight:600; max-width:340px; line-height:1.5;">Sign in to your CoWorkConnect account to view live circle messages, join discussions, and chat with members.</p>
-                                <a href="login.html" class="btn btn-primary" style="border-radius:10px; font-weight:800; padding:0.65rem 1.5rem; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                                <a href="login" class="btn btn-primary" style="border-radius:10px; font-weight:800; padding:0.65rem 1.5rem; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
                                     <i data-lucide="log-in" size="16"></i> Sign In to Account
                                 </a>
                             </div>
@@ -1284,7 +1284,7 @@
             const token = localStorage.getItem('token');
             if (!token) {
                 showToast('Please sign in to join this circle.', 'error');
-                setTimeout(() => window.location.href = 'login.html', 1200);
+                setTimeout(() => window.location.href = 'login', 1200);
                 return;
             }
 

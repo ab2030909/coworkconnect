@@ -15,19 +15,19 @@
     <!-- Shared Navbar -->
     <nav class="navbar">
         <div class="container nav-container">
-            <a href="index.html" class="logo">
+            <a href="/" class="logo">
                 <i data-lucide="briefcase"></i>
                 <span>CoWorkConnect</span>
             </a>
             <div class="nav-links">
-                <a href="spaces.html" class="nav-link">Explore Spaces</a>
-                <a href="community.html" class="nav-link">Networking</a>
-                <a href="groups.html" class="nav-link">Groups</a>
-                <a href="events.html" class="nav-link">Events</a>
+                <a href="spaces" class="nav-link">Explore Spaces</a>
+                <a href="community" class="nav-link">Networking</a>
+                <a href="groups" class="nav-link">Groups</a>
+                <a href="events" class="nav-link">Events</a>
                 
                 <div id="auth-links" class="auth-links">
-                    <a href="login.html" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
-                    <a href="register.html" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
+                    <a href="login" class="btn btn-outline" style="border-radius:10px;padding:0.45rem 1rem;font-weight:700;font-size:0.85rem;text-decoration:none;">Login</a>
+                    <a href="register" class="btn btn-primary" style="border-radius:10px;padding:0.45rem 1rem;font-weight:800;font-size:0.85rem;text-decoration:none;">Register</a>
                 </div>
                 <div id="user-links" class="user-links hidden" style="border-left: 1px solid #eee; padding-left: 1.5rem; margin-left: 1rem;">
                     <!-- Populated dynamically by app.js -->
@@ -107,7 +107,7 @@
                 <div style="background: white; padding: 2rem; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                         <h3 style="margin: 0; font-size: 1.4rem; font-weight: 800; color: var(--dark);">Activity & Posts</h3>
-                        <a id="u-all-posts-link" href="community.html" class="btn btn-outline" style="border-radius: 50px; font-size: 0.82rem; font-weight: 700; padding: 0.35rem 0.9rem;">View in Network Feed ↗</a>
+                        <a id="u-all-posts-link" href="community" class="btn btn-outline" style="border-radius: 50px; font-size: 0.82rem; font-weight: 700; padding: 0.35rem 0.9rem;">View in Network Feed ↗</a>
                     </div>
                     
                     <div id="u-posts-feed" style="display: flex; flex-direction: column; gap: 1.25rem;">
@@ -132,7 +132,7 @@
 
         async function loadUserProfile() {
             if (!targetUserId) {
-                window.location.href = 'community.html';
+                window.location.href = 'community';
                 return;
             }
 
@@ -144,7 +144,7 @@
                 const data = await res.json();
                 if (!res.ok || !data.data) {
                     alert('User profile not found.');
-                    window.location.href = 'community.html';
+                    window.location.href = 'community';
                     return;
                 }
 
@@ -203,7 +203,7 @@
 
             const st = targetUser.friendship_status;
             if (st === 'self') {
-                container.innerHTML = `<a href="profile.html" class="btn btn-outline" style="border-radius:50px;font-weight:800;padding:0.6rem 1.4rem;">Edit Profile</a>`;
+                container.innerHTML = `<a href="profile" class="btn btn-outline" style="border-radius:50px;font-weight:800;padding:0.6rem 1.4rem;">Edit Profile</a>`;
                 return;
             }
 
@@ -258,7 +258,7 @@
                     return;
                 }
                 list.innerHTML = friends.map(f => `
-                    <div style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;" onclick="window.location.href='user-profile.html?id=${f.id}'">
+                    <div style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;" onclick="window.location.href="user-profile?id=${f.id}"">
                         <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#ecfdf5;display:flex;align-items:center;justify-content:center;font-weight:800;color:#059669;">
                             ${f.avatar_url ? `<img src="${safeImageUrl(f.avatar_url)}" style="width:100%;height:100%;object-fit:cover;">` : (f.name || 'F')[0].toUpperCase()}
                         </div>
@@ -301,7 +301,7 @@
                 if (posts.length > 0) {
                     postsHtml += `
                         <div style="text-align:center;margin-top:1rem;">
-                            <a href="user-posts.html?user_id=${userId}" class="btn btn-primary" style="width:100%;padding:0.9rem;border-radius:12px;font-weight:800;font-size:0.95rem;text-decoration:none;display:inline-block;">
+                            <a href="user-posts?user_id=${userId}" class="btn btn-primary" style="width:100%;padding:0.9rem;border-radius:12px;font-weight:800;font-size:0.95rem;text-decoration:none;display:inline-block;">
                                 View All ${posts.length} Posts by Member →
                             </a>
                         </div>
