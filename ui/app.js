@@ -240,6 +240,9 @@ function updateNavbar() {
                     <span id="user-name">${escapeHtml(displayName)}</span>
                     <i data-lucide="chevron-down" size="14"></i>
                     <div class="dropdown-menu">
+                        <a href="login.html" class="dropdown-item">
+                            <i data-lucide="log-in" size="18"></i> Login
+                        </a>
                         <a href="profile.html" class="dropdown-item">
                             <i data-lucide="user" size="18"></i> Profile
                         </a>
