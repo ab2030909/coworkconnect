@@ -487,6 +487,29 @@ async function compressImageFile(file, maxWidth = 1920, maxHeight = 1920, qualit
     });
 }
 
+// Open User Profile Page (Page Navigation)
+function openUserProfileModal(userId) {
+    if (!userId) return;
+    window.location.href = `user-profile.html?id=${userId}`;
+}
+
+function closeUserProfileModal() {
+    // No-op for page navigation
+}
+
+async function handleFriendAction(targetUserId, action) {
+    try {
+        const res = await apiFetch(`/users/${targetUserId}/friends`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action }),
+        });
+        return await res.json();
+    } catch {
+        return { success: false, message: 'Friend action failed.' };
+    }
+}
+
 window.CoWorkConnect = {
     apiFetch,
     escapeHtml,
@@ -499,6 +522,8 @@ window.CoWorkConnect = {
     renderInlineLoginGate,
     compressImageFile,
     openUserProfileModal,
+    closeUserProfileModal,
+    handleFriendAction,
 };
 window.escapeHtml = escapeHtml;
 window.safeImageUrl = safeImageUrl;
@@ -511,12 +536,6 @@ window.compressImageFile = compressImageFile;
 window.openUserProfileModal = openUserProfileModal;
 window.closeUserProfileModal = closeUserProfileModal;
 window.handleFriendAction = handleFriendAction;
-
-// Open User Profile Page (Page Navigation)
-function openUserProfileModal(userId) {
-    if (!userId) return;
-    window.location.href = `user-profile.html?id=${userId}`;
-}
 
 // Full-Screen Image Lightbox Popup Modal with Scroll & Download
 function openImageLightbox(src) {
@@ -570,9 +589,7 @@ document.addEventListener('click', (e) => {
     }
 });
 
-enforceAuth();
-
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
     applyImageFallbacks();
     updateNavbar();
     if (!authChecked) enforceAuth();
@@ -585,7 +602,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     renderInlineLoginGate();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
 
 document.addEventListener('error', (event) => {
     const target = event.target;
