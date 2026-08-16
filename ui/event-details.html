@@ -461,7 +461,7 @@
             return raw;
         }
 
-        function openGoogleFormModal() {
+        async function openGoogleFormModal() {
             const token = localStorage.getItem('token');
             if (!token) {
                 showToast('Please sign in first to attend this event.', 'error');
@@ -473,18 +473,33 @@
             const rawUrl = (activeEventData.google_form_url || '').trim();
 
             if (rawUrl) {
-                const embedUrl = getGoogleEmbedUrl(rawUrl);
-                document.getElementById('gform-modal-title').textContent = `Register for ${activeEventData.title}`;
-                document.getElementById('gform-external-link').href = rawUrl;
-                document.getElementById('gform-direct-btn').href = rawUrl;
-                document.getElementById('gform-iframe').src = embedUrl;
-                document.getElementById('google-form-modal').classList.remove('hidden');
-                if (window.lucide) lucide.createIcons();
-                
-                // Open direct window as well in case iframe is blocked by Google policy
+                let formUrl = rawUrl;
+                if (!formUrl.startsWith('http://') && !formUrl.startsWith('https://')) {
+                    formUrl = 'https://' + formUrl;
+                }
+
+                // Immediately open Google Form in new tab
+                window.open(formUrl, '_blank');
+
+                const attendBtn = document.getElementById('attend-btn');
+                if (attendBtn) {
+                    attendBtn.disabled = true;
+                    attendBtn.textContent = 'Registering...';
+                }
+
                 try {
-                    window.open(rawUrl, '_blank');
-                } catch (err) {}
+                    const res = await fetch(`/api/events/${eventId}/register`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    showToast('Opening Google Form! Your application is recorded as PENDING.', 'success');
+                    await loadEventDetails();
+                } catch (e) {
+                    showToast('Opening Google Form for registration...', 'info');
+                } finally {
+                    if (attendBtn) attendBtn.disabled = false;
+                }
             } else {
                 // If host didn't specify an external form URL, directly complete registration!
                 submitDirectRegistration();
