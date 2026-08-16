@@ -62,19 +62,10 @@ function getToken() {
 }
 
 function sanitizeHtml(dirty = '') {
-    if (window.DOMPurify) {
-        return window.DOMPurify.sanitize(String(dirty), {
-            ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'span', 'p', 'br', 'code', 'pre', 'ul', 'ol', 'li', 'small'],
-            ALLOWED_ATTR: ['href', 'target', 'class', 'style', 'rel']
-        });
-    }
     return escapeHtml(dirty);
 }
 
 function escapeHtml(value = '') {
-    if (window.DOMPurify) {
-        return window.DOMPurify.sanitize(String(value), { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
-    }
     return String(value)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -83,73 +74,7 @@ function escapeHtml(value = '') {
         .replace(/'/g, '&#039;');
 }
 
-/* SWR (Stale-While-Revalidate) Client-Side Caching Engine */
-const _swrMemoryCache = new Map();
 
-/**
- * SWR Fetch helper for instant (0ms) render from cache + background revalidation
- * @param {string} path - The API path, e.g. '/spaces' or '/posts'
- * @param {function} onData - Callback executed with (data, isCached)
- * @param {object} options - Optional fetch options and maxAge
- */
-async function swrFetch(path, onData, options = {}) {
-    const maxAgeMs = options.maxAge || 120000; // 2 minutes default cache window
-    const cacheKey = `cc_swr_${path}`;
-    let servedFromCache = false;
-
-    // 1. Immediate 0ms render from memory or sessionStorage cache
-    try {
-        let cached = _swrMemoryCache.get(cacheKey);
-        if (!cached) {
-            const raw = sessionStorage.getItem(cacheKey);
-            if (raw) cached = JSON.parse(raw);
-        }
-        if (cached && (Date.now() - cached.timestamp < maxAgeMs) && cached.payload) {
-            servedFromCache = true;
-            onData(cached.payload, true);
-        }
-    } catch (err) {
-        console.warn('SWR read error', err);
-    }
-
-    // 2. Background Revalidation (Network Fetch)
-    try {
-        const res = await apiFetch(path, options);
-        if (res.ok) {
-            const data = await res.json();
-            const entry = { timestamp: Date.now(), payload: data };
-            _swrMemoryCache.set(cacheKey, entry);
-            try { sessionStorage.setItem(cacheKey, JSON.stringify(entry)); } catch (e) {}
-
-            onData(data, false);
-            return data;
-        }
-    } catch (err) {
-        if (!servedFromCache) {
-            throw err;
-        }
-    }
-}
-
-function clearSwrCache(prefix = '') {
-    if (!prefix) {
-        _swrMemoryCache.clear();
-        try {
-            Object.keys(sessionStorage).forEach(k => {
-                if (k.startsWith('cc_swr_')) sessionStorage.removeItem(k);
-            });
-        } catch (e) {}
-        return;
-    }
-    for (const key of _swrMemoryCache.keys()) {
-        if (key.includes(prefix)) _swrMemoryCache.delete(key);
-    }
-    try {
-        Object.keys(sessionStorage).forEach(k => {
-            if (k.startsWith('cc_swr_') && k.includes(prefix)) sessionStorage.removeItem(k);
-        });
-    } catch (e) {}
-}
 
 function fallbackImage(type = 'workspace') {
     return FALLBACK_IMAGES[type] || FALLBACK_IMAGES.workspace;

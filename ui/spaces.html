@@ -6,7 +6,7 @@
     <title>Explore Workspaces | CoWorkConnect</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+
     <script src="https://unpkg.com/lucide@latest"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
@@ -1017,75 +1017,74 @@
             }
 
             try {
-                await swrFetch(cacheKey, (data, isCached) => {
-                    document.getElementById('results-count').textContent = data.count || (data.data ? data.data.length : 0);
-                    document.getElementById('location-title').textContent = currentFilters.location || 'Anywhere';
+                const res = await apiFetch(cacheKey);
+                const data = await res.json();
+                document.getElementById('results-count').textContent = data.count || (data.data ? data.data.length : 0);
+                document.getElementById('location-title').textContent = currentFilters.location || 'Anywhere';
 
-                    if (!data.data || data.data.length === 0) {
-                        container.innerHTML = `
-                            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; border: 1px solid var(--border);">
-                                <i data-lucide="search-x" size="40" color="var(--gray)" style="margin-bottom: 1rem;"></i>
-                                <p style="color: var(--gray); font-weight: 700;">No spaces found matching your range or location.</p>
-                            </div>`;
-                        lucide.createIcons();
-                        return;
-                    }
+                if (!data.data || data.data.length === 0) {
+                    container.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; border: 1px solid var(--border);">
+                            <i data-lucide="search-x" size="40" color="var(--gray)" style="margin-bottom: 1rem;"></i>
+                            <p style="color: var(--gray); font-weight: 700;">No spaces found matching your range or location.</p>
+                        </div>`;
+                    lucide.createIcons();
+                    return;
+                }
 
-                    const currentUser = getCurrentUser();
+                const currentUser = getCurrentUser();
 
-                    container.innerHTML = data.data.map((space) => {
-                        const coverImg = (space.images_list && space.images_list.length > 0) 
-                            ? safeImageUrl(space.images_list[0], fallbackImage('workspace'))
-                            : safeImageUrl(space.image_url, fallbackImage('workspace'));
-                        const isCreatorOrAdmin = currentUser && (currentUser.role === 'admin' || (space.user_id && Number(currentUser.id) === Number(space.user_id)));
-                        const typeLabel = (space.type || 'Desk').replace('_', ' ');
+                container.innerHTML = data.data.map((space) => {
+                    const coverImg = (space.images_list && space.images_list.length > 0) 
+                        ? safeImageUrl(space.images_list[0], fallbackImage('workspace'))
+                        : safeImageUrl(space.image_url, fallbackImage('workspace'));
+                    const isCreatorOrAdmin = currentUser && (currentUser.role === 'admin' || (space.user_id && Number(currentUser.id) === Number(space.user_id)));
+                    const typeLabel = (space.type || 'Desk').replace('_', ' ');
 
-                        return `
-                            <div class="listing-card fade-in" onclick="handleCardClick(event, ${space.id})">
-                                <!-- Compact 1 Cover Photo -->
-                                <div class="card-cover-wrapper">
-                                    <div class="card-cover-image image-surface" style="background-image: url('${coverImg}');"></div>
-                                    <span class="space-type-badge">${escapeHtml(typeLabel)}</span>
+                    return `
+                        <div class="listing-card fade-in" onclick="handleCardClick(event, ${space.id})">
+                            <!-- Compact 1 Cover Photo -->
+                            <div class="card-cover-wrapper">
+                                <div class="card-cover-image image-surface" style="background-image: url('${coverImg}');"></div>
+                                <span class="space-type-badge">${escapeHtml(typeLabel)}</span>
+                            </div>
+
+                            <!-- Info Body with Bounded Compact Dimensions -->
+                            <div class="listing-body">
+                                <div>
+                                    <h3 class="space-title" title="${escapeHtml(space.name)}">${escapeHtml(space.name)}</h3>
+                                    <p class="space-location-meta" title="${escapeHtml(space.location || 'General Area')}">
+                                        <i data-lucide="map-pin" size="14"></i> ${escapeHtml(space.location || 'General Area')}
+                                    </p>
+                                    
+                                    <div class="space-amenities-mini">
+                                        ${(space.amenities_list || []).slice(0,2).map(a => `<span class="mini-tag">${escapeHtml(a)}</span>`).join('')}
+                                        ${(space.amenities_list || []).length > 2 ? `<span class="mini-tag">+${space.amenities_list.length - 2}</span>` : ''}
+                                    </div>
                                 </div>
 
-                                <!-- Info Body with Bounded Compact Dimensions -->
-                                <div class="listing-body">
-                                    <div>
-                                        <h3 class="space-title" title="${escapeHtml(space.name)}">${escapeHtml(space.name)}</h3>
-                                        <p class="space-location-meta" title="${escapeHtml(space.location || 'General Area')}">
-                                            <i data-lucide="map-pin" size="13" color="var(--primary)" style="flex-shrink: 0;"></i>
-                                            <span style="overflow: hidden; text-overflow: ellipsis;">${escapeHtml(space.location || 'General Area')}</span>
-                                            <span class="meta-dot">•</span>
-                                            <span style="flex-shrink: 0;">${escapeHtml(space.capacity || 10)} seats</span>
-                                        </p>
-                                        <p class="space-desc-preview">
-                                            ${escapeHtml(space.description || 'Modern flexible workspace with high-speed internet, ergonomic desks, and community access.')}
-                                        </p>
+                                <div class="card-footer-flex">
+                                    <div class="price-stack">
+                                        <span class="price-value">$${Number(space.price_per_day).toLocaleString()}</span>
+                                        <span class="price-label">/day</span>
                                     </div>
-
-                                    <div class="card-footer-row">
-                                        <div>
-                                            <span class="price-label">Per Day</span>
-                                            <span class="price-amount">Rs ${escapeHtml(space.price_per_day)}</span>
-                                        </div>
-                                        <div class="card-action-group">
-                                            ${isCreatorOrAdmin ? `
-                                                <button onclick="deleteCardSpace(event, ${space.id}, '${escapeHtml(space.name)}')" class="btn-card-delete" title="Delete Workspace">
-                                                    <i data-lucide="trash-2" size="15"></i>
-                                                </button>
-                                            ` : ''}
-                                            <a class="btn btn-primary btn-view-space" href="space-details.html?id=${space.id}" onclick="event.stopPropagation()">
-                                                View Space <i data-lucide="arrow-up-right" size="14"></i>
-                                            </a>
-                                        </div>
+                                    <div class="card-action-group">
+                                        ${isCreatorOrAdmin ? `
+                                            <button onclick="deleteCardSpace(event, ${space.id}, '${escapeHtml(space.name)}')" class="btn-card-delete" title="Delete Workspace">
+                                                <i data-lucide="trash-2" size="15"></i>
+                                            </button>
+                                        ` : ''}
+                                        <a class="btn btn-primary btn-view-space" href="space-details.html?id=${space.id}" onclick="event.stopPropagation()">
+                                            View Space <i data-lucide="arrow-up-right" size="14"></i>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
-                        `;
-                    }).join('');
+                        </div>
+                    `;
+                }).join('');
 
-                    lucide.createIcons();
-                });
+                lucide.createIcons();
             } catch (err) {
                 container.innerHTML = '<p style="color: var(--gray); text-align: center; grid-column: 1 / -1;">Error loading results.</p>';
             }

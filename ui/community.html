@@ -6,7 +6,7 @@
     <title>Networking | CoWorkConnect</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+
     <script src="https://unpkg.com/lucide@latest"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
     <style>
@@ -2043,15 +2043,15 @@
                 document.getElementById('posts-feed').innerHTML = Array(3).fill(skeletonPostHtml).join('');
             }
             try {
-                await swrFetch('/posts', (data) => {
-                    currentPosts = data.data || [];
-                    const totalComments = currentPosts.reduce((total, post) => total + ((post.comments || []).length), 0);
-                    const profilePosts = document.getElementById('profile-posts');
-                    const profileComments = document.getElementById('profile-comments');
-                    if (profilePosts) profilePosts.textContent = currentPosts.length;
-                    if (profileComments) profileComments.textContent = totalComments;
-                    applyFeedFilter();
-                });
+                const res = await apiFetch('/posts');
+                const data = await res.json();
+                currentPosts = data.data || [];
+                const totalComments = currentPosts.reduce((total, post) => total + ((post.comments || []).length), 0);
+                const profilePosts = document.getElementById('profile-posts');
+                const profileComments = document.getElementById('profile-comments');
+                if (profilePosts) profilePosts.textContent = currentPosts.length;
+                if (profileComments) profileComments.textContent = totalComments;
+                applyFeedFilter();
             } catch (error) {
                 console.error('Feed fetch error:', error);
                 if (!silent && !currentPosts.length) {

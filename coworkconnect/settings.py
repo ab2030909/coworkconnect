@@ -59,7 +59,6 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",
     "api.middleware.EnsureSchemaMiddleware",
-    "api.middleware.AuthRateLimitMiddleware",
     "api.middleware.CorsMiddleware",
 ]
 
