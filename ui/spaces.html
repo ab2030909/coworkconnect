@@ -875,9 +875,8 @@
             formData.append('file', file);
 
             try {
-                const res = await fetch('/api/upload', {
+                const res = await apiFetch('/upload', {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
                 });
                 const data = await res.json();
@@ -1004,9 +1003,9 @@
             };
 
             try {
-                const res = await fetch('/api/spaces', {
+                const res = await apiFetch('/spaces', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 const data = await res.json();
@@ -1166,7 +1165,7 @@
             if (!token) return;
 
             try {
-                const res = await apiFetch('/api/spaces/' + id);
+                const res = await apiFetch('/spaces/' + id);
                 const data = await res.json();
                 if (res.ok && data.success && data.data) {
                     const space = data.data;
@@ -1211,9 +1210,9 @@
             };
 
             try {
-                const res = await apiFetch('/api/spaces/' + id, {
+                const res = await apiFetch('/spaces/' + id, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 const data = await res.json();
@@ -1231,10 +1230,6 @@
                 submitBtn.innerHTML = 'Save Updates';
             }
         });
-            document.getElementById('delete-modal-space-name').textContent = `"${name}"`;
-            document.getElementById('delete-space-modal').classList.add('open');
-            lucide.createIcons();
-        }
 
         function closeDeleteSpaceModal() {
             pendingDeleteSpaceId = null;
@@ -1243,15 +1238,13 @@
 
         document.getElementById('confirm-delete-space-btn').addEventListener('click', async () => {
             if (!pendingDeleteSpaceId) return;
-            const token = localStorage.getItem('token');
             const deleteBtn = document.getElementById('confirm-delete-space-btn');
             deleteBtn.disabled = true;
             deleteBtn.textContent = 'Deleting...';
 
             try {
-                const res = await fetch(`/api/spaces/${pendingDeleteSpaceId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const res = await apiFetch(`/spaces/${pendingDeleteSpaceId}`, {
+                    method: 'DELETE'
                 });
                 const data = await res.json();
                 if (res.ok && data.success) {
