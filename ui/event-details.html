@@ -779,7 +779,7 @@
             document.getElementById('edit-e-city').value = activeEventData.city || '';
             document.getElementById('edit-e-venue').value = activeEventData.venue || '';
             document.getElementById('edit-e-desc').value = activeEventData.description || '';
-            document.getElementById('edit-e-seats').value = activeEventData.total_seats || 50;
+            document.getElementById('edit-e-seats').value = activeEventData.total_seats != null ? activeEventData.total_seats : '';
             document.getElementById('edit-e-google-form').value = activeEventData.google_form_url || '';
 
             const isPaid = (Boolean(activeEventData.is_paid) && activeEventData.is_paid !== '0' && activeEventData.is_paid !== 0) || (activeEventData.price && Number(activeEventData.price) > 0);
