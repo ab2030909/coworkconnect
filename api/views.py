@@ -1455,7 +1455,10 @@ def events(request):
             FROM events e
             LEFT JOIN spaces s ON e.space_id = s.id
             JOIN users u ON e.created_by = u.id
-            ORDER BY e.event_date ASC
+            ORDER BY 
+              CASE WHEN COALESCE(e.end_date, e.event_date) >= CURRENT_TIMESTAMP THEN 0 ELSE 1 END ASC,
+              CASE WHEN COALESCE(e.end_date, e.event_date) >= CURRENT_TIMESTAMP THEN e.event_date END ASC,
+              e.event_date DESC
             """
         )
         user, _ = auth_user(request)

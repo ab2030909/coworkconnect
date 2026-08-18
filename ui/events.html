@@ -376,23 +376,43 @@
                 return;
             }
 
+            const now = new Date();
+            filtered.sort((a, b) => {
+                const aEnd = new Date(a.end_date || a.event_date);
+                const bEnd = new Date(b.end_date || b.event_date);
+                const aIsUpcoming = aEnd >= now;
+                const bIsUpcoming = bEnd >= now;
+
+                if (aIsUpcoming && !bIsUpcoming) return -1;
+                if (!aIsUpcoming && bIsUpcoming) return 1;
+
+                if (aIsUpcoming && bIsUpcoming) {
+                    return new Date(a.event_date) - new Date(b.event_date);
+                } else {
+                    return new Date(b.event_date) - new Date(a.event_date);
+                }
+            });
+
             grid.innerHTML = filtered.map((e) => {
                 const d = new Date(e.event_date);
-                const formattedDate = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                const timeStr = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+                const formattedDate = !isNaN(d.getTime()) ? d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'Upcoming';
+                const timeStr = !isNaN(d.getTime()) ? d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : '';
                 const img = safeImageUrl(e.image_url, fallbackImage('event'));
                 const venueDisplay = e.space_name || e.venue || e.city || 'Online / TBD';
                 const typeDisplay = e.event_type || 'Event';
+                const isPast = new Date(e.end_date || e.event_date) < now;
+                const freeBadge = isPast ? '<span class="evt-card-free-badge" style="background: #64748b;">Past Event</span>' : '<span class="evt-card-free-badge">Free</span>';
+                const tagStyle = isPast ? 'background: #f1f5f9; color: #64748b;' : '';
 
                 return `
-                <div class="evt-card" onclick="window.location.href='event-details?id=${Number(e.id)}'">
+                <div class="evt-card" onclick="window.location.href='event-details?id=${Number(e.id)}'" style="${isPast ? 'opacity: 0.85;' : ''}">
                     <div class="evt-card-img-wrap">
-                        <span class="evt-card-free-badge">Free</span>
+                        ${freeBadge}
                         <img class="evt-card-img" src="${img}" data-fallback="${fallbackImage('event')}" alt="${escapeHtml(e.title)}">
                     </div>
                     <div class="evt-card-body">
                         <div style="margin-bottom: 0.6rem;">
-                            <span class="evt-card-tag">${escapeHtml(typeDisplay)}</span>
+                            <span class="evt-card-tag" style="${tagStyle}">${escapeHtml(typeDisplay)}</span>
                         </div>
                         <h3 class="evt-card-title">${escapeHtml(e.title)}</h3>
                         <p class="evt-card-meta"><i data-lucide="calendar" size="14"></i> ${escapeHtml(formattedDate)} • ${escapeHtml(timeStr)}</p>

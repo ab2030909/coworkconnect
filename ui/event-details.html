@@ -965,9 +965,24 @@
                 const listData = await listRes.json();
                 const allEvents = (listData && listData.data && Array.isArray(listData.data)) ? listData.data : [];
                 
-                // Exclude current event, show other latest events
+                // Exclude current event, show other latest events (upcoming first, past at end)
+                const now = new Date();
                 const otherEvents = allEvents.filter(e => String(e.id) !== String(currentId));
-                otherEvents.sort((a, b) => Number(b.id) - Number(a.id));
+                otherEvents.sort((a, b) => {
+                    const aEnd = new Date(a.end_date || a.event_date);
+                    const bEnd = new Date(b.end_date || b.event_date);
+                    const aIsUpcoming = aEnd >= now;
+                    const bIsUpcoming = bEnd >= now;
+
+                    if (aIsUpcoming && !bIsUpcoming) return -1;
+                    if (!aIsUpcoming && bIsUpcoming) return 1;
+
+                    if (aIsUpcoming && bIsUpcoming) {
+                        return new Date(a.event_date) - new Date(b.event_date);
+                    } else {
+                        return new Date(b.event_date) - new Date(a.event_date);
+                    }
+                });
                 const relatedEvents = otherEvents.slice(0, 3);
 
                 if (relatedEvents.length > 0) {
@@ -979,16 +994,19 @@
                         const venueDisplay = e.space_name || e.venue || e.city || 'Islamabad / Online';
                         const typeDisplay = e.event_type || 'Event';
                         const spotsLeft = Math.max(0, 50 - Number(e.participant_count || 0));
+                        const isPast = new Date(e.end_date || e.event_date) < now;
+                        const freeBadge = isPast ? '<span class="evt-card-free-badge" style="background: #64748b;">Past Event</span>' : '<span class="evt-card-free-badge">Free</span>';
+                        const tagStyle = isPast ? 'background: #f1f5f9; color: #64748b;' : 'background: #e0f2fe; color: #0284c7;';
 
                         return `
-                        <div class="evt-card" onclick="window.location.href='event-details?id=${Number(e.id)}'" style="cursor: pointer;">
+                        <div class="evt-card" onclick="window.location.href='event-details?id=${Number(e.id)}'" style="cursor: pointer; ${isPast ? 'opacity: 0.85;' : ''}">
                             <div class="evt-card-img-wrap">
-                                <span class="evt-card-free-badge">Free</span>
+                                ${freeBadge}
                                 <img class="evt-card-img" src="${img}" data-fallback="${fallbackImage('event')}" alt="${escapeHtml(e.title)}">
                             </div>
                             <div class="evt-card-body">
                                 <div style="margin-bottom: 0.6rem;">
-                                    <span class="evt-card-tag" style="background: #e0f2fe; color: #0284c7;">${escapeHtml(typeDisplay)}</span>
+                                    <span class="evt-card-tag" style="${tagStyle}">${escapeHtml(typeDisplay)}</span>
                                 </div>
                                 <h3 class="evt-card-title">${escapeHtml(e.title)}</h3>
                                 <p class="evt-card-meta"><i data-lucide="calendar" size="14"></i> ${escapeHtml(formattedDate)} ${timeStr ? `• ${escapeHtml(timeStr)}` : ''}</p>
