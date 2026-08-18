@@ -881,7 +881,8 @@
         });
 
         function copyCurrentEventLink() {
-            const url = window.location.href;
+            const slug = (activeEventData && (activeEventData.slug || (typeof slugify === 'function' ? slugify(activeEventData.title) : ''))) || eventId;
+            const url = window.location.origin + '/event-details?id=' + encodeURIComponent(slug);
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(url).then(() => {
                     showToast('Event link copied to clipboard!', 'success');
@@ -898,8 +899,8 @@
             }
         }
 
-        function copyDirectLink(id) {
-            const url = window.location.origin + '/event-details?id=' + id;
+        function copyDirectLink(identifier) {
+            const url = window.location.origin + '/event-details?id=' + encodeURIComponent(identifier);
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(url).then(() => {
                     showToast('Event link copied to clipboard!', 'success');
@@ -972,6 +973,15 @@
 
             if(!event) return;
             activeEventData = event;
+
+            const currentSlug = event.slug || (typeof slugify === 'function' ? slugify(event.title) : '') || event.id;
+            if (currentSlug && window.history.replaceState) {
+                try {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('id', currentSlug);
+                    window.history.replaceState({}, '', currentUrl.toString());
+                } catch(e) {}
+            }
 
             const dateStr = new Date(event.event_date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
             const timeStr = new Date(event.event_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
@@ -1138,8 +1148,10 @@
 
                         const tagStyle = isPast ? 'background: #f1f5f9; color: #64748b;' : 'background: #e0f2fe; color: #0284c7;';
 
+                        const evSlug = e.slug || (typeof slugify === 'function' ? slugify(e.title) : '') || e.id;
+
                         return `
-                        <div class="evt-card" onclick="window.location.href='event-details?id=${Number(e.id)}'" style="cursor: pointer; ${isPast ? 'opacity: 0.85;' : ''}">
+                        <div class="evt-card" onclick="window.location.href='event-details?id=${encodeURIComponent(evSlug)}'" style="cursor: pointer; ${isPast ? 'opacity: 0.85;' : ''}">
                             <div class="evt-card-img-wrap">
                                 ${priceBadge}
                                 <img class="evt-card-img" src="${img}" data-fallback="${fallbackImage('event')}" alt="${escapeHtml(e.title)}">
@@ -1147,7 +1159,7 @@
                             <div class="evt-card-body">
                                 <div style="margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
                                     <span class="evt-card-tag" style="${tagStyle}">${escapeHtml(typeDisplay)}</span>
-                                    <button type="button" onclick="event.stopPropagation(); copyDirectLink(${Number(e.id)})" title="Copy Event Link" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.25rem 0.55rem; font-size: 0.75rem; font-weight: 700; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    <button type="button" onclick="event.stopPropagation(); copyDirectLink('${escapeHtml(evSlug)}')" title="Copy Event Link" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.25rem 0.55rem; font-size: 0.75rem; font-weight: 700; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
                                         <i data-lucide="link-2" size="12"></i> Copy
                                     </button>
                                 </div>

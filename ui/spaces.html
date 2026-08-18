@@ -1097,9 +1097,10 @@
                         : safeImageUrl(space.image_url, fallbackImage('workspace'));
                     const isCreatorOrAdmin = currentUser && (currentUser.role === 'admin' || (space.user_id && Number(currentUser.id) === Number(space.user_id)));
                     const typeLabel = (space.type || 'Desk').replace('_', ' ');
+                    const spaceSlug = space.slug || (typeof slugify === 'function' ? slugify(space.name) : '') || space.id;
 
                     return `
-                        <div class="listing-card fade-in" onclick="handleCardClick(event, ${space.id})">
+                        <div class="listing-card fade-in" onclick="handleCardClick(event, '${escapeHtml(spaceSlug)}')">
                             <!-- Compact 1 Cover Photo -->
                             <div class="card-cover-wrapper">
                                 <div class="card-cover-image image-surface" style="background-image: url('${coverImg}');"></div>
@@ -1134,7 +1135,7 @@
                                                 <i data-lucide="trash-2" size="15"></i>
                                             </button>
                                         ` : ''}
-                                        <a class="btn btn-primary btn-view-space" href="space-details?id=${space.id}" onclick="event.stopPropagation()">
+                                        <a class="btn btn-primary btn-view-space" href="space-details?id=${encodeURIComponent(spaceSlug)}" onclick="event.stopPropagation()">
                                             View Space <i data-lucide="arrow-up-right" size="14"></i>
                                         </a>
                                     </div>

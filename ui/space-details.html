@@ -783,6 +783,15 @@
                 currentSpace = space;
                 document.title = `${space.name} | CoWorkConnect`;
 
+                const currentSlug = space.slug || (typeof slugify === 'function' ? slugify(space.name) : '') || space.id;
+                if (currentSlug && window.history.replaceState) {
+                    try {
+                        const currentUrl = new URL(window.location.href);
+                        currentUrl.searchParams.set('id', currentSlug);
+                        window.history.replaceState({}, '', currentUrl.toString());
+                    } catch(e) {}
+                }
+
                 // Check Creator or Admin authorization for Delete button
                 const currentUser = getCurrentUser();
                 const isCreator = space.user_id && currentUser && Number(currentUser.id) === Number(space.user_id);
@@ -1018,11 +1027,17 @@
         }
 
         function copyShareLink() {
-            navigator.clipboard.writeText(window.location.href).then(() => {
-                showToast('Workspace link copied to clipboard!', 'success');
-            }).catch(() => {
-                showToast('Failed to copy link', 'error');
-            });
+            const slug = (currentSpace && (currentSpace.slug || (typeof slugify === 'function' ? slugify(currentSpace.name) : ''))) || (new URLSearchParams(window.location.search).get('id'));
+            const url = window.location.origin + '/space-details?id=' + encodeURIComponent(slug);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Workspace link copied to clipboard!', 'success');
+                }).catch(() => {
+                    prompt('Copy workspace link:', url);
+                });
+            } else {
+                prompt('Copy workspace link:', url);
+            }
         }
 
         if (document.readyState === 'loading') {

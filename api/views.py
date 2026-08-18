@@ -17,6 +17,7 @@ from .utils import (
     read_data,
     require_admin,
     save_upload,
+    slugify,
     verify_password,
 )
 from .schema import ensure_schema
@@ -211,6 +212,7 @@ def spaces(request):
                 except Exception:
                     plans_list = []
             row["pricing_plans_list"] = plans_list
+            row["slug"] = slugify(row.get("name"))
 
         return api_response({"success": True, "count": len(rows), "data": rows})
 
@@ -331,9 +333,19 @@ def upload_file(request):
 
 def space_detail(request, space_id):
     if request.method == "GET":
-        space = fetch_one("SELECT * FROM spaces WHERE id = %s", [space_id])
+        space = None
+        if str(space_id).isdigit():
+            space = fetch_one("SELECT * FROM spaces WHERE id = %s", [int(space_id)])
+        if not space:
+            all_spaces = fetch_all("SELECT * FROM spaces")
+            for s in all_spaces:
+                if slugify(s.get("name")) == str(space_id).lower() or str(s.get("id")) == str(space_id):
+                    space = s
+                    break
         if not space:
             return api_response({"success": False, "message": "Space not found"}, 404)
+        
+        space["slug"] = slugify(space.get("name"))
         
         raw_imgs = space.get("images")
         imgs_list = []
@@ -1469,6 +1481,7 @@ def events(request):
             if row["id"] in reg_map:
                 row["my_status"] = reg_map[row["id"]]
             row["is_host"] = bool(user and (user.get("role") == "admin" or str(row.get("created_by")) == str(user.get("id"))))
+            row["slug"] = slugify(row.get("title"))
         return api_response({"success": True, "count": len(rows), "data": rows})
 
     if request.method == "POST":
@@ -1594,24 +1607,44 @@ def events(request):
 
 
 def event_detail(request, event_id):
-    event = fetch_one(
-        """
-        SELECT e.*, s.name as space_name, u.name as creator_name,
-          (SELECT COUNT(*) FROM event_registrations WHERE event_id = e.id AND (status IS NULL OR LOWER(status) != 'rejected')) as participant_count
-        FROM events e
-        LEFT JOIN spaces s ON e.space_id = s.id
-        JOIN users u ON e.created_by = u.id
-        WHERE e.id = %s
-        """,
-        [event_id],
-    )
+    event = None
+    if str(event_id).isdigit():
+        event = fetch_one(
+            """
+            SELECT e.*, s.name as space_name, u.name as creator_name,
+              (SELECT COUNT(*) FROM event_registrations WHERE event_id = e.id AND (status IS NULL OR LOWER(status) != 'rejected')) as participant_count
+            FROM events e
+            LEFT JOIN spaces s ON e.space_id = s.id
+            JOIN users u ON e.created_by = u.id
+            WHERE e.id = %s
+            """,
+            [int(event_id)],
+        )
+    if not event:
+        all_events = fetch_all(
+            """
+            SELECT e.*, s.name as space_name, u.name as creator_name,
+              (SELECT COUNT(*) FROM event_registrations WHERE event_id = e.id AND (status IS NULL OR LOWER(status) != 'rejected')) as participant_count
+            FROM events e
+            LEFT JOIN spaces s ON e.space_id = s.id
+            JOIN users u ON e.created_by = u.id
+            """
+        )
+        for ev in all_events:
+            if slugify(ev.get("title")) == str(event_id).lower() or str(ev.get("id")) == str(event_id):
+                event = ev
+                break
+
     if not event:
         return api_response({"success": False, "message": "Event not found"}, 404)
+
+    event["slug"] = slugify(event.get("title"))
+    actual_event_id = event["id"]
 
     if request.method == "GET":
         user, _ = auth_user(request)
         if user:
-            reg = fetch_one("SELECT status FROM event_registrations WHERE event_id = %s AND user_id = %s", [event_id, user["id"]])
+            reg = fetch_one("SELECT status FROM event_registrations WHERE event_id = %s AND user_id = %s", [actual_event_id, user["id"]])
             if reg:
                 event["my_status"] = reg.get("status") or "pending"
         event["is_host"] = bool(user and (user.get("role") == "admin" or str(event.get("created_by")) == str(user.get("id"))))
@@ -1668,7 +1701,7 @@ def event_detail(request, event_id):
                 SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, is_paid = %s, price = %s, total_seats = %s, event_date = %s, end_date = %s, image_url = %s
                 WHERE id = %s
                 """,
-                [title, city, venue, event_type, description, google_form_url, is_paid, price, total_seats, event_date, end_date, image_url, event_id],
+                [title, city, venue, event_type, description, google_form_url, is_paid, price, total_seats, event_date, end_date, image_url, actual_event_id],
             )
         except Exception:
             try:
@@ -1691,7 +1724,7 @@ def event_detail(request, event_id):
                     SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, is_paid = %s, price = %s, total_seats = %s, event_date = %s, end_date = %s, image_url = %s
                     WHERE id = %s
                     """,
-                    [title, city, venue, event_type, description, google_form_url, is_paid, price, total_seats, event_date, end_date, image_url, event_id],
+                    [title, city, venue, event_type, description, google_form_url, is_paid, price, total_seats, event_date, end_date, image_url, actual_event_id],
                 )
             except Exception:
                 execute(
@@ -1700,10 +1733,10 @@ def event_detail(request, event_id):
                     SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, event_date = %s, end_date = %s, image_url = %s
                     WHERE id = %s
                     """,
-                    [title, city, venue, event_type, description, google_form_url, event_date, end_date, image_url, event_id],
+                    [title, city, venue, event_type, description, google_form_url, event_date, end_date, image_url, actual_event_id],
                 )
 
-        return api_response({"success": True, "message": "Event updated successfully", "data": {"id": event_id, "title": title}})
+        return api_response({"success": True, "message": "Event updated successfully", "data": {"id": actual_event_id, "title": title, "slug": slugify(title)}})
 
     if request.method == "DELETE":
         user, error = auth_user(request)
@@ -1713,7 +1746,7 @@ def event_detail(request, event_id):
         if user.get("role") != "admin" and str(event.get("created_by")) != str(user.get("id")):
             return api_response({"success": False, "message": "Only the event host or admin can delete this event"}, 403)
 
-        execute("DELETE FROM events WHERE id = %s", [event_id])
+        execute("DELETE FROM events WHERE id = %s", [actual_event_id])
         return api_response({"success": True, "message": "Event deleted successfully"})
 
     return method_not_allowed()
@@ -1725,17 +1758,29 @@ def register_event(request, event_id):
     user, error = auth_user(request)
     if error:
         return error
-    event = fetch_one("SELECT id, google_form_url FROM events WHERE id = %s", [event_id])
+
+    event = None
+    if str(event_id).isdigit():
+        event = fetch_one("SELECT id, google_form_url, total_seats FROM events WHERE id = %s", [int(event_id)])
+    if not event:
+        all_events = fetch_all("SELECT id, title, google_form_url, total_seats FROM events")
+        for ev in all_events:
+            if slugify(ev.get("title")) == str(event_id).lower() or str(ev.get("id")) == str(event_id):
+                event = ev
+                break
     if not event:
         return api_response({"success": False, "message": "Event not found"}, 404)
 
+    actual_event_id = event["id"]
+    total_capacity = Number = int(event.get("total_seats") or 50)
+
     count_row = fetch_one(
         "SELECT COUNT(*) as active_count FROM event_registrations WHERE event_id = %s AND (status IS NULL OR LOWER(status) != 'rejected')",
-        [event_id]
+        [actual_event_id]
     )
     active_count = count_row.get("active_count", 0) if count_row else 0
 
-    existing = fetch_one("SELECT id, COALESCE(status, 'pending') as status FROM event_registrations WHERE event_id = %s AND user_id = %s", [event_id, user["id"]])
+    existing = fetch_one("SELECT id, COALESCE(status, 'pending') as status FROM event_registrations WHERE event_id = %s AND user_id = %s", [actual_event_id, user["id"]])
     if existing:
         st = existing.get("status", "pending")
         return api_response({
@@ -1745,10 +1790,10 @@ def register_event(request, event_id):
             "participant_count": active_count
         }, 200)
 
-    if active_count >= 50:
-        return api_response({"success": False, "message": "Sorry, this event is fully booked! 0 spots remaining."}, 400)
+    if active_count >= total_capacity:
+        return api_response({"success": False, "message": f"Sorry, this event is fully booked! {total_capacity} spots reached."}, 400)
 
-    execute("INSERT INTO event_registrations (event_id, user_id, status) VALUES (%s, %s, 'pending')", [event_id, user["id"]])
+    execute("INSERT INTO event_registrations (event_id, user_id, status) VALUES (%s, %s, 'pending')", [actual_event_id, user["id"]])
     new_count = active_count + 1
     return api_response({
         "success": True,
@@ -1764,11 +1809,23 @@ def event_participants(request, event_id):
     user, error = auth_user(request)
     if error:
         return error
-    event = fetch_one("SELECT created_by FROM events WHERE id = %s", [event_id])
+
+    event = None
+    if str(event_id).isdigit():
+        event = fetch_one("SELECT id, created_by FROM events WHERE id = %s", [int(event_id)])
+    if not event:
+        all_events = fetch_all("SELECT id, title, created_by FROM events")
+        for ev in all_events:
+            if slugify(ev.get("title")) == str(event_id).lower() or str(ev.get("id")) == str(event_id):
+                event = ev
+                break
     if not event:
         return api_response({"success": False, "message": "Event not found"}, 404)
-    if user.get("role") != "admin" and event["created_by"] != user["id"]:
+
+    actual_event_id = event["id"]
+    if user.get("role") != "admin" and str(event.get("created_by")) != str(user.get("id")):
         return api_response({"success": False, "message": "Only the event host or admin can view participants"}, 403)
+
     rows = fetch_all(
         """
         SELECT r.id as registration_id, u.id as user_id, u.name, u.email, u.avatar_url,
@@ -1778,7 +1835,7 @@ def event_participants(request, event_id):
         WHERE r.event_id = %s
         ORDER BY (CASE WHEN r.status = 'pending' THEN 1 WHEN r.status = 'approved' THEN 2 ELSE 3 END), r.registered_at DESC
         """,
-        [event_id],
+        [actual_event_id],
     )
     return api_response({"success": True, "count": len(rows), "data": rows})
 
@@ -1790,17 +1847,26 @@ def update_registration_status(request, event_id, target_user_id):
     if error:
         return error
 
-    event = fetch_one("SELECT created_by FROM events WHERE id = %s", [event_id])
+    event = None
+    if str(event_id).isdigit():
+        event = fetch_one("SELECT id, created_by FROM events WHERE id = %s", [int(event_id)])
+    if not event:
+        all_events = fetch_all("SELECT id, title, created_by FROM events")
+        for ev in all_events:
+            if slugify(ev.get("title")) == str(event_id).lower() or str(ev.get("id")) == str(event_id):
+                event = ev
+                break
     if not event:
         return api_response({"success": False, "message": "Event not found"}, 404)
 
-    if user.get("role") != "admin" and event["created_by"] != user["id"]:
-        return api_response({"success": False, "message": "Only event host or admin can update registration status"}, 403)
+    actual_event_id = event["id"]
+    if user.get("role") != "admin" and str(event.get("created_by")) != str(user.get("id")):
+        return api_response({"success": False, "message": "Only the event host or admin can update registration status"}, 403)
 
     data = read_data(request)
-    new_status = (data.get("status") or "").strip().lower()
-    if new_status not in ["pending", "approved", "confirmed", "rejected"]:
-        return api_response({"success": False, "message": "Invalid status value. Choose pending, approved, or rejected."}, 400)
+    status = (data.get("status") or "").strip().lower()
+    if status not in ["approved", "rejected", "pending"]:
+        return api_response({"success": False, "message": "Status must be 'approved', 'rejected', or 'pending'"}, 400)
 
-    execute("UPDATE event_registrations SET status = %s WHERE event_id = %s AND user_id = %s", [new_status, event_id, target_user_id])
-    return api_response({"success": True, "message": f"Participant status updated to {new_status.upper()}"})
+    execute("UPDATE event_registrations SET status = %s WHERE event_id = %s AND user_id = %s", [status, actual_event_id, target_user_id])
+    return api_response({"success": True, "message": f"Registration status updated to {status.upper()}"})

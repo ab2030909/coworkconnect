@@ -445,8 +445,10 @@
 
                 const tagStyle = isPast ? 'background: #f1f5f9; color: #64748b;' : '';
 
+                const eventSlug = e.slug || (typeof slugify === 'function' ? slugify(e.title) : '') || e.id;
+
                 return `
-                <div class="evt-card" onclick="window.location.href='event-details?id=${Number(e.id)}'" style="${isPast ? 'opacity: 0.85;' : ''}">
+                <div class="evt-card" onclick="window.location.href='event-details?id=${encodeURIComponent(eventSlug)}'" style="${isPast ? 'opacity: 0.85;' : ''}">
                     <div class="evt-card-img-wrap">
                         ${priceBadge}
                         <img class="evt-card-img" src="${img}" data-fallback="${fallbackImage('event')}" alt="${escapeHtml(e.title)}">
@@ -456,10 +458,10 @@
                             <span class="evt-card-tag" style="${tagStyle}">${escapeHtml(typeDisplay)}</span>
                             <div style="display: flex; align-items: center; gap: 0.4rem;">
                                 ${isHostThis ? `
-                                <button type="button" onclick="event.stopPropagation(); window.location.href='event-details?id=${Number(e.id)}&edit=1'" title="Edit Event" style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 0.25rem 0.55rem; font-size: 0.75rem; font-weight: 700; color: #047857; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                <button type="button" onclick="event.stopPropagation(); window.location.href='event-details?id=${encodeURIComponent(eventSlug)}&edit=1'" title="Edit Event" style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 0.25rem 0.55rem; font-size: 0.75rem; font-weight: 700; color: #047857; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
                                     <i data-lucide="edit-3" size="12"></i> Edit
                                 </button>` : ''}
-                                <button type="button" onclick="copyEventLinkDirect(event, ${Number(e.id)})" title="Copy Event Link" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.25rem 0.55rem; font-size: 0.75rem; font-weight: 700; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#475569'">
+                                <button type="button" onclick="copyEventLinkDirect(event, '${escapeHtml(eventSlug)}')" title="Copy Event Link" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.25rem 0.55rem; font-size: 0.75rem; font-weight: 700; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#475569'">
                                     <i data-lucide="link-2" size="12"></i> Copy
                                 </button>
                             </div>
@@ -487,9 +489,9 @@
             lucide.createIcons();
         }
 
-        function copyEventLinkDirect(evt, eventId) {
+        function copyEventLinkDirect(evt, eventIdentifier) {
             if (evt && evt.stopPropagation) evt.stopPropagation();
-            const url = window.location.origin + '/event-details?id=' + eventId;
+            const url = window.location.origin + '/event-details?id=' + encodeURIComponent(eventIdentifier);
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(url).then(() => {
                     showToast('Event link copied to clipboard!', 'success');

@@ -1,5 +1,16 @@
 const API_URL = (window.location.protocol === 'file:' || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') ? 'http://localhost:5000/api' : '/api';
 
+function slugify(text) {
+    if (!text) return '';
+    return String(text)
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+window.slugify = slugify;
+
 // Alpine.js Global Stores & Reactivity
 document.addEventListener('alpine:init', () => {
     if (window.Alpine) {

@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import time
 import os
+import re
 from uuid import uuid4
 
 import cloudinary
@@ -14,6 +15,13 @@ from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import connection
 from django.http import JsonResponse
+
+
+def slugify(text):
+    if not text:
+        return ""
+    s = re.sub(r"[^\w\s-]", "", str(text).lower().strip())
+    return re.sub(r"[-\s]+", "-", s).strip("-")
 
 
 def api_response(payload, status=200):
