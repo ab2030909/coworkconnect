@@ -1489,11 +1489,18 @@ def events(request):
             image_url = save_upload(request.FILES["image"], "events") if "image" in request.FILES else None
         except ValueError as exc:
             return api_response({"success": False, "message": str(exc)}, 400)
+        
+        is_paid = 1 if str(data.get("is_paid", "")).lower() in ["true", "1", "paid"] or (data.get("price") and float(data.get("price") or 0) > 0) else 0
+        try:
+            price = float(data.get("price") or 0) if is_paid else 0.0
+        except (ValueError, TypeError):
+            price = 0.0
+
         space_id = data.get("spaceId") or None
         _, event_id = execute(
             """
-            INSERT INTO events (title, city, venue, event_type, description, google_form_url, event_date, end_date, image_url, space_id, created_by)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO events (title, city, venue, event_type, description, google_form_url, is_paid, price, event_date, end_date, image_url, space_id, created_by)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             [
                 data.get("title"),
@@ -1502,6 +1509,8 @@ def events(request):
                 data.get("eventType") or None,
                 data.get("description"),
                 google_form_url,
+                is_paid,
+                price,
                 data.get("eventDate"),
                 data.get("endDate") or None,
                 image_url,
@@ -1509,7 +1518,7 @@ def events(request):
                 user["id"],
             ],
         )
-        return api_response({"success": True, "data": {"id": event_id, "title": data.get("title"), "google_form_url": google_form_url, "eventDate": data.get("eventDate")}}, 201)
+        return api_response({"success": True, "data": {"id": event_id, "title": data.get("title"), "google_form_url": google_form_url, "is_paid": is_paid, "price": price, "eventDate": data.get("eventDate")}}, 201)
 
     return method_not_allowed()
 
@@ -1556,6 +1565,19 @@ def event_detail(request, event_id):
         if google_form_url and not is_google_form_url(google_form_url):
             return api_response({"success": False, "message": "Please enter a valid Registration / External Link URL"}, 400)
 
+        is_paid = event.get("is_paid", 0)
+        if "is_paid" in data or "price" in data:
+            is_paid = 1 if str(data.get("is_paid", "")).lower() in ["true", "1", "paid"] or (data.get("price") and float(data.get("price") or 0) > 0) else 0
+        
+        price = event.get("price", 0.0)
+        if "price" in data:
+            try:
+                price = float(data.get("price") or 0) if is_paid else 0.0
+            except (ValueError, TypeError):
+                price = 0.0
+        elif not is_paid:
+            price = 0.0
+
         event_date = data.get("eventDate") or data.get("event_date") or event.get("event_date")
         end_date = data.get("endDate") or data.get("end_date") or event.get("end_date")
 
@@ -1571,10 +1593,10 @@ def event_detail(request, event_id):
         execute(
             """
             UPDATE events 
-            SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, event_date = %s, end_date = %s, image_url = %s
+            SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, is_paid = %s, price = %s, event_date = %s, end_date = %s, image_url = %s
             WHERE id = %s
             """,
-            [title, city, venue, event_type, description, google_form_url, event_date, end_date, image_url, event_id],
+            [title, city, venue, event_type, description, google_form_url, is_paid, price, event_date, end_date, image_url, event_id],
         )
         return api_response({"success": True, "message": "Event updated successfully", "data": {"id": event_id, "title": title}})
 

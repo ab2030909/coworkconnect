@@ -184,14 +184,19 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                     <h3 style="font-size: 2rem; font-weight: 800; color: var(--dark); margin: 0;">About this event</h3>
                     
-                    <!-- Event Actions (Edit / Delete) -->
-                    <div id="host-quick-actions" style="display: flex; align-items: center; gap: 0.65rem;">
-                        <button type="button" class="btn" style="background: #059669; color: white; border: none; padding: 0.55rem 1.25rem; border-radius: 50px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);" onclick="openEditEventModal()">
-                            <i data-lucide="edit-3" size="15"></i> Edit Event
+                    <!-- Event Actions (Copy Link / Edit / Delete) -->
+                    <div id="event-header-actions" style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-outline" style="background: white; border: 1.5px solid #cbd5e1; padding: 0.55rem 1.25rem; border-radius: 50px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.45rem; cursor: pointer;" onclick="copyCurrentEventLink()">
+                            <i data-lucide="link-2" size="16" style="color: var(--primary);"></i> <span id="copy-btn-text">Copy Link</span>
                         </button>
-                        <button type="button" class="btn" style="background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 0.55rem 1.25rem; border-radius: 50px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.4rem;" onclick="promptDeleteEvent()">
-                            <i data-lucide="trash-2" size="15"></i> Delete Event
-                        </button>
+                        <div id="host-quick-actions" style="display: none; align-items: center; gap: 0.65rem;">
+                            <button type="button" class="btn" style="background: #059669; color: white; border: none; padding: 0.55rem 1.25rem; border-radius: 50px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);" onclick="openEditEventModal()">
+                                <i data-lucide="edit-3" size="15"></i> Edit Event
+                            </button>
+                            <button type="button" class="btn" style="background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 0.55rem 1.25rem; border-radius: 50px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.4rem;" onclick="promptDeleteEvent()">
+                                <i data-lucide="trash-2" size="15"></i> Delete Event
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -225,7 +230,7 @@
                 <div style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 1.2rem;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <span style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary);">Join Event</span>
-                        <span style="background: #f0fdf4; color: #166534; font-weight: 800; font-size: 0.82rem; padding: 0.3rem 0.85rem; border-radius: 50px;">Free Admission</span>
+                        <span id="e-card-price-badge" style="background: #f0fdf4; color: #166534; font-weight: 800; font-size: 0.82rem; padding: 0.3rem 0.85rem; border-radius: 50px;">Free Admission</span>
                     </div>
 
                     <!-- Attend Button -->
@@ -320,7 +325,7 @@
         </div>
         
         <div style="display: flex; align-items: center; gap: 1rem;">
-            <span style="border: 1px solid #e2e8f0; padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; color: var(--dark);">Free</span>
+            <span id="sticky-price-badge" style="border: 1px solid #e2e8f0; padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; color: var(--dark);">Free</span>
             
             <button id="sticky-register-btn" onclick="handleRegisterNow()" style="background: #1e293b; color: white; border: none; padding: 0 2.5rem; height: 48px; border-radius: 50px; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: opacity 0.2s; margin-left: 0.5rem;">
                 Attend
@@ -390,6 +395,28 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="input-group"><label style="font-weight:800;color:var(--dark);">Starting Time</label><input type="datetime-local" id="edit-e-date" name="eventDate" class="input-field" style="border-radius: 12px;" required></div>
                     <div class="input-group"><label style="font-weight:800;color:var(--dark);">Ending Time</label><input type="datetime-local" id="edit-e-end-date" name="endDate" class="input-field" style="border-radius: 12px;" required></div>
+                </div>
+
+                <!-- Event Pricing (Free or Paid) -->
+                <div class="input-group">
+                    <label style="font-weight: 800; color: var(--dark); display: block; margin-bottom: 0.4rem;">Event Pricing</label>
+                    <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 0.5rem;">
+                        <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; color: var(--dark); font-size: 0.95rem;">
+                            <input type="radio" id="edit-is-free" name="is_paid" value="0" checked onchange="document.getElementById('edit-price-container').style.display='none'">
+                            <span>Free Admission</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; color: var(--dark); font-size: 0.95rem;">
+                            <input type="radio" id="edit-is-paid" name="is_paid" value="1" onchange="document.getElementById('edit-price-container').style.display='block'">
+                            <span>Paid Ticket</span>
+                        </label>
+                    </div>
+                    <div id="edit-price-container" style="display: none; margin-top: 0.6rem;">
+                        <label style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 0.3rem; display: block;">Ticket Price (PKR)</label>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <span style="position: absolute; left: 1rem; font-weight: 800; color: #64748b; font-size: 0.9rem;">PKR</span>
+                            <input type="number" id="edit-e-price" name="price" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem 0.8rem 3.8rem;" placeholder="e.g. 2500" min="0" step="any">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="input-group">
@@ -738,6 +765,17 @@
             document.getElementById('edit-e-desc').value = activeEventData.description || '';
             document.getElementById('edit-e-google-form').value = activeEventData.google_form_url || '';
 
+            const isPaid = activeEventData.is_paid && Number(activeEventData.price) > 0;
+            if (isPaid) {
+                document.getElementById('edit-is-paid').checked = true;
+                document.getElementById('edit-price-container').style.display = 'block';
+                document.getElementById('edit-e-price').value = activeEventData.price;
+            } else {
+                document.getElementById('edit-is-free').checked = true;
+                document.getElementById('edit-price-container').style.display = 'none';
+                document.getElementById('edit-e-price').value = '';
+            }
+
             if (activeEventData.event_date) {
                 document.getElementById('edit-e-date').value = formatDateTimeLocal(activeEventData.event_date);
             }
@@ -782,6 +820,8 @@
 
                 const rawDate = document.getElementById('edit-e-date').value;
                 const rawEndDate = document.getElementById('edit-e-end-date').value;
+                const isPaidSelected = document.getElementById('edit-is-paid').checked ? 1 : 0;
+                const priceVal = isPaidSelected ? parseFloat(document.getElementById('edit-e-price').value || 0) : 0;
 
                 const payload = {
                     title: document.getElementById('edit-e-title').value.trim(),
@@ -790,6 +830,8 @@
                     venue: document.getElementById('edit-e-venue').value.trim(),
                     description: document.getElementById('edit-e-desc').value.trim(),
                     googleFormUrl: document.getElementById('edit-e-google-form').value.trim(),
+                    is_paid: isPaidSelected,
+                    price: priceVal,
                     eventDate: rawDate ? rawDate.replace('T', ' ') + ':00' : null,
                     endDate: rawEndDate ? rawEndDate.replace('T', ' ') + ':00' : null,
                     imageUrl: imageUrl
@@ -817,6 +859,37 @@
                 }
             }
         });
+
+        function copyCurrentEventLink() {
+            const url = window.location.href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Event link copied to clipboard!', 'success');
+                    const btnText = document.getElementById('copy-btn-text');
+                    if (btnText) {
+                        btnText.textContent = 'Copied!';
+                        setTimeout(() => { btnText.textContent = 'Copy Link'; }, 2000);
+                    }
+                }).catch(() => {
+                    prompt('Copy event link:', url);
+                });
+            } else {
+                prompt('Copy event link:', url);
+            }
+        }
+
+        function copyDirectLink(id) {
+            const url = window.location.origin + '/event-details?id=' + id;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Event link copied to clipboard!', 'success');
+                }).catch(() => {
+                    prompt('Copy event link:', url);
+                });
+            } else {
+                prompt('Copy event link:', url);
+            }
+        }
 
         function promptDeleteEvent() {
             if (!activeEventData) return;
@@ -915,14 +988,45 @@
             document.getElementById('pass-title').textContent = event.title;
             document.getElementById('pass-user').textContent = JSON.parse(localStorage.getItem('user'))?.name || 'Member';
 
-            // Show Event Action Buttons (Edit / Delete)
-            const quickActions = document.getElementById('host-quick-actions');
-            if (quickActions) {
-                quickActions.style.display = 'flex';
+            // Price Badges Sync
+            const cardPriceBadge = document.getElementById('e-card-price-badge');
+            const stickyPriceBadge = document.getElementById('sticky-price-badge');
+            const isPaid = event.is_paid && Number(event.price) > 0;
+
+            if (isPaid) {
+                const formattedPrice = `PKR ${Number(event.price).toLocaleString()}`;
+                if (cardPriceBadge) {
+                    cardPriceBadge.textContent = formattedPrice;
+                    cardPriceBadge.style.background = '#ecfdf5';
+                    cardPriceBadge.style.color = '#047857';
+                }
+                if (stickyPriceBadge) {
+                    stickyPriceBadge.textContent = formattedPrice;
+                    stickyPriceBadge.style.background = '#ecfdf5';
+                    stickyPriceBadge.style.color = '#047857';
+                    stickyPriceBadge.style.borderColor = '#a7f3d0';
+                }
+            } else {
+                if (cardPriceBadge) {
+                    cardPriceBadge.textContent = 'Free Admission';
+                    cardPriceBadge.style.background = '#f0fdf4';
+                    cardPriceBadge.style.color = '#166534';
+                }
+                if (stickyPriceBadge) {
+                    stickyPriceBadge.textContent = 'Free';
+                    stickyPriceBadge.style.background = 'white';
+                    stickyPriceBadge.style.color = 'var(--dark)';
+                    stickyPriceBadge.style.borderColor = '#e2e8f0';
+                }
             }
 
+            // Show Event Action Buttons (Edit / Delete if Host or Admin)
+            const quickActions = document.getElementById('host-quick-actions');
             const me = JSON.parse(localStorage.getItem('user')) || {};
             const isHostOrAdmin = me.role === 'admin' || (me.id && Number(event.created_by) === Number(me.id));
+            if (quickActions) {
+                quickActions.style.display = isHostOrAdmin ? 'flex' : 'none';
+            }
 
             const hostSec = document.getElementById('host-verification-section');
             if (hostSec) {
@@ -980,20 +1084,31 @@
                         const img = safeImageUrl(e.image_url, fallbackImage('event'));
                         const venueDisplay = e.space_name || e.venue || e.city || 'Islamabad / Online';
                         const typeDisplay = e.event_type || 'Event';
-                        const spotsLeft = Math.max(0, 50 - Number(e.participant_count || 0));
                         const isPast = new Date(e.end_date || e.event_date) < now;
-                        const freeBadge = isPast ? '<span class="evt-card-free-badge" style="background: #64748b;">Past Event</span>' : '<span class="evt-card-free-badge">Free</span>';
+                        
+                        let priceBadge = '';
+                        if (isPast) {
+                            priceBadge = '<span class="evt-card-free-badge" style="background: #64748b;">Past Event</span>';
+                        } else if (e.is_paid && Number(e.price) > 0) {
+                            priceBadge = `<span class="evt-card-free-badge" style="background: #047857; color: white;">PKR ${Number(e.price).toLocaleString()}</span>`;
+                        } else {
+                            priceBadge = '<span class="evt-card-free-badge">Free</span>';
+                        }
+
                         const tagStyle = isPast ? 'background: #f1f5f9; color: #64748b;' : 'background: #e0f2fe; color: #0284c7;';
 
                         return `
                         <div class="evt-card" onclick="window.location.href='event-details?id=${Number(e.id)}'" style="cursor: pointer; ${isPast ? 'opacity: 0.85;' : ''}">
                             <div class="evt-card-img-wrap">
-                                ${freeBadge}
+                                ${priceBadge}
                                 <img class="evt-card-img" src="${img}" data-fallback="${fallbackImage('event')}" alt="${escapeHtml(e.title)}">
                             </div>
                             <div class="evt-card-body">
-                                <div style="margin-bottom: 0.6rem;">
+                                <div style="margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
                                     <span class="evt-card-tag" style="${tagStyle}">${escapeHtml(typeDisplay)}</span>
+                                    <button type="button" onclick="event.stopPropagation(); copyDirectLink(${Number(e.id)})" title="Copy Event Link" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.25rem 0.55rem; font-size: 0.75rem; font-weight: 700; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i data-lucide="link-2" size="12"></i> Copy
+                                    </button>
                                 </div>
                                 <h3 class="evt-card-title">${escapeHtml(e.title)}</h3>
                                 <p class="evt-card-meta"><i data-lucide="calendar" size="14"></i> ${escapeHtml(formattedDate)} ${timeStr ? `• ${escapeHtml(timeStr)}` : ''}</p>
@@ -1002,7 +1117,7 @@
                                 <div class="evt-card-footer">
                                     <div class="evt-card-attendees">
                                         <i data-lucide="calendar-check" size="15" style="color: var(--primary);"></i>
-                                        <span>${isPast ? 'Concluded' : 'Open Registration'}</span>
+                                        <span>${isPast ? 'Concluded' : (e.is_paid && Number(e.price) > 0 ? `PKR ${Number(e.price).toLocaleString()}` : 'Free Admission')}</span>
                                     </div>
                                     <span style="font-size: 0.84rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px;">
                                         View Event <i data-lucide="arrow-right" size="14"></i>

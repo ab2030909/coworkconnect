@@ -278,11 +278,33 @@
                     </div>
                 </div>
 
+                <!-- Event Pricing (Free or Paid) -->
                 <div class="input-group">
-                    <label style="font-weight: 800; color: var(--dark);">Registration / External Link <span style="font-size: 0.8rem; color: var(--gray); font-weight: 500;">(Optional)</span></label>
-                    <input type="url" id="e-google-form" name="googleFormUrl" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;" placeholder="https://docs.google.com/forms/..., https://forms.gle/..., or website link">
+                    <label style="font-weight: 800; color: var(--dark); display: block; margin-bottom: 0.4rem;">Event Pricing</label>
+                    <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 0.5rem;">
+                        <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; color: var(--dark); font-size: 0.95rem;">
+                            <input type="radio" name="is_paid" value="0" checked onchange="document.getElementById('create-price-container').style.display='none'">
+                            <span>Free Admission</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; color: var(--dark); font-size: 0.95rem;">
+                            <input type="radio" name="is_paid" value="1" onchange="document.getElementById('create-price-container').style.display='block'">
+                            <span>Paid Ticket</span>
+                        </label>
+                    </div>
+                    <div id="create-price-container" style="display: none; margin-top: 0.6rem;">
+                        <label style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 0.3rem; display: block;">Ticket Price (PKR)</label>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <span style="position: absolute; left: 1rem; font-weight: 800; color: #64748b; font-size: 0.9rem;">PKR</span>
+                            <input type="number" id="e-price" name="price" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem 0.8rem 3.8rem;" placeholder="e.g. 2500" min="0" step="any">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label style="font-weight: 800; color: var(--dark);">Website / Registration Form Link <span style="font-size: 0.8rem; color: var(--gray); font-weight: 500;">(Optional)</span></label>
+                    <input type="url" id="e-google-form" name="googleFormUrl" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;" placeholder="https://... (Google Form, Event Page, or Website URL)">
                     <p style="font-size: 0.78rem; color: var(--gray); margin-top: 0.3rem;">
-                        <i data-lucide="info" size="13" style="display: inline; vertical-align: middle;"></i> Optional: Paste a Google Form, custom registration page, or website link. If provided, users will be redirected to this link upon registering.
+                        <i data-lucide="info" size="13" style="display: inline; vertical-align: middle;"></i> Optional: Add an external link for registration or official event website.
                     </p>
                 </div>
 
@@ -401,18 +423,30 @@
                 const venueDisplay = e.space_name || e.venue || e.city || 'Online / TBD';
                 const typeDisplay = e.event_type || 'Event';
                 const isPast = new Date(e.end_date || e.event_date) < now;
-                const freeBadge = isPast ? '<span class="evt-card-free-badge" style="background: #64748b;">Past Event</span>' : '<span class="evt-card-free-badge">Free</span>';
+                
+                let priceBadge = '';
+                if (isPast) {
+                    priceBadge = '<span class="evt-card-free-badge" style="background: #64748b;">Past Event</span>';
+                } else if (e.is_paid && Number(e.price) > 0) {
+                    priceBadge = `<span class="evt-card-free-badge" style="background: #047857; color: white;">PKR ${Number(e.price).toLocaleString()}</span>`;
+                } else {
+                    priceBadge = '<span class="evt-card-free-badge">Free</span>';
+                }
+
                 const tagStyle = isPast ? 'background: #f1f5f9; color: #64748b;' : '';
 
                 return `
                 <div class="evt-card" onclick="window.location.href='event-details?id=${Number(e.id)}'" style="${isPast ? 'opacity: 0.85;' : ''}">
                     <div class="evt-card-img-wrap">
-                        ${freeBadge}
+                        ${priceBadge}
                         <img class="evt-card-img" src="${img}" data-fallback="${fallbackImage('event')}" alt="${escapeHtml(e.title)}">
                     </div>
                     <div class="evt-card-body">
-                        <div style="margin-bottom: 0.6rem;">
+                        <div style="margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
                             <span class="evt-card-tag" style="${tagStyle}">${escapeHtml(typeDisplay)}</span>
+                            <button type="button" onclick="copyEventLinkDirect(event, ${Number(e.id)})" title="Copy Event Link" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.25rem 0.55rem; font-size: 0.75rem; font-weight: 700; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#475569'">
+                                <i data-lucide="link-2" size="12"></i> Copy
+                            </button>
                         </div>
                         <h3 class="evt-card-title">${escapeHtml(e.title)}</h3>
                         <p class="evt-card-meta"><i data-lucide="calendar" size="14"></i> ${escapeHtml(formattedDate)} • ${escapeHtml(timeStr)}</p>
@@ -422,7 +456,7 @@
                         <div class="evt-card-footer">
                             <div class="evt-card-attendees">
                                 <i data-lucide="calendar-check" size="15" style="color: var(--primary);"></i>
-                                <span>${isPast ? 'Concluded' : 'Open Registration'}</span>
+                                <span>${isPast ? 'Concluded' : (e.is_paid && Number(e.price) > 0 ? `PKR ${Number(e.price).toLocaleString()}` : 'Free Admission')}</span>
                             </div>
                             <span style="font-size: 0.84rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px;">
                                 View Event <i data-lucide="arrow-right" size="14"></i>
@@ -434,6 +468,20 @@
 
             applyImageFallbacks(grid);
             lucide.createIcons();
+        }
+
+        function copyEventLinkDirect(evt, eventId) {
+            if (evt && evt.stopPropagation) evt.stopPropagation();
+            const url = window.location.origin + '/event-details?id=' + eventId;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Event link copied to clipboard!', 'success');
+                }).catch(() => {
+                    prompt('Copy event link:', url);
+                });
+            } else {
+                prompt('Copy event link:', url);
+            }
         }
 
         function toggleEventModal(show) { 
