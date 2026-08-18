@@ -1712,8 +1712,12 @@
                     ? (post.user_bio.trim().length > 45 ? post.user_bio.trim().slice(0, 42) + '...' : post.user_bio.trim()) 
                     : 'CoWorkConnect Member');
 
+            const contentSnippet = (post.content || '').trim().slice(0, 50);
+            const contentSlug = typeof slugify === 'function' ? slugify(contentSnippet) : '';
+            const postSlug = contentSlug ? `${contentSlug}-${post.id}` : `post-${post.id}`;
+
             return `
-                <article class="post-card" id="post-${post.id}">
+                <article class="post-card" id="post-${post.id}" data-slug="${escapeHtml(postSlug)}">
                     <div class="post-body">
                         <div class="post-head">
                             <div class="post-author">
@@ -1748,7 +1752,7 @@
                         <button onclick="focusComment(${post.id})" class="post-action" type="button">
                             <i data-lucide="message-circle" size="18"></i><span>Comment</span>${comments.length > 0 ? `<span class="action-count">${comments.length}</span>` : ''}
                         </button>
-                        <button id="share-btn-${post.id}" onclick="sharePost(${post.id}, this)" class="post-action" type="button" title="Copy link to post">
+                        <button id="share-btn-${post.id}" onclick="sharePost(${post.id}, this, '${escapeHtml(contentSlug)}')" class="post-action" type="button" title="Copy link to post">
                             <i data-lucide="link-2" size="18"></i><span>Copy Link</span>
                         </button>
                     </div>
@@ -1842,20 +1846,41 @@
 
         function checkPostHashScroll() {
             const hash = window.location.hash;
-            if (hash && hash.startsWith('#post-')) {
-                const targetPost = document.querySelector(hash);
-                if (targetPost) {
-                    setTimeout(() => {
-                        targetPost.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        targetPost.style.transition = 'all 0.4s ease';
-                        targetPost.style.borderColor = '#059669';
-                        targetPost.style.boxShadow = '0 0 0 4px rgba(5, 150, 105, 0.25)';
-                        setTimeout(() => {
-                            targetPost.style.borderColor = '';
-                            targetPost.style.boxShadow = '';
-                        }, 3000);
-                    }, 200);
+            const urlParams = new URLSearchParams(window.location.search);
+            const postParam = urlParams.get('post');
+            let targetPost = null;
+
+            if (hash && hash.length > 1) {
+                const raw = hash.replace('#', '');
+                targetPost = document.getElementById(raw) || document.querySelector(`[data-slug="${raw}"]`);
+                if (!targetPost && raw.startsWith('post-')) {
+                    const cleanId = raw.replace('post-', '');
+                    targetPost = document.getElementById(`post-${cleanId}`);
                 }
+            }
+
+            if (!targetPost && postParam) {
+                targetPost = document.querySelector(`[data-slug="${postParam}"]`) || document.getElementById(`post-${postParam}`);
+                if (!targetPost) {
+                    const parts = postParam.split('-');
+                    const lastPart = parts[parts.length - 1];
+                    if (/^\d+$/.test(lastPart)) {
+                        targetPost = document.getElementById(`post-${lastPart}`);
+                    }
+                }
+            }
+
+            if (targetPost) {
+                setTimeout(() => {
+                    targetPost.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    targetPost.style.transition = 'all 0.4s ease';
+                    targetPost.style.borderColor = '#059669';
+                    targetPost.style.boxShadow = '0 0 0 4px rgba(5, 150, 105, 0.25)';
+                    setTimeout(() => {
+                        targetPost.style.borderColor = '';
+                        targetPost.style.boxShadow = '';
+                    }, 3500);
+                }, 250);
             }
         }
 
@@ -2235,8 +2260,17 @@
             }
         }
 
-        function sharePost(postId, btnEl) {
-            const url = `${window.location.origin}/community#post-${postId}`;
+        function sharePost(postId, btnEl, textSlug) {
+            let slugStr = textSlug ? `${textSlug}-${postId}` : `post-${postId}`;
+            if (!textSlug && typeof slugify === 'function') {
+                const postCard = document.getElementById(`post-${postId}`);
+                if (postCard) {
+                    const pText = postCard.querySelector('.post-text')?.textContent || '';
+                    const s = slugify(pText.slice(0, 50));
+                    if (s) slugStr = `${s}-${postId}`;
+                }
+            }
+            const url = `${window.location.origin}/community?post=${encodeURIComponent(slugStr)}`;
             const btn = btnEl || document.getElementById(`share-btn-${postId}`);
             const originalHtml = btn ? btn.innerHTML : null;
 
