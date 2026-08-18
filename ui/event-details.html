@@ -228,9 +228,9 @@
                         <span style="background: #f0fdf4; color: #166534; font-weight: 800; font-size: 0.82rem; padding: 0.3rem 0.85rem; border-radius: 50px;">Free Admission</span>
                     </div>
 
-                    <!-- Register Now Button -->
-                    <button id="card-register-btn" class="btn btn-primary" onclick="handleRegisterNow()" style="width: 100%; padding: 0.95rem 1.25rem; border-radius: 14px; font-weight: 800; font-size: 1.02rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
-                        <i data-lucide="external-link" size="18"></i> Visit Website / Register
+                    <!-- Attend Button -->
+                    <button id="card-register-btn" onclick="handleRegisterNow()" style="background: #1e293b; color: white; border: none; width: 100%; padding: 0.95rem 1.25rem; border-radius: 14px; font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity 0.2s;">
+                        Attend
                     </button>
 
                     <p style="text-align: center; font-size: 0.78rem; color: #64748b; margin: 0; font-weight: 600;">
@@ -322,8 +322,8 @@
         <div style="display: flex; align-items: center; gap: 1rem;">
             <span style="border: 1px solid #e2e8f0; padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; color: var(--dark);">Free</span>
             
-            <button id="sticky-register-btn" onclick="handleRegisterNow()" class="btn btn-primary" style="padding: 0 2.2rem; height: 48px; border-radius: 50px; font-weight: 800; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                <i data-lucide="external-link" size="18"></i> Visit Website / Register
+            <button id="sticky-register-btn" onclick="handleRegisterNow()" style="background: #1e293b; color: white; border: none; padding: 0 2.5rem; height: 48px; border-radius: 50px; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: opacity 0.2s; margin-left: 0.5rem;">
+                Attend
             </button>
         </div>
     </div>
@@ -694,24 +694,19 @@
 
             if (modalTitle) modalTitle.textContent = event.title || 'Event';
 
+            if (cardRegisterBtn) {
+                cardRegisterBtn.textContent = 'Attend';
+            }
+            if (stickyRegisterBtn) {
+                stickyRegisterBtn.textContent = 'Attend';
+            }
+
             if (formUrl) {
-                if (cardRegisterBtn) {
-                    cardRegisterBtn.innerHTML = '<i data-lucide="external-link" size="18"></i> Visit Website / Register';
-                }
-                if (stickyRegisterBtn) {
-                    stickyRegisterBtn.innerHTML = '<i data-lucide="external-link" size="18"></i> Visit Website / Register';
-                }
                 if (modalFormBtn) {
                     modalFormBtn.href = formUrl;
                     modalFormBtn.style.display = 'inline-flex';
                 }
             } else {
-                if (cardRegisterBtn) {
-                    cardRegisterBtn.innerHTML = '<i data-lucide="mail" size="18"></i> Contact Organizer';
-                }
-                if (stickyRegisterBtn) {
-                    stickyRegisterBtn.innerHTML = '<i data-lucide="mail" size="18"></i> Contact Organizer';
-                }
                 if (modalFormBtn) {
                     modalFormBtn.style.display = 'none';
                 }
