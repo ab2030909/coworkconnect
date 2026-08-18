@@ -40,10 +40,17 @@ def read_data(request):
 
 
 def fetch_all(sql, params=None):
-    with connection.cursor() as cursor:
-        cursor.execute(sql, params or [])
-        columns = [column[0] for column in cursor.description]
-        return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(sql, params or [])
+            columns = [column[0] for column in cursor.description]
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    except Exception:
+        try:
+            connection._rollback()
+        except Exception:
+            pass
+        raise
 
 
 def fetch_one(sql, params=None):
@@ -52,17 +59,24 @@ def fetch_one(sql, params=None):
 
 
 def execute(sql, params=None):
-    with connection.cursor() as cursor:
-        if connection.vendor == "postgresql" and sql.lstrip().lower().startswith("insert") and " returning " not in sql.lower():
-            cursor.execute(f"{sql.rstrip()} RETURNING id", params or [])
-            row = cursor.fetchone()
-            return cursor.rowcount, row[0] if row else None
+    try:
+        with connection.cursor() as cursor:
+            if connection.vendor == "postgresql" and sql.lstrip().lower().startswith("insert") and " returning " not in sql.lower():
+                cursor.execute(f"{sql.rstrip()} RETURNING id", params or [])
+                row = cursor.fetchone()
+                return cursor.rowcount, row[0] if row else None
 
-        cursor.execute(sql, params or [])
-        lastrowid = getattr(cursor, "lastrowid", None)
-        if lastrowid is None and hasattr(cursor, "cursor"):
-            lastrowid = getattr(cursor.cursor, "lastrowid", None)
-        return cursor.rowcount, lastrowid
+            cursor.execute(sql, params or [])
+            lastrowid = getattr(cursor, "lastrowid", None)
+            if lastrowid is None and hasattr(cursor, "cursor"):
+                lastrowid = getattr(cursor.cursor, "lastrowid", None)
+            return cursor.rowcount, lastrowid
+    except Exception:
+        try:
+            connection._rollback()
+        except Exception:
+            pass
+        raise
 
 
 def hash_password(password):

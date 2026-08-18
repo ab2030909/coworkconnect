@@ -19,6 +19,7 @@ from .utils import (
     save_upload,
     verify_password,
 )
+from .schema import ensure_schema
 
 VALID_SPACE_TYPES = {"desk", "private_office", "meeting_room", "virtual_office"}
 VALID_BOOKING_STATUSES = {"pending", "confirmed", "cancelled"}
@@ -1471,6 +1472,7 @@ def events(request):
         return api_response({"success": True, "count": len(rows), "data": rows})
 
     if request.method == "POST":
+        ensure_schema()
         user, error = auth_user(request)
         if error:
             return error
@@ -1616,6 +1618,7 @@ def event_detail(request, event_id):
         return api_response({"success": True, "data": event})
 
     if request.method == "PUT":
+        ensure_schema()
         user, error = auth_user(request)
         if error:
             return error

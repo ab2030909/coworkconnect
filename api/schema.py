@@ -22,13 +22,19 @@ def ensure_schema():
             with connection.cursor() as cursor:
                 cursor.execute(statement)
         except Exception:
-            pass
+            try:
+                connection._rollback()
+            except Exception:
+                pass
     for statement in compatibility_statements(connection.vendor):
         try:
             with connection.cursor() as cursor:
                 cursor.execute(statement)
         except Exception:
-            pass
+            try:
+                connection._rollback()
+            except Exception:
+                pass
 
     _schema_checked = True
 
