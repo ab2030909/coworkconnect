@@ -1462,12 +1462,12 @@ def events(request):
             """
         )
         user, _ = auth_user(request)
-        if user:
-            user_regs = fetch_all("SELECT event_id, status FROM event_registrations WHERE user_id = %s", [user["id"]])
-            reg_map = {r["event_id"]: (r.get("status") or "pending") for r in user_regs}
-            for row in rows:
-                if row["id"] in reg_map:
-                    row["my_status"] = reg_map[row["id"]]
+        user_regs = fetch_all("SELECT event_id, status FROM event_registrations WHERE user_id = %s", [user["id"]]) if user else []
+        reg_map = {r["event_id"]: (r.get("status") or "pending") for r in user_regs}
+        for row in rows:
+            if row["id"] in reg_map:
+                row["my_status"] = reg_map[row["id"]]
+            row["is_host"] = bool(user and (user.get("role") == "admin" or str(row.get("created_by")) == str(user.get("id"))))
         return api_response({"success": True, "count": len(rows), "data": rows})
 
     if request.method == "POST":
@@ -1612,6 +1612,7 @@ def event_detail(request, event_id):
             reg = fetch_one("SELECT status FROM event_registrations WHERE event_id = %s AND user_id = %s", [event_id, user["id"]])
             if reg:
                 event["my_status"] = reg.get("status") or "pending"
+        event["is_host"] = bool(user and (user.get("role") == "admin" or str(event.get("created_by")) == str(user.get("id"))))
         return api_response({"success": True, "data": event})
 
     if request.method == "PUT":

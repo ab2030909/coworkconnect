@@ -1043,10 +1043,20 @@
 
             // Show Event Action Buttons (Edit / Delete if Host or Admin)
             const quickActions = document.getElementById('host-quick-actions');
-            const me = JSON.parse(localStorage.getItem('user')) || {};
-            const isHostOrAdmin = me.role === 'admin' || (me.id && Number(event.created_by) === Number(me.id));
+            let me = {};
+            try {
+                me = JSON.parse(localStorage.getItem('user')) || {};
+            } catch(e) {}
+
+            const isHostOrAdmin = Boolean(
+                event.is_host === true ||
+                (me && me.role === 'admin') || 
+                (me && me.id && String(event.created_by) === String(me.id)) ||
+                (me && me.name && event.creator_name && me.name.trim().toLowerCase() === event.creator_name.trim().toLowerCase())
+            );
+
             if (quickActions) {
-                quickActions.style.display = isHostOrAdmin ? 'flex' : 'none';
+                quickActions.style.display = isHostOrAdmin ? 'inline-flex' : 'none';
             }
 
             const hostSec = document.getElementById('host-verification-section');
