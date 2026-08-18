@@ -451,14 +451,10 @@
             const rawDate = formData.get('eventDate');
             const rawEndDate = formData.get('endDate');
 
-            const googleFormUrl = (formData.get('googleFormUrl') || '').trim();
-            if (!googleFormUrl) {
-                alert('Error: Google Form Registration Link is compulsory.');
-                return;
-            }
-            if (!googleFormUrl.includes('docs.google.com/forms') && !googleFormUrl.includes('forms.gle') && !googleFormUrl.startsWith('https://')) {
-                alert('Error: Please enter a valid Google Form URL (e.g. https://docs.google.com/forms/... or https://forms.gle/...)');
-                return;
+            let googleFormUrl = (formData.get('googleFormUrl') || '').trim();
+            if (googleFormUrl && !googleFormUrl.startsWith('http://') && !googleFormUrl.startsWith('https://')) {
+                googleFormUrl = 'https://' + googleFormUrl;
+                formData.set('googleFormUrl', googleFormUrl);
             }
 
             if (rawDate && rawEndDate) {

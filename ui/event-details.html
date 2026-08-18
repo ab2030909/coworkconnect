@@ -221,25 +221,20 @@
             <!-- Right Side: Info Cards -->
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 
-                <!-- Registration & Contact Action Card -->
-                <div style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Registration Action Card -->
+                <div style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 1.2rem;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <span style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary);">Join Event</span>
                         <span style="background: #f0fdf4; color: #166534; font-weight: 800; font-size: 0.82rem; padding: 0.3rem 0.85rem; border-radius: 50px;">Free Admission</span>
                     </div>
 
-                    <!-- Direct Form / Website Button -->
-                    <a id="card-website-btn" href="#" target="_blank" class="btn btn-primary" style="display: none; width: 100%; padding: 0.95rem 1.25rem; border-radius: 14px; font-weight: 800; font-size: 1rem; text-decoration: none; align-items: center; justify-content: center; gap: 8px;">
-                        <i data-lucide="external-link" size="18"></i> Register / Form Link
-                    </a>
-
-                    <!-- Contact Organizer Button -->
-                    <button class="btn btn-outline" onclick="openContactModal()" style="width: 100%; padding: 0.9rem 1.25rem; border-radius: 14px; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <i data-lucide="phone-call" size="16"></i> Contact Organizer
+                    <!-- Register Now Button -->
+                    <button class="btn btn-primary" onclick="openContactModal()" style="width: 100%; padding: 0.95rem 1.25rem; border-radius: 14px; font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+                        <i data-lucide="check-circle-2" size="18"></i> Register Now
                     </button>
 
-                    <p style="text-align: center; font-size: 0.76rem; color: #64748b; margin: 0; font-weight: 600;">
-                        <i data-lucide="shield-check" size="13" style="vertical-align: middle; color: var(--primary);"></i> Direct connection with event organizer
+                    <p style="text-align: center; font-size: 0.78rem; color: #64748b; margin: 0; font-weight: 600;">
+                        <i data-lucide="shield-check" size="13" style="vertical-align: middle; color: var(--primary);"></i> Direct registration with event organizer
                     </p>
                 </div>
 
@@ -324,24 +319,20 @@
             <h4 id="sticky-title" style="font-size: 1.25rem; font-weight: 800; color: var(--dark); overflow: hidden; text-overflow: ellipsis; margin: 0;">Event Title</h4>
         </div>
         
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
             <span style="border: 1px solid #e2e8f0; padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; color: var(--dark);">Free</span>
             
-            <a id="sticky-website-btn" href="#" target="_blank" class="btn btn-primary" style="display: none; padding: 0 1.75rem; height: 48px; border-radius: 50px; font-weight: 800; font-size: 0.95rem; align-items: center; gap: 6px; text-decoration: none;">
-                <i data-lucide="external-link" size="16"></i> Register / Form
-            </a>
-
-            <button onclick="openContactModal()" style="background: #1e293b; color: white; border: none; padding: 0 2rem; height: 48px; border-radius: 50px; font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: background 0.3s; display: inline-flex; align-items: center; gap: 6px;">
-                <i data-lucide="phone-call" size="16"></i> Contact Organizer
+            <button onclick="openContactModal()" class="btn btn-primary" style="padding: 0 2.2rem; height: 48px; border-radius: 50px; font-weight: 800; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                <i data-lucide="check-circle-2" size="18"></i> Register Now
             </button>
         </div>
     </div>
 
-    <!-- Contact Organizer Modal -->
+    <!-- Contact & Registration Modal -->
     <div id="contact-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 2300; align-items: center; justify-content: center; backdrop-filter: blur(6px); padding: 1.5rem;">
         <div class="modal-card" style="background: white; width: 100%; max-width: 440px; border-radius: 24px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem;">
-                <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--dark); margin: 0;">Contact Organizer</h3>
+                <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--dark); margin: 0;">Register for Event</h3>
                 <button onclick="closeContactModal()" style="background: none; border: none; cursor: pointer; color: var(--gray); display: flex;"><i data-lucide="x" size="20"></i></button>
             </div>
             
@@ -351,13 +342,13 @@
 
             <div style="display: flex; flex-direction: column; gap: 0.85rem;">
                 <!-- Website / Form Link -->
-                <a id="modal-form-btn" href="#" target="_blank" class="contact-action-btn" style="display: none; background: var(--primary); color: white; padding: 0.85rem 1.2rem; border-radius: 12px; font-weight: 700; text-decoration: none; align-items: center; justify-content: center; gap: 8px;">
-                    <i data-lucide="external-link" size="18"></i>
-                    <span>Visit Form / Website</span>
+                <a id="modal-form-btn" href="#" target="_blank" class="contact-action-btn" style="display: none; background: #f8fafc; color: var(--dark); border: 1px solid #cbd5e1; padding: 0.85rem 1.2rem; border-radius: 14px; font-weight: 700; text-decoration: none; align-items: center; justify-content: center; gap: 8px;">
+                    <i data-lucide="globe" size="18" style="color: var(--primary);"></i>
+                    <span>Visit Official Website / Form</span>
                 </a>
 
                 <!-- Email Organizer Button -->
-                <a id="modal-email-btn" href="#" target="_blank" class="contact-action-btn" style="display: flex; background: #3b82f6; color: white; padding: 0.85rem 1.2rem; border-radius: 12px; font-weight: 700; text-decoration: none; align-items: center; justify-content: center; gap: 8px;">
+                <a id="modal-email-btn" href="#" target="_blank" class="contact-action-btn" style="display: flex; background: #3b82f6; color: white; padding: 0.85rem 1.2rem; border-radius: 14px; font-weight: 700; text-decoration: none; align-items: center; justify-content: center; gap: 8px;">
                     <i data-lucide="mail" size="18"></i>
                     <span>Send Email Inquiry</span>
                 </a>
@@ -402,8 +393,8 @@
                 </div>
 
                 <div class="input-group">
-                    <label style="font-weight: 800; color: var(--dark);">Registration / External Link <span style="font-size: 0.8rem; color: var(--gray); font-weight: 500;">(Optional)</span></label>
-                    <input type="url" id="edit-e-google-form" name="googleFormUrl" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;" placeholder="https://docs.google.com/forms/..., https://forms.gle/..., or website link">
+                    <label style="font-weight: 800; color: var(--dark);">Website / Registration Link <span style="font-size: 0.8rem; color: var(--gray); font-weight: 500;">(Optional)</span></label>
+                    <input type="url" id="edit-e-google-form" name="googleFormUrl" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;" placeholder="https://... (e.g. Google Form or Official Website)">
                 </div>
 
                 <div class="input-group"><label style="font-weight:800;color:var(--dark);">Update Event Photo</label><input type="file" id="edit-e-image" name="image" class="input-field" style="border-radius: 12px; padding: 0.6rem 1rem;" accept="image/*"></div>
