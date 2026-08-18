@@ -1432,9 +1432,47 @@
         }
         function updateProfileStats() {
             const user = getUser();
-            if (!user) return;
+            const token = localStorage.getItem('token');
+            const leftProfileCard = document.querySelector('.panel.profile-card');
+            const composerCard = document.querySelector('.feed-card.composer-card');
+
+            if (!token || !user) {
+                if (leftProfileCard) {
+                    leftProfileCard.innerHTML = `
+                        <div style="text-align:center; padding:1.75rem 1.25rem;">
+                            <div style="width:52px; height:52px; border-radius:50%; background:#ecfdf5; color:var(--primary); display:flex; align-items:center; justify-content:center; margin:0 auto 0.85rem; border:1px solid #a7f3d0;">
+                                <i data-lucide="lock" size="24"></i>
+                            </div>
+                            <h4 style="margin:0 0 0.3rem; font-weight:800; font-size:1.1rem; color:#0f172a;">Sign in first</h4>
+                            <p style="margin:0 0 1.2rem; font-size:0.85rem; color:#64748b; font-weight:600; line-height:1.45;">Sign in to view your profile, manage posts, and build your network.</p>
+                            <a href="login" class="btn btn-primary" style="border-radius:10px; font-weight:800; font-size:0.88rem; padding:0.6rem 1.25rem; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:6px; width:100%;">
+                                <i data-lucide="log-in" size="15"></i> Sign In to Account
+                            </a>
+                        </div>
+                    `;
+                }
+
+                if (composerCard) {
+                    composerCard.innerHTML = `
+                        <div style="padding:2rem 1.5rem; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                            <div style="width:52px; height:52px; border-radius:50%; background:#ecfdf5; color:var(--primary); display:flex; align-items:center; justify-content:center; margin-bottom:0.85rem; border:1px solid #a7f3d0;">
+                                <i data-lucide="lock" size="24"></i>
+                            </div>
+                            <h4 style="margin:0 0 0.35rem; font-size:1.25rem; font-weight:800; color:#0f172a;">Sign in to Join Networking</h4>
+                            <p style="margin:0 0 1.2rem; font-size:0.9rem; color:#64748b; font-weight:600; max-width:360px; line-height:1.5;">Sign in to your CoWorkConnect account to share posts, collaborate with professionals, and participate in discussions.</p>
+                            <a href="login" class="btn btn-primary" style="border-radius:10px; font-weight:800; padding:0.65rem 1.6rem; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                                <i data-lucide="log-in" size="16"></i> Sign In to Account
+                            </a>
+                        </div>
+                    `;
+                }
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
             const initial = user.name ? user.name[0].toUpperCase() : 'U';
-            document.getElementById('profile-name').textContent = user.name;
+            const nameEl = document.getElementById('profile-name');
+            if (nameEl) nameEl.textContent = user.name;
             
             const profileAv = document.getElementById('profile-avatar');
             if (profileAv) {
@@ -1462,9 +1500,16 @@
                 }
             });
             document.querySelectorAll('.user-name-small').forEach((item) => item.textContent = user.name);
+            if (window.lucide) lucide.createIcons();
         }
 
         function toggleComposer(show) {
+            const token = localStorage.getItem('token');
+            if (show && !token) {
+                showToast('Please sign in first to create a post.', 'error');
+                setTimeout(() => { window.location.href = 'login'; }, 800);
+                return;
+            }
             document.getElementById('composer-modal').classList.toggle('hidden', !show);
             if (show) {
                 updateProfileStats();
@@ -1473,6 +1518,12 @@
         }
 
         function quickCompose(text) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showToast('Please sign in first to create a post.', 'error');
+                setTimeout(() => { window.location.href = 'login'; }, 800);
+                return;
+            }
             toggleComposer(true);
             const contentEl = document.getElementById('modal-post-content');
             contentEl.value = text;
