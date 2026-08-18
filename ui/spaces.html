@@ -566,6 +566,61 @@
         </div>
     </div>
 
+    <!-- Modal: Edit Workspace -->
+    <div id="edit-space-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--dark);">Edit Workspace</h3>
+                <button id="close-edit-modal-btn" style="background: none; border: none; cursor: pointer; color: var(--gray);" onclick="closeEditModal()"><i data-lucide="x" size="22"></i></button>
+            </div>
+            
+            <form id="edit-space-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <input type="hidden" id="edit-space-id">
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Workspace Name</label>
+                    <input type="text" id="edit-space-name" maxlength="60" class="input-field" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Type</label>
+                        <select id="edit-space-type" class="input-field" required>
+                            <option value="desk">Dedicated Desk</option>
+                            <option value="private_office">Private Office</option>
+                            <option value="meeting_room">Meeting Room</option>
+                            <option value="virtual_office">Virtual Office</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Location / City</label>
+                        <input type="text" id="edit-space-location" maxlength="80" class="input-field" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Price / Day (Rs)</label>
+                        <input type="number" id="edit-space-price" min="0" max="999999" class="input-field" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Capacity (Seats)</label>
+                        <input type="number" id="edit-space-capacity" min="1" max="9999" class="input-field" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Description</label>
+                    <textarea id="edit-space-desc" maxlength="300" rows="3" class="input-field" style="resize: vertical;"></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeEditModal()" style="border-radius: 12px; font-weight: 700; padding: 0.8rem;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 0.8rem; border-radius: 12px; font-weight: 800;">Save Updates</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Delete Confirmation Modal -->
     <div id="delete-space-modal" class="modal-overlay">
         <div class="modal-card" style="max-width: 440px; text-align: center; padding: 2rem;">
@@ -1068,11 +1123,14 @@
 
                                 <div class="card-footer-flex">
                                     <div class="price-stack">
-                                        <span class="price-value">$${Number(space.price_per_day).toLocaleString()}</span>
+                                        <span class="price-value">PKR ${Number(space.price_per_day).toLocaleString()}</span>
                                         <span class="price-label">/day</span>
                                     </div>
                                     <div class="card-action-group">
                                         ${isCreatorOrAdmin ? `
+                                            <button onclick="editCardSpace(event, ${space.id})" class="btn-card-edit" title="Edit Workspace" style="background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; border-radius: 8px; padding: 0.45rem 0.65rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease;">
+                                                <i data-lucide="pencil" size="15"></i>
+                                            </button>
                                             <button onclick="deleteCardSpace(event, ${space.id}, '${escapeHtml(space.name)}')" class="btn-card-delete" title="Delete Workspace">
                                                 <i data-lucide="trash-2" size="15"></i>
                                             </button>
@@ -1098,6 +1156,81 @@
         function deleteCardSpace(event, id, name) {
             if (event) event.stopPropagation();
             pendingDeleteSpaceId = id;
+            document.getElementById('delete-modal-space-name').textContent = name;
+            document.getElementById('delete-space-modal').classList.add('open');
+        }
+
+        async function editCardSpace(event, id) {
+            if (event) event.stopPropagation();
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                const res = await apiFetch('/api/spaces/' + id);
+                const data = await res.json();
+                if (res.ok && data.success && data.data) {
+                    const space = data.data;
+                    document.getElementById('edit-space-id').value = space.id;
+                    document.getElementById('edit-space-name').value = space.name || '';
+                    document.getElementById('edit-space-type').value = space.type || 'desk';
+                    document.getElementById('edit-space-location').value = space.location || '';
+                    document.getElementById('edit-space-price').value = space.price_per_day || 0;
+                    document.getElementById('edit-space-capacity').value = space.capacity || 1;
+                    document.getElementById('edit-space-desc').value = space.description || '';
+                    
+                    document.getElementById('edit-space-modal').classList.add('open');
+                } else {
+                    showToast('Failed to load workspace details', 'error');
+                }
+            } catch (err) {
+                showToast('Error loading workspace details', 'error');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-space-modal').classList.remove('open');
+            document.getElementById('edit-space-form').reset();
+        }
+
+        document.getElementById('edit-space-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const id = document.getElementById('edit-space-id').value;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Saving...';
+
+            const payload = {
+                name: document.getElementById('edit-space-name').value.trim(),
+                type: document.getElementById('edit-space-type').value,
+                location: document.getElementById('edit-space-location').value.trim(),
+                price_per_day: document.getElementById('edit-space-price').value,
+                capacity: document.getElementById('edit-space-capacity').value,
+                description: document.getElementById('edit-space-desc').value.trim()
+            };
+
+            try {
+                const res = await apiFetch('/api/spaces/' + id, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast('Workspace updated successfully!', 'success');
+                    closeEditModal();
+                    fetchResults();
+                } else {
+                    showToast(data.message || 'Failed to update workspace', 'error');
+                }
+            } catch (err) {
+                showToast('Error updating workspace', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Save Updates';
+            }
+        });
             document.getElementById('delete-modal-space-name').textContent = `"${name}"`;
             document.getElementById('delete-space-modal').classList.add('open');
             lucide.createIcons();

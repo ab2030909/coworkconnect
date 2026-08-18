@@ -64,7 +64,21 @@
                 </div>
                 <div class="input-group">
                     <label style="color: var(--dark);">Create Password</label>
-                    <input type="password" id="password" class="input-field" placeholder="At least 8 characters" minlength="8" required>
+                    <div style="position: relative;">
+                        <input type="password" id="password" class="input-field" placeholder="At least 8 characters" minlength="8" required style="padding-right: 2.5rem;">
+                        <button type="button" class="toggle-password" data-target="password" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--gray); padding: 0; display: flex;">
+                            <i data-lucide="eye" size="18"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label style="color: var(--dark);">Confirm Password</label>
+                    <div style="position: relative;">
+                        <input type="password" id="confirm-password" class="input-field" placeholder="Confirm your password" minlength="8" required style="padding-right: 2.5rem;">
+                        <button type="button" class="toggle-password" data-target="confirm-password" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--gray); padding: 0; display: flex;">
+                            <i data-lucide="eye" size="18"></i>
+                        </button>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1rem; font-size: 1rem; border-radius: 12px;">
                     Create Account
