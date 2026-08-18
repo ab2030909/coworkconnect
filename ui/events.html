@@ -301,6 +301,11 @@
                 </div>
 
                 <div class="input-group">
+                    <label style="font-weight: 800; color: var(--dark);">Total Seats / Capacity <span style="font-size: 0.8rem; color: var(--gray); font-weight: 500;">(Optional)</span></label>
+                    <input type="number" id="e-seats" name="total_seats" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;" placeholder="e.g. 50 (Total people who can join)" min="1" value="50">
+                </div>
+
+                <div class="input-group">
                     <label style="font-weight: 800; color: var(--dark);">Website / Registration Form Link <span style="font-size: 0.8rem; color: var(--gray); font-weight: 500;">(Optional)</span></label>
                     <input type="url" id="e-google-form" name="googleFormUrl" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;" placeholder="https://... (Google Form, Event Page, or Website URL)">
                     <p style="font-size: 0.78rem; color: var(--gray); margin-top: 0.3rem;">
@@ -423,6 +428,7 @@
                 const venueDisplay = e.space_name || e.venue || e.city || 'Online / TBD';
                 const typeDisplay = e.event_type || 'Event';
                 const isPast = new Date(e.end_date || e.event_date) < now;
+                const totalSeats = Number(e.total_seats || 50);
                 
                 let priceBadge = '';
                 if (isPast) {
@@ -451,12 +457,13 @@
                         <h3 class="evt-card-title">${escapeHtml(e.title)}</h3>
                         <p class="evt-card-meta"><i data-lucide="calendar" size="14"></i> ${escapeHtml(formattedDate)} • ${escapeHtml(timeStr)}</p>
                         <p class="evt-card-meta"><i data-lucide="user" size="14"></i> by ${escapeHtml(e.creator_name || 'Host')}</p>
+                        <p class="evt-card-meta"><i data-lucide="users" size="14"></i> ${totalSeats} Total Seats</p>
                         <p class="evt-card-meta"><i data-lucide="map-pin" size="14"></i> ${escapeHtml(venueDisplay)}</p>
                         
                         <div class="evt-card-footer">
                             <div class="evt-card-attendees">
                                 <i data-lucide="calendar-check" size="15" style="color: var(--primary);"></i>
-                                <span>${isPast ? 'Concluded' : (e.is_paid && Number(e.price) > 0 ? `PKR ${Number(e.price).toLocaleString()}` : 'Free Admission')}</span>
+                                <span>${isPast ? 'Concluded' : (e.is_paid && Number(e.price) > 0 ? `PKR ${Number(e.price).toLocaleString()}` : 'Register Now')}</span>
                             </div>
                             <span style="font-size: 0.84rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px;">
                                 View Event <i data-lucide="arrow-right" size="14"></i>

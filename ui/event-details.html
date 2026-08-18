@@ -257,6 +257,17 @@
                     </div>
                 </div>
 
+                <!-- Total Seats / Capacity Card -->
+                <div style="background: white; padding: 1.75rem 2rem; border-radius: 24px; border: 1px solid #e2e8f0; display: flex; gap: 1.5rem; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <div style="background: #fdf4ff; padding: 1rem; border-radius: 16px; color: #a855f7;">
+                        <i data-lucide="users" size="28"></i>
+                    </div>
+                    <div>
+                        <p style="font-size: 0.9rem; color: var(--gray); margin-bottom: 0.2rem; font-weight: 600;">Total Capacity</p>
+                        <p id="e-total-seats" style="font-weight: 800; color: var(--dark); font-size: 1.1rem; margin-bottom: 0; line-height: 1.4;">50 Seats Max</p>
+                    </div>
+                </div>
+
                 <!-- Location Card -->
                 <div style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
                     <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
@@ -417,6 +428,11 @@
                             <input type="number" id="edit-e-price" name="price" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem 0.8rem 3.8rem;" placeholder="e.g. 2500" min="0" step="any">
                         </div>
                     </div>
+                </div>
+
+                <div class="input-group">
+                    <label style="font-weight:800;color:var(--dark);">Total Seats / Capacity</label>
+                    <input type="number" id="edit-e-seats" name="total_seats" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;" placeholder="e.g. 50" min="1">
                 </div>
 
                 <div class="input-group">
@@ -763,6 +779,7 @@
             document.getElementById('edit-e-city').value = activeEventData.city || '';
             document.getElementById('edit-e-venue').value = activeEventData.venue || '';
             document.getElementById('edit-e-desc').value = activeEventData.description || '';
+            document.getElementById('edit-e-seats').value = activeEventData.total_seats || 50;
             document.getElementById('edit-e-google-form').value = activeEventData.google_form_url || '';
 
             const isPaid = activeEventData.is_paid && Number(activeEventData.price) > 0;
@@ -972,6 +989,10 @@
             const venueName = event.space_name || event.venue || event.city || 'Islamabad, Pakistan';
             document.getElementById('e-location').textContent = venueName;
             
+            const totalSeatsDisplay = `${Number(event.total_seats || 50)} Seats (Total Capacity)`;
+            const seatsEl = document.getElementById('e-total-seats');
+            if (seatsEl) seatsEl.textContent = totalSeatsDisplay;
+            
             const locationQuery = encodeURIComponent(venueName.toLowerCase().includes('pakistan') ? venueName : `${venueName}, Pakistan`);
             document.getElementById('e-map-iframe').src = `https://maps.google.com/maps?q=${locationQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
             document.getElementById('e-map-link').href = `https://www.google.com/maps/search/?api=1&query=${locationQuery}`;
@@ -1113,11 +1134,12 @@
                                 <h3 class="evt-card-title">${escapeHtml(e.title)}</h3>
                                 <p class="evt-card-meta"><i data-lucide="calendar" size="14"></i> ${escapeHtml(formattedDate)} ${timeStr ? `• ${escapeHtml(timeStr)}` : ''}</p>
                                 <p class="evt-card-meta"><i data-lucide="user" size="14"></i> by ${escapeHtml(e.creator_name || 'Host')}</p>
+                                <p class="evt-card-meta"><i data-lucide="users" size="14"></i> ${Number(e.total_seats || 50)} Total Seats</p>
                                 <p class="evt-card-meta"><i data-lucide="map-pin" size="14"></i> ${escapeHtml(venueDisplay)}</p>
                                 <div class="evt-card-footer">
                                     <div class="evt-card-attendees">
                                         <i data-lucide="calendar-check" size="15" style="color: var(--primary);"></i>
-                                        <span>${isPast ? 'Concluded' : (e.is_paid && Number(e.price) > 0 ? `PKR ${Number(e.price).toLocaleString()}` : 'Free Admission')}</span>
+                                        <span>${isPast ? 'Concluded' : (e.is_paid && Number(e.price) > 0 ? `PKR ${Number(e.price).toLocaleString()}` : 'Register Now')}</span>
                                     </div>
                                     <span style="font-size: 0.84rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px;">
                                         View Event <i data-lucide="arrow-right" size="14"></i>

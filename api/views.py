@@ -1496,13 +1496,20 @@ def events(request):
         except (ValueError, TypeError):
             price = 0.0
 
+        try:
+            total_seats = int(data.get("total_seats") or data.get("totalSeats") or 50)
+            if total_seats < 1:
+                total_seats = 50
+        except (ValueError, TypeError):
+            total_seats = 50
+
         space_id = data.get("spaceId") or None
         event_id = None
         try:
             _, event_id = execute(
                 """
-                INSERT INTO events (title, city, venue, event_type, description, google_form_url, is_paid, price, event_date, end_date, image_url, space_id, created_by)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO events (title, city, venue, event_type, description, google_form_url, is_paid, price, total_seats, event_date, end_date, image_url, space_id, created_by)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 [
                     data.get("title"),
@@ -1513,6 +1520,7 @@ def events(request):
                     google_form_url,
                     is_paid,
                     price,
+                    total_seats,
                     data.get("eventDate"),
                     data.get("endDate") or None,
                     image_url,
@@ -1525,17 +1533,20 @@ def events(request):
                 if connection.vendor == "postgresql":
                     execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE")
                     execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS price NUMERIC(10,2) DEFAULT 0")
+                    execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS total_seats INT DEFAULT 50")
                 elif connection.vendor == "sqlite":
                     execute("ALTER TABLE events ADD COLUMN is_paid INTEGER DEFAULT 0")
                     execute("ALTER TABLE events ADD COLUMN price NUMERIC DEFAULT 0")
+                    execute("ALTER TABLE events ADD COLUMN total_seats INTEGER DEFAULT 50")
                 else:
                     execute("ALTER TABLE events ADD COLUMN is_paid BOOLEAN DEFAULT FALSE")
                     execute("ALTER TABLE events ADD COLUMN price DECIMAL(10,2) DEFAULT 0")
+                    execute("ALTER TABLE events ADD COLUMN total_seats INT DEFAULT 50")
 
                 _, event_id = execute(
                     """
-                    INSERT INTO events (title, city, venue, event_type, description, google_form_url, is_paid, price, event_date, end_date, image_url, space_id, created_by)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO events (title, city, venue, event_type, description, google_form_url, is_paid, price, total_seats, event_date, end_date, image_url, space_id, created_by)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
                     [
                         data.get("title"),
@@ -1546,6 +1557,7 @@ def events(request):
                         google_form_url,
                         is_paid,
                         price,
+                        total_seats,
                         data.get("eventDate"),
                         data.get("endDate") or None,
                         image_url,
@@ -1574,7 +1586,7 @@ def events(request):
                     ],
                 )
 
-        return api_response({"success": True, "data": {"id": event_id, "title": data.get("title"), "google_form_url": google_form_url, "is_paid": is_paid, "price": price, "eventDate": data.get("eventDate")}}, 201)
+        return api_response({"success": True, "data": {"id": event_id, "title": data.get("title"), "google_form_url": google_form_url, "is_paid": is_paid, "price": price, "total_seats": total_seats, "eventDate": data.get("eventDate")}}, 201)
 
     return method_not_allowed()
 
@@ -1634,6 +1646,15 @@ def event_detail(request, event_id):
         elif not is_paid:
             price = 0.0
 
+        total_seats = event.get("total_seats", 50)
+        if "total_seats" in data or "totalSeats" in data:
+            try:
+                total_seats = int(data.get("total_seats") or data.get("totalSeats") or 50)
+                if total_seats < 1:
+                    total_seats = 50
+            except (ValueError, TypeError):
+                total_seats = 50
+
         event_date = data.get("eventDate") or data.get("event_date") or event.get("event_date")
         end_date = data.get("endDate") or data.get("end_date") or event.get("end_date")
 
@@ -1650,10 +1671,10 @@ def event_detail(request, event_id):
             execute(
                 """
                 UPDATE events 
-                SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, is_paid = %s, price = %s, event_date = %s, end_date = %s, image_url = %s
+                SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, is_paid = %s, price = %s, total_seats = %s, event_date = %s, end_date = %s, image_url = %s
                 WHERE id = %s
                 """,
-                [title, city, venue, event_type, description, google_form_url, is_paid, price, event_date, end_date, image_url, event_id],
+                [title, city, venue, event_type, description, google_form_url, is_paid, price, total_seats, event_date, end_date, image_url, event_id],
             )
         except Exception:
             execute(
