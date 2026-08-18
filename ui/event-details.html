@@ -257,17 +257,6 @@
                     </div>
                 </div>
 
-                <!-- Total Seats / Capacity Card -->
-                <div style="background: white; padding: 1.75rem 2rem; border-radius: 24px; border: 1px solid #e2e8f0; display: flex; gap: 1.5rem; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
-                    <div style="background: #fdf4ff; padding: 1rem; border-radius: 16px; color: #a855f7;">
-                        <i data-lucide="users" size="28"></i>
-                    </div>
-                    <div>
-                        <p style="font-size: 0.9rem; color: var(--gray); margin-bottom: 0.2rem; font-weight: 600;">Total Capacity</p>
-                        <p id="e-total-seats" style="font-weight: 800; color: var(--dark); font-size: 1.1rem; margin-bottom: 0; line-height: 1.4;">50 Seats Max</p>
-                    </div>
-                </div>
-
                 <!-- Location Card -->
                 <div style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
                     <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
@@ -406,33 +395,6 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="input-group"><label style="font-weight:800;color:var(--dark);">Starting Time</label><input type="datetime-local" id="edit-e-date" name="eventDate" class="input-field" style="border-radius: 12px;" required></div>
                     <div class="input-group"><label style="font-weight:800;color:var(--dark);">Ending Time</label><input type="datetime-local" id="edit-e-end-date" name="endDate" class="input-field" style="border-radius: 12px;" required></div>
-                </div>
-
-                <!-- Event Pricing (Free or Paid) -->
-                <div class="input-group">
-                    <label style="font-weight: 800; color: var(--dark); display: block; margin-bottom: 0.4rem;">Event Pricing</label>
-                    <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 0.5rem;">
-                        <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; color: var(--dark); font-size: 0.95rem;">
-                            <input type="radio" id="edit-is-free" name="is_paid" value="0" checked onchange="document.getElementById('edit-price-container').style.display='none'">
-                            <span>Free Admission</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; color: var(--dark); font-size: 0.95rem;">
-                            <input type="radio" id="edit-is-paid" name="is_paid" value="1" onchange="document.getElementById('edit-price-container').style.display='block'">
-                            <span>Paid Ticket</span>
-                        </label>
-                    </div>
-                    <div id="edit-price-container" style="display: none; margin-top: 0.6rem;">
-                        <label style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 0.3rem; display: block;">Ticket Price (PKR)</label>
-                        <div style="position: relative; display: flex; align-items: center;">
-                            <span style="position: absolute; left: 1rem; font-weight: 800; color: #64748b; font-size: 0.9rem;">PKR</span>
-                            <input type="number" id="edit-e-price" name="price" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem 0.8rem 3.8rem;" placeholder="e.g. 2500" min="0" step="any">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label style="font-weight:800;color:var(--dark);">Total Seats / Capacity</label>
-                    <input type="number" id="edit-e-seats" name="total_seats" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;" placeholder="e.g. 50" min="1">
                 </div>
 
                 <div class="input-group">
@@ -779,18 +741,22 @@
             document.getElementById('edit-e-city').value = activeEventData.city || '';
             document.getElementById('edit-e-venue').value = activeEventData.venue || '';
             document.getElementById('edit-e-desc').value = activeEventData.description || '';
-            document.getElementById('edit-e-seats').value = activeEventData.total_seats != null ? activeEventData.total_seats : '';
+            if (document.getElementById('edit-e-seats')) {
+                document.getElementById('edit-e-seats').value = activeEventData.total_seats != null ? activeEventData.total_seats : '';
+            }
             document.getElementById('edit-e-google-form').value = activeEventData.google_form_url || '';
 
             const isPaid = (Boolean(activeEventData.is_paid) && activeEventData.is_paid !== '0' && activeEventData.is_paid !== 0) || (activeEventData.price && Number(activeEventData.price) > 0);
-            if (isPaid) {
-                document.getElementById('edit-is-paid').checked = true;
-                document.getElementById('edit-price-container').style.display = 'block';
-                document.getElementById('edit-e-price').value = activeEventData.price || '';
-            } else {
-                document.getElementById('edit-is-free').checked = true;
-                document.getElementById('edit-price-container').style.display = 'none';
-                document.getElementById('edit-e-price').value = '';
+            if (document.getElementById('edit-is-paid')) {
+                if (isPaid) {
+                    document.getElementById('edit-is-paid').checked = true;
+                    if (document.getElementById('edit-price-container')) document.getElementById('edit-price-container').style.display = 'block';
+                    if (document.getElementById('edit-e-price')) document.getElementById('edit-e-price').value = activeEventData.price || '';
+                } else {
+                    if (document.getElementById('edit-is-free')) document.getElementById('edit-is-free').checked = true;
+                    if (document.getElementById('edit-price-container')) document.getElementById('edit-price-container').style.display = 'none';
+                    if (document.getElementById('edit-e-price')) document.getElementById('edit-e-price').value = '';
+                }
             }
 
             if (activeEventData.event_date) {
@@ -837,9 +803,13 @@
 
                 const rawDate = document.getElementById('edit-e-date').value;
                 const rawEndDate = document.getElementById('edit-e-end-date').value;
-                const isPaidSelected = document.getElementById('edit-is-paid').checked ? 1 : 0;
-                const priceVal = isPaidSelected ? parseFloat(document.getElementById('edit-e-price').value || 0) : 0;
-                const seatsVal = parseInt(document.getElementById('edit-e-seats').value || 50, 10);
+                
+                const editPaidInput = document.getElementById('edit-is-paid');
+                const isPaidSelected = editPaidInput ? (editPaidInput.checked ? 1 : 0) : (activeEventData?.is_paid || 0);
+                const editPriceInput = document.getElementById('edit-e-price');
+                const priceVal = editPriceInput ? (isPaidSelected ? parseFloat(editPriceInput.value || 0) : 0) : (activeEventData?.price || 0);
+                const editSeatsInput = document.getElementById('edit-e-seats');
+                const seatsVal = editSeatsInput ? parseInt(editSeatsInput.value || 50, 10) : (activeEventData?.total_seats || 50);
 
                 const payload = {
                     title: document.getElementById('edit-e-title').value.trim(),

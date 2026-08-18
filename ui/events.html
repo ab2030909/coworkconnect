@@ -278,33 +278,6 @@
                     </div>
                 </div>
 
-                <!-- Event Pricing (Free or Paid) -->
-                <div class="input-group">
-                    <label style="font-weight: 800; color: var(--dark); display: block; margin-bottom: 0.4rem;">Event Pricing</label>
-                    <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 0.5rem;">
-                        <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; color: var(--dark); font-size: 0.95rem;">
-                            <input type="radio" name="is_paid" value="0" checked onchange="document.getElementById('create-price-container').style.display='none'">
-                            <span>Free Admission</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; color: var(--dark); font-size: 0.95rem;">
-                            <input type="radio" name="is_paid" value="1" onchange="document.getElementById('create-price-container').style.display='block'">
-                            <span>Paid Ticket</span>
-                        </label>
-                    </div>
-                    <div id="create-price-container" style="display: none; margin-top: 0.6rem;">
-                        <label style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 0.3rem; display: block;">Ticket Price (PKR)</label>
-                        <div style="position: relative; display: flex; align-items: center;">
-                            <span style="position: absolute; left: 1rem; font-weight: 800; color: #64748b; font-size: 0.9rem;">PKR</span>
-                            <input type="number" id="e-price" name="price" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem 0.8rem 3.8rem;" placeholder="e.g. 2500" min="0" step="any">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label style="font-weight: 800; color: var(--dark);">Total Seats / Capacity <span style="font-size: 0.8rem; color: var(--gray); font-weight: 500;">(Optional)</span></label>
-                    <input type="number" id="e-seats" name="total_seats" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;" placeholder="e.g. 70 (Total people who can join)" min="1">
-                </div>
-
                 <div class="input-group">
                     <label style="font-weight: 800; color: var(--dark);">Website / Registration Form Link <span style="font-size: 0.8rem; color: var(--gray); font-weight: 500;">(Optional)</span></label>
                     <input type="url" id="e-google-form" name="googleFormUrl" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;" placeholder="https://... (Google Form, Event Page, or Website URL)">
@@ -469,7 +442,6 @@
                         <h3 class="evt-card-title">${escapeHtml(e.title)}</h3>
                         <p class="evt-card-meta"><i data-lucide="calendar" size="14"></i> ${escapeHtml(formattedDate)} • ${escapeHtml(timeStr)}</p>
                         <p class="evt-card-meta"><i data-lucide="user" size="14"></i> by ${escapeHtml(e.creator_name || 'Host')}</p>
-                        <p class="evt-card-meta"><i data-lucide="users" size="14"></i> ${totalSeats} Total Seats</p>
                         <p class="evt-card-meta"><i data-lucide="map-pin" size="14"></i> ${escapeHtml(venueDisplay)}</p>
                         
                         <div class="evt-card-footer">
