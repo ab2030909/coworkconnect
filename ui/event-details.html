@@ -914,62 +914,62 @@
             // Sync Attend button status and handler
             updateUserStatusUI(event.my_status);
 
-            // Render Related Events
-            const eventImages = [
-                fallbackImage('event'),
-                fallbackImage('community'),
-                fallbackImage('workspace'),
-                fallbackImage('event'),
-                fallbackImage('community'),
-                fallbackImage('workspace')
-            ];
-            
-            const relatedEvents = data.data.filter(e => e.id != eventId).slice(0, 3);
-            const grid = document.getElementById('related-events-grid');
-            if(relatedEvents.length > 0) {
-                grid.innerHTML = relatedEvents.map((e, idx) => {
-                    const d = new Date(e.event_date);
-                    const formattedDate = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                    const timeStr = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-                    const img = safeImageUrl(e.image_url, eventImages[idx % eventImages.length]);
-                    const venueDisplay = e.space_name || e.venue || e.city || 'Online / TBD';
-                    const typeDisplay = e.event_type || 'Event';
-                    
-                    const avatars = [
-                        fallbackImage('avatar'),
-                        fallbackImage('avatar'),
-                        fallbackImage('avatar')
-                    ];
+            // Render Related / Latest Events in "You may also like"
+            try {
+                const listRes = await apiFetch('/events');
+                const listData = await listRes.json();
+                const allEvents = (listData && listData.data && Array.isArray(listData.data)) ? listData.data : [];
+                
+                // Exclude current event, show other latest events
+                const otherEvents = allEvents.filter(e => Number(e.id) !== Number(eventId));
+                const relatedEvents = otherEvents.slice(0, 3);
+                
+                const grid = document.getElementById('related-events-grid');
+                if (grid) {
+                    if (relatedEvents.length > 0) {
+                        grid.innerHTML = relatedEvents.map((e) => {
+                            const d = new Date(e.event_date);
+                            const formattedDate = !isNaN(d.getTime()) ? d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'Upcoming';
+                            const timeStr = !isNaN(d.getTime()) ? d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : '';
+                            const img = safeImageUrl(e.image_url, fallbackImage('event'));
+                            const venueDisplay = e.space_name || e.venue || e.city || 'Islamabad / Online';
+                            const typeDisplay = e.event_type || 'Event';
+                            const spotsLeft = Math.max(0, 50 - Number(e.participant_count || 0));
 
-                    return `
-                    <div class="evt-card" onclick="window.location.href='event-details?id=${Number(e.id)}'">
-                        <div class="evt-card-img-wrap">
-                            <span class="evt-card-free-badge">Free</span>
-                            <img class="evt-card-img" src="${img}" data-fallback="${fallbackImage('event')}" alt="${escapeHtml(e.title)}">
-                        </div>
-                        <div class="evt-card-body">
-                            <div style="margin-bottom: 0.5rem;"><span class="evt-card-tag" style="background: #e0f2fe; color: #0284c7;">${escapeHtml(typeDisplay)}</span></div>
-                            <h3 class="evt-card-title">${escapeHtml(e.title)}</h3>
-                            <p class="evt-card-meta"><i data-lucide="clock" size="14"></i> ${escapeHtml(formattedDate)} - ${escapeHtml(timeStr)} PKT</p>
-                            <p class="evt-card-meta"><i data-lucide="user" size="14"></i> by ${escapeHtml(e.creator_name || 'Host')}</p>
-                            <p class="evt-card-meta"><i data-lucide="map-pin" size="14"></i> ${escapeHtml(venueDisplay)}</p>
-                            <div class="evt-card-footer">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div class="avatar-stack">
-                                        <img src="${avatars[0]}" class="avatar" data-fallback="${fallbackImage('avatar')}">
-                                        <img src="${avatars[1]}" class="avatar" data-fallback="${fallbackImage('avatar')}">
-                                        <img src="${avatars[2]}" class="avatar" data-fallback="${fallbackImage('avatar')}">
-                                    </div>
-                                    <span class="evt-card-attendees">${Number(e.participant_count || 0)} attendees</span>
+                            return `
+                            <div class="evt-card" onclick="window.location.href='event-details?id=${Number(e.id)}'" style="cursor: pointer;">
+                                <div class="evt-card-img-wrap">
+                                    <span class="evt-card-free-badge">Free</span>
+                                    <img class="evt-card-img" src="${img}" data-fallback="${fallbackImage('event')}" alt="${escapeHtml(e.title)}">
                                 </div>
-                            </div>
-                        </div>
-                    </div>`;
-                }).join('');
-                applyImageFallbacks(grid);
-                lucide.createIcons();
-            } else {
-                grid.innerHTML = '<p style="color: var(--gray); grid-column: 1/-1;">No other upcoming events.</p>';
+                                <div class="evt-card-body">
+                                    <div style="margin-bottom: 0.6rem;">
+                                        <span class="evt-card-tag" style="background: #e0f2fe; color: #0284c7;">${escapeHtml(typeDisplay)}</span>
+                                    </div>
+                                    <h3 class="evt-card-title">${escapeHtml(e.title)}</h3>
+                                    <p class="evt-card-meta"><i data-lucide="calendar" size="14"></i> ${escapeHtml(formattedDate)} ${timeStr ? `• ${escapeHtml(timeStr)}` : ''}</p>
+                                    <p class="evt-card-meta"><i data-lucide="user" size="14"></i> by ${escapeHtml(e.creator_name || 'Host')}</p>
+                                    <p class="evt-card-meta"><i data-lucide="map-pin" size="14"></i> ${escapeHtml(venueDisplay)}</p>
+                                    <div class="evt-card-footer">
+                                        <div class="evt-card-attendees">
+                                            <i data-lucide="users" size="15" style="color: var(--primary);"></i>
+                                            <span>${Number(e.participant_count || 0)} registered (${spotsLeft} spots left)</span>
+                                        </div>
+                                        <span style="font-size: 0.84rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px;">
+                                            Details <i data-lucide="arrow-right" size="14"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>`;
+                        }).join('');
+                        applyImageFallbacks(grid);
+                        if (window.lucide) lucide.createIcons();
+                    } else {
+                        grid.innerHTML = '<p style="color: var(--gray); font-weight: 600; grid-column: 1/-1;">No other current events found.</p>';
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load related events', err);
             }
         }
 
