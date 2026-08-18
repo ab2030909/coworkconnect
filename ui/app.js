@@ -145,48 +145,25 @@ function renderInlineLoginGate(message = '') {
 
     main.className = 'inline-auth-page';
     main.innerHTML = `
-        <section class="inline-auth-shell">
-            <div class="inline-auth-copy">
-                <span class="eyebrow"><i data-lucide="lock-keyhole" size="16"></i> Members only</span>
-                <h1>${protectedPageLabel()} is available after sign in.</h1>
-                <p>Sign in here to continue without leaving this page. The rest of CoWorkConnect stays open for browsing.</p>
-                <div class="inline-auth-points">
-                    <span><i data-lucide="check" size="16"></i> Keep the same navbar</span>
-                    <span><i data-lucide="check" size="16"></i> Open protected tools instantly</span>
-                    <span><i data-lucide="check" size="16"></i> Return to this page after login</span>
-                </div>
+        <section class="inline-auth-shell" style="max-width: 640px; margin: 4rem auto; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2.5rem; background: white; border-radius: 28px; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05);">
+            <div style="width: 64px; height: 64px; border-radius: 20px; background: #ecfdf5; color: var(--primary); display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);">
+                <i data-lucide="lock" size="32"></i>
             </div>
-            <div class="auth-card inline-auth-card">
-                <div class="auth-card-head">
-                    <div class="auth-icon"><i data-lucide="log-in" size="28"></i></div>
-                    <h2>Sign in</h2>
-                    <p>Use your CoWorkConnect account to continue.</p>
-                </div>
-                <div id="inline-login-error" class="auth-message ${message ? '' : 'hidden'}">
-                    <i data-lucide="alert-circle" size="18"></i>
-                    <span class="msg-content">${escapeHtml(message)}</span>
-                </div>
-                <form id="inline-login-form">
-                    <div class="input-group">
-                        <label>Email Address</label>
-                        <input type="email" id="inline-email" class="input-field" placeholder="you@example.com" autocomplete="email" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Password</label>
-                        <input type="password" id="inline-password" class="input-field" placeholder="Password" autocomplete="current-password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary inline-auth-submit">
-                        <i data-lucide="arrow-right" size="18"></i> Sign in
-                    <button type="submit" class="btn btn-primary inline-auth-submit">
-                        <i data-lucide="arrow-right" size="18"></i> Sign in
-                    </button>
-                </form>
-                <p class="inline-auth-footer">New here? <a href="register">Create an account</a></p>
-            </div>
+            <span class="eyebrow" style="display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; color: #475569; padding: 0.35rem 1rem; border-radius: 50px; font-weight: 700; font-size: 0.85rem; margin-bottom: 1.25rem;">
+                <i data-lucide="lock-keyhole" size="14"></i> Members only
+            </span>
+            <h1 style="font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 800; color: var(--dark); margin: 0 0 1.25rem 0; line-height: 1.2;">
+                ${protectedPageLabel()} is available after sign in.
+            </h1>
+            <p style="font-size: 1.05rem; color: #64748b; margin: 0 0 2.2rem 0; line-height: 1.65; max-width: 500px;">
+                Sign in here to continue without leaving this page. The rest of CoWorkConnect stays open for browsing.
+            </p>
+            <a href="login" class="btn btn-primary" style="padding: 0.95rem 2.8rem; border-radius: 50px; font-weight: 800; font-size: 1.05rem; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); transition: transform 0.2s, box-shadow 0.2s;">
+                <i data-lucide="log-in" size="18"></i> Sign in
+            </a>
         </section>
     `;
 
-    bindLoginForm(document.getElementById('inline-login-form'));
     applyImageFallbacks(main);
     if (window.lucide) lucide.createIcons();
     return true;
