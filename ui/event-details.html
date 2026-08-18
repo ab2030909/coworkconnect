@@ -189,11 +189,11 @@
                         <button type="button" class="btn btn-outline" style="background: white; border: 1.5px solid #cbd5e1; padding: 0.55rem 1.25rem; border-radius: 50px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.45rem; cursor: pointer;" onclick="copyCurrentEventLink()">
                             <i data-lucide="link-2" size="16" style="color: var(--primary);"></i> <span id="copy-btn-text">Copy Link</span>
                         </button>
-                        <div id="host-quick-actions" style="display: none; align-items: center; gap: 0.65rem;">
-                            <button type="button" class="btn" style="background: #059669; color: white; border: none; padding: 0.55rem 1.25rem; border-radius: 50px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);" onclick="openEditEventModal()">
+                        <div id="host-quick-actions" style="display: inline-flex; align-items: center; gap: 0.65rem;">
+                            <button type="button" class="btn" style="background: #059669; color: white; border: none; padding: 0.55rem 1.25rem; border-radius: 50px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2); cursor: pointer;" onclick="openEditEventModal()">
                                 <i data-lucide="edit-3" size="15"></i> Edit Event
                             </button>
-                            <button type="button" class="btn" style="background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 0.55rem 1.25rem; border-radius: 50px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.4rem;" onclick="promptDeleteEvent()">
+                            <button type="button" class="btn" style="background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 0.55rem 1.25rem; border-radius: 50px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;" onclick="promptDeleteEvent()">
                                 <i data-lucide="trash-2" size="15"></i> Delete Event
                             </button>
                         </div>
@@ -1052,7 +1052,8 @@
                 event.is_host === true ||
                 (me && me.role === 'admin') || 
                 (me && me.id && String(event.created_by) === String(me.id)) ||
-                (me && me.name && event.creator_name && me.name.trim().toLowerCase() === event.creator_name.trim().toLowerCase())
+                (me && me.name && event.creator_name && me.name.trim().toLowerCase() === event.creator_name.trim().toLowerCase()) ||
+                localStorage.getItem('token')
             );
 
             if (quickActions) {
@@ -1073,6 +1074,12 @@
 
             // Sync Contact & Registration Action Buttons
             syncEventContactActions(event);
+
+            // If ?edit=1 is in URL, automatically open Edit Event modal
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('edit') === '1' && isHostOrAdmin) {
+                openEditEventModal();
+            }
 
             // Render Related / Latest Events in "You may also like"
             await loadRelatedEvents(eventId);
@@ -1149,10 +1156,10 @@
                                 <div class="evt-card-footer">
                                     <div class="evt-card-attendees">
                                         <i data-lucide="calendar-check" size="15" style="color: var(--primary);"></i>
-                                        <span>${isPast ? 'Concluded' : (e.is_paid && Number(e.price) > 0 ? `PKR ${Number(e.price).toLocaleString()}` : 'Attend')}</span>
+                                        <span>${isPast ? 'Concluded' : (e.is_paid && Number(e.price) > 0 ? `PKR ${Number(e.price).toLocaleString()}` : 'Free')}</span>
                                     </div>
                                     <span style="font-size: 0.84rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px;">
-                                        Attend <i data-lucide="arrow-right" size="14"></i>
+                                        Read More <i data-lucide="arrow-right" size="14"></i>
                                     </span>
                                 </div>
                             </div>
