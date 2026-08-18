@@ -221,18 +221,26 @@
             <!-- Right Side: Info Cards -->
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 
-                <!-- Attendees Preview -->
-                <div style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
-                    <h4 style="font-weight: 800; font-size: 1.1rem; margin-bottom: 1rem; color: var(--dark);">Attending</h4>
+                <!-- Registration & Contact Action Card -->
+                <div style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 1rem;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div class="avatar-stack" style="display: flex; align-items: center;">
-                            <img src="assets/fallback-avatar.svg" data-fallback="assets/fallback-avatar.svg" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; margin-left: -15px; object-fit: cover; position: relative; z-index: 3; margin-left: 0;">
-                            <img src="assets/fallback-avatar.svg" data-fallback="assets/fallback-avatar.svg" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; margin-left: -15px; object-fit: cover; position: relative; z-index: 2;">
-                            <img src="assets/fallback-avatar.svg" data-fallback="assets/fallback-avatar.svg" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; margin-left: -15px; object-fit: cover; position: relative; z-index: 1;">
-                            <div style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; margin-left: -15px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: var(--gray); position: relative; z-index: 0;">+25</div>
-                        </div>
-                        <span style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">Join them</span>
+                        <span style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary);">Join Event</span>
+                        <span style="background: #f0fdf4; color: #166534; font-weight: 800; font-size: 0.82rem; padding: 0.3rem 0.85rem; border-radius: 50px;">Free Admission</span>
                     </div>
+
+                    <!-- Direct Form / Website Button -->
+                    <a id="card-website-btn" href="#" target="_blank" class="btn btn-primary" style="display: none; width: 100%; padding: 0.95rem 1.25rem; border-radius: 14px; font-weight: 800; font-size: 1rem; text-decoration: none; align-items: center; justify-content: center; gap: 8px;">
+                        <i data-lucide="external-link" size="18"></i> Register / Form Link
+                    </a>
+
+                    <!-- Contact Organizer Button -->
+                    <button class="btn btn-outline" onclick="openContactModal()" style="width: 100%; padding: 0.9rem 1.25rem; border-radius: 14px; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i data-lucide="phone-call" size="16"></i> Contact Organizer
+                    </button>
+
+                    <p style="text-align: center; font-size: 0.76rem; color: #64748b; margin: 0; font-weight: 600;">
+                        <i data-lucide="shield-check" size="13" style="vertical-align: middle; color: var(--primary);"></i> Direct connection with event organizer
+                    </p>
                 </div>
 
                 <!-- Date Card -->
@@ -309,57 +317,50 @@
     </main>
 
     <!-- Sticky Floating Bar -->
-    <div style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: white; border-radius: 50px; padding: 0.8rem 1rem 0.8rem 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05); z-index: 1000; display: flex; justify-content: space-between; align-items: center; width: 92%; max-width: 900px; gap: 2rem;">
+    <div style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: white; border-radius: 50px; padding: 0.8rem 1.25rem 0.8rem 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06); z-index: 1000; display: flex; justify-content: space-between; align-items: center; width: 92%; max-width: 900px; gap: 1.5rem;">
         
         <div style="flex: 1; overflow: hidden; white-space: nowrap;">
             <p id="sticky-date" style="font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 0.2rem;">Date Loading...</p>
-            <h4 id="sticky-title" style="font-size: 1.25rem; font-weight: 800; color: var(--dark); overflow: hidden; text-overflow: ellipsis;">Event Title</h4>
+            <h4 id="sticky-title" style="font-size: 1.25rem; font-weight: 800; color: var(--dark); overflow: hidden; text-overflow: ellipsis; margin: 0;">Event Title</h4>
         </div>
         
-        <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
             <span style="border: 1px solid #e2e8f0; padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; color: var(--dark);">Free</span>
-            <span id="sticky-spots" style="background: #fff7ed; color: #ea580c; padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700;">Spots remaining</span>
             
-            <button id="attend-btn" style="background: #1e293b; color: white; border: none; padding: 0 2.5rem; height: 48px; border-radius: 50px; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: background 0.3s; margin-left: 0.5rem;">Attend</button>
+            <a id="sticky-website-btn" href="#" target="_blank" class="btn btn-primary" style="display: none; padding: 0 1.75rem; height: 48px; border-radius: 50px; font-weight: 800; font-size: 0.95rem; align-items: center; gap: 6px; text-decoration: none;">
+                <i data-lucide="external-link" size="16"></i> Register / Form
+            </a>
+
+            <button onclick="openContactModal()" style="background: #1e293b; color: white; border: none; padding: 0 2rem; height: 48px; border-radius: 50px; font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: background 0.3s; display: inline-flex; align-items: center; gap: 6px;">
+                <i data-lucide="phone-call" size="16"></i> Contact Organizer
+            </button>
         </div>
     </div>
 
-    <!-- Embedded Google Form Modal -->
-    <div id="google-form-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); z-index: 2200; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); padding: 1.5rem;">
-        <div style="background: white; width: min(850px, 98vw); height: min(780px, 92vh); border-radius: 24px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 30px 80px rgba(0,0,0,0.3);">
-            <div style="padding: 1.25rem 1.75rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
-                <div>
-                    <h4 id="gform-modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">Event Registration Form</h4>
-                    <p style="margin: 0; font-size: 0.8rem; color: #059669; font-weight: 700;">Step 1: Fill out the Google Form</p>
-                </div>
-                <div style="display: flex; gap: 0.75rem; align-items: center;">
-                    <a id="gform-external-link" href="#" target="_blank" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.85rem; border-radius: 8px; font-weight: 700;">
-                        Open in New Tab <i data-lucide="external-link" size="13"></i>
-                    </a>
-                    <button class="btn-icon-sm" type="button" onclick="closeGoogleFormModal()"><i data-lucide="x" size="18"></i></button>
-                </div>
-            </div>
-
-            <div style="background: #f0fdf4; border-bottom: 1px solid #bbf7d0; padding: 0.75rem 1.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
-                <div style="font-size: 0.84rem; color: #166534; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                    <i data-lucide="info" size="16"></i> Form requires Google sign-in or not loading below?
-                </div>
-                <a id="gform-direct-btn" href="#" target="_blank" class="btn btn-primary" style="padding: 0.45rem 1.1rem; font-size: 0.84rem; border-radius: 8px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
-                    Open Form Directly in New Tab <i data-lucide="external-link" size="14"></i>
-                </a>
+    <!-- Contact Organizer Modal -->
+    <div id="contact-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 2300; align-items: center; justify-content: center; backdrop-filter: blur(6px); padding: 1.5rem;">
+        <div class="modal-card" style="background: white; width: 100%; max-width: 440px; border-radius: 24px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--dark); margin: 0;">Contact Organizer</h3>
+                <button onclick="closeContactModal()" style="background: none; border: none; cursor: pointer; color: var(--gray); display: flex;"><i data-lucide="x" size="20"></i></button>
             </div>
             
-            <div style="flex: 1; position: relative; background: #ffffff;">
-                <iframe id="gform-iframe" style="width: 100%; height: 100%; border: none;" src="about:blank"></iframe>
-            </div>
+            <p style="font-size: 0.88rem; color: #64748b; font-weight: 600; margin-bottom: 1.25rem;">
+                Registration & contact options for <strong id="modal-event-title" style="color: var(--dark);">this event</strong>:
+            </p>
 
-            <div style="padding: 1.25rem 1.75rem; border-top: 1px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
-                <span style="font-size: 0.82rem; color: #64748b; font-weight: 600;">
-                    <i data-lucide="clock" size="14" style="color: #d97706; vertical-align: middle;"></i> Status will be set to <strong>PENDING</strong> for host verification.
-                </span>
-                <button id="gform-submit-app-btn" type="button" class="btn btn-primary" style="padding: 0.75rem 1.75rem; border-radius: 12px; font-weight: 800;" onclick="submitGoogleFormRegistration()">
-                    <i data-lucide="check-circle-2" size="16"></i> I Have Submitted Form — Complete Application
-                </button>
+            <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+                <!-- Website / Form Link -->
+                <a id="modal-form-btn" href="#" target="_blank" class="contact-action-btn" style="display: none; background: var(--primary); color: white; padding: 0.85rem 1.2rem; border-radius: 12px; font-weight: 700; text-decoration: none; align-items: center; justify-content: center; gap: 8px;">
+                    <i data-lucide="external-link" size="18"></i>
+                    <span>Visit Form / Website</span>
+                </a>
+
+                <!-- Email Organizer Button -->
+                <a id="modal-email-btn" href="#" target="_blank" class="contact-action-btn" style="display: flex; background: #3b82f6; color: white; padding: 0.85rem 1.2rem; border-radius: 12px; font-weight: 700; text-decoration: none; align-items: center; justify-content: center; gap: 8px;">
+                    <i data-lucide="mail" size="18"></i>
+                    <span>Send Email Inquiry</span>
+                </a>
             </div>
         </div>
     </div>
@@ -499,6 +500,19 @@
             return raw;
         }
 
+        function openContactModal() {
+            const modal = document.getElementById('contact-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        function closeContactModal() {
+            const modal = document.getElementById('contact-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
         function getEventFormUrl() {
             if (!activeEventData) return '';
             const rawUrl = (activeEventData.google_form_url || '').trim();
@@ -507,71 +521,6 @@
                 return 'https://' + rawUrl;
             }
             return rawUrl;
-        }
-
-        function openFormLink(url) {
-            const link = url || getEventFormUrl();
-            if (!link) return;
-            const opened = window.open(link, '_blank');
-            if (!opened || opened.closed || typeof opened.closed === 'undefined') {
-                window.location.href = link;
-            }
-        }
-
-        async function openGoogleFormModal() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                showToast('Please sign in first to attend this event.', 'error');
-                setTimeout(() => { window.location.href = 'login'; }, 1000);
-                return;
-            }
-
-            if (!activeEventData) {
-                showToast('Loading event details, please try again.', 'info');
-                return;
-            }
-
-            const formUrl = getEventFormUrl();
-
-            // 1. If an external form URL exists, open it immediately on click
-            if (formUrl) {
-                openFormLink(formUrl);
-            }
-
-            const attendBtn = document.getElementById('attend-btn');
-            if (attendBtn) {
-                attendBtn.disabled = true;
-                attendBtn.textContent = 'Submitting Request...';
-            }
-
-            // 2. Submit pending registration in background
-            try {
-                const res = await apiFetch(`/events/${eventId}/register`, {
-                    method: 'POST'
-                });
-                const data = await res.json();
-                activeEventData.my_status = data.status || 'pending';
-                updateUserStatusUI(activeEventData.my_status);
-
-                if (data.participant_count !== undefined) {
-                    const spotsLeft = Math.max(0, 50 - data.participant_count);
-                    const stickySpots = document.getElementById('sticky-spots');
-                    if (stickySpots) stickySpots.textContent = `${spotsLeft} spots remaining`;
-                }
-
-                if (formUrl) {
-                    showToast('Opening registration form! Status: PENDING organizer review.', 'success');
-                } else {
-                    showToast(data.message || 'Your attendance request is pending organizer review.', 'success');
-                }
-                await loadEventDetails();
-            } catch (e) {
-                showToast('Attendance request recorded.', 'info');
-                if (attendBtn && !activeEventData?.my_status) {
-                    attendBtn.disabled = false;
-                    attendBtn.textContent = formUrl ? 'Attend & Fill Form 🔗' : 'Attend Event';
-                }
-            }
         }
 
         function closeGoogleFormModal() {
@@ -716,42 +665,46 @@
             }
         }
 
-        function updateUserStatusUI(status) {
-            const attendBtn = document.getElementById('attend-btn');
-            if (!attendBtn) return;
-
-            const formUrl = getEventFormUrl();
-            const st = (status || '').toLowerCase();
-
-            if (st === 'approved' || st === 'confirmed') {
-                attendBtn.disabled = false;
-                attendBtn.textContent = 'Status: Attending ✓ (View Pass)';
-                attendBtn.style.background = '#059669';
-                attendBtn.style.cursor = 'pointer';
-                attendBtn.onclick = () => document.getElementById('ticket-modal').classList.remove('hidden');
-            } else if (st === 'pending') {
-                attendBtn.disabled = false;
-                attendBtn.style.background = '#d97706';
-                attendBtn.style.cursor = 'pointer';
-                if (formUrl) {
-                    attendBtn.textContent = 'Open Form Link 🔗 (Pending ⏳)';
-                    attendBtn.onclick = () => openFormLink(formUrl);
-                } else {
-                    attendBtn.textContent = 'Status: Pending Organizer Review ⏳';
-                    attendBtn.onclick = () => showToast('Your attendance request is pending organizer review.', 'info');
+        function syncEventContactActions(event) {
+            let formUrl = '';
+            if (event.google_form_url && event.google_form_url.trim()) {
+                formUrl = event.google_form_url.trim();
+                if (!formUrl.startsWith('http://') && !formUrl.startsWith('https://')) {
+                    formUrl = 'https://' + formUrl;
                 }
-            } else if (st === 'rejected') {
-                attendBtn.disabled = true;
-                attendBtn.textContent = 'Status: Rejected ❌';
-                attendBtn.style.background = '#dc2626';
-                attendBtn.style.cursor = 'not-allowed';
-                attendBtn.onclick = null;
+            }
+
+            const cardWebBtn = document.getElementById('card-website-btn');
+            const stickyWebBtn = document.getElementById('sticky-website-btn');
+            const modalFormBtn = document.getElementById('modal-form-btn');
+            const modalEmailBtn = document.getElementById('modal-email-btn');
+            const modalTitle = document.getElementById('modal-event-title');
+
+            if (modalTitle) modalTitle.textContent = event.title || 'Event';
+
+            if (formUrl) {
+                if (cardWebBtn) {
+                    cardWebBtn.href = formUrl;
+                    cardWebBtn.style.display = 'inline-flex';
+                }
+                if (stickyWebBtn) {
+                    stickyWebBtn.href = formUrl;
+                    stickyWebBtn.style.display = 'inline-flex';
+                }
+                if (modalFormBtn) {
+                    modalFormBtn.href = formUrl;
+                    modalFormBtn.style.display = 'inline-flex';
+                }
             } else {
-                attendBtn.disabled = false;
-                attendBtn.textContent = formUrl ? 'Attend & Fill Form 🔗' : 'Attend Event';
-                attendBtn.style.background = 'var(--primary)';
-                attendBtn.style.cursor = 'pointer';
-                attendBtn.onclick = openGoogleFormModal;
+                if (cardWebBtn) cardWebBtn.style.display = 'none';
+                if (stickyWebBtn) stickyWebBtn.style.display = 'none';
+                if (modalFormBtn) modalFormBtn.style.display = 'none';
+            }
+
+            if (modalEmailBtn) {
+                const mailSubject = encodeURIComponent(`Inquiry about event: ${event.title}`);
+                const mailBody = encodeURIComponent(`Hi ${event.creator_name || 'Organizer'},\n\nI am interested in attending "${event.title}". Please share details regarding registration.\n\nThank you!`);
+                modalEmailBtn.href = `mailto:info@coworkconnect.com?subject=${mailSubject}&body=${mailBody}`;
             }
         }
 
@@ -945,8 +898,6 @@
             
             document.getElementById('sticky-title').textContent = event.title;
             document.getElementById('sticky-date').textContent = `${stickyDateStr} - ${stickyTimeStr} PKT`;
-            const spotsLeft = 50 - event.participant_count;
-            document.getElementById('sticky-spots').textContent = `${spotsLeft} spots left`;
 
             document.getElementById('pass-title').textContent = event.title;
             document.getElementById('pass-user').textContent = JSON.parse(localStorage.getItem('user'))?.name || 'Member';
@@ -972,8 +923,8 @@
                 loadHostVerificationCenter();
             }
 
-            // Sync Attend button status and handler
-            updateUserStatusUI(event.my_status);
+            // Sync Contact & Registration Action Buttons
+            syncEventContactActions(event);
 
             // Render Related / Latest Events in "You may also like"
             await loadRelatedEvents(eventId);
@@ -1037,11 +988,11 @@
                                 <p class="evt-card-meta"><i data-lucide="map-pin" size="14"></i> ${escapeHtml(venueDisplay)}</p>
                                 <div class="evt-card-footer">
                                     <div class="evt-card-attendees">
-                                        <i data-lucide="users" size="15" style="color: var(--primary);"></i>
-                                        <span>${Number(e.participant_count || 0)} registered (${spotsLeft} spots left)</span>
+                                        <i data-lucide="calendar-check" size="15" style="color: var(--primary);"></i>
+                                        <span>${isPast ? 'Concluded' : 'Open Registration'}</span>
                                     </div>
                                     <span style="font-size: 0.84rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px;">
-                                        Details <i data-lucide="arrow-right" size="14"></i>
+                                        View Event <i data-lucide="arrow-right" size="14"></i>
                                     </span>
                                 </div>
                             </div>
