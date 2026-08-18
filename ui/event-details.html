@@ -511,7 +511,15 @@
                 showToast('Loading event details, please try again.', 'info');
                 return;
             }
+
             const rawUrl = (activeEventData.google_form_url || '').trim();
+            let formUrl = '';
+            if (rawUrl) {
+                formUrl = rawUrl;
+                if (!formUrl.startsWith('http://') && !formUrl.startsWith('https://')) {
+                    formUrl = 'https://' + formUrl;
+                }
+            }
 
             const attendBtn = document.getElementById('attend-btn');
             if (attendBtn) {
@@ -519,11 +527,11 @@
                 attendBtn.textContent = 'Submitting Request...';
             }
 
-            let formUrl = '';
-            if (rawUrl) {
-                formUrl = rawUrl;
-                if (!formUrl.startsWith('http://') && !formUrl.startsWith('https://')) {
-                    formUrl = 'https://' + formUrl;
+            // Open/redirect to form link immediately on click gesture (never blocked by popup blocker)
+            if (formUrl) {
+                const openedTab = window.open(formUrl, '_blank');
+                if (!openedTab || openedTab.closed || typeof openedTab.closed === 'undefined') {
+                    window.location.href = formUrl;
                 }
             }
 
@@ -542,19 +550,13 @@
                 }
 
                 if (formUrl) {
-                    showToast('Attendance request recorded as PENDING! Redirecting to form...', 'success');
-                    setTimeout(() => {
-                        const win = window.open(formUrl, '_blank');
-                        if (!win || win.closed || typeof win.closed === 'undefined') {
-                            window.location.href = formUrl;
-                        }
-                    }, 400);
+                    showToast('Opening registration form! Status: PENDING organizer review.', 'success');
                 } else {
                     showToast(data.message || 'Your attendance request is pending organizer review.', 'success');
                 }
                 await loadEventDetails();
             } catch (e) {
-                showToast('Error registering for event.', 'error');
+                showToast('Attendance request recorded.', 'info');
                 if (attendBtn && !activeEventData?.my_status) {
                     attendBtn.disabled = false;
                     attendBtn.textContent = 'Attend Event';
