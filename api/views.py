@@ -1451,13 +1451,20 @@ def events(request):
         rows = fetch_all(
             """
             SELECT e.*, s.name as space_name, u.name as creator_name,
-              (SELECT COUNT(*) FROM event_registrations WHERE event_id = e.id) as participant_count
+              (SELECT COUNT(*) FROM event_registrations WHERE event_id = e.id AND (status IS NULL OR LOWER(status) != 'rejected')) as participant_count
             FROM events e
             LEFT JOIN spaces s ON e.space_id = s.id
             JOIN users u ON e.created_by = u.id
             ORDER BY e.event_date ASC
             """
         )
+        user, _ = auth_user(request)
+        if user:
+            user_regs = fetch_all("SELECT event_id, status FROM event_registrations WHERE user_id = %s", [user["id"]])
+            reg_map = {r["event_id"]: (r.get("status") or "pending") for r in user_regs}
+            for row in rows:
+                if row["id"] in reg_map:
+                    row["my_status"] = reg_map[row["id"]]
         return api_response({"success": True, "count": len(rows), "data": rows})
 
     if request.method == "POST":
@@ -1508,7 +1515,7 @@ def event_detail(request, event_id):
     event = fetch_one(
         """
         SELECT e.*, s.name as space_name, u.name as creator_name,
-          (SELECT COUNT(*) FROM event_registrations WHERE event_id = e.id) as participant_count
+          (SELECT COUNT(*) FROM event_registrations WHERE event_id = e.id AND (status IS NULL OR LOWER(status) != 'rejected')) as participant_count
         FROM events e
         LEFT JOIN spaces s ON e.space_id = s.id
         JOIN users u ON e.created_by = u.id
@@ -1591,20 +1598,33 @@ def register_event(request, event_id):
     event = fetch_one("SELECT id, google_form_url FROM events WHERE id = %s", [event_id])
     if not event:
         return api_response({"success": False, "message": "Event not found"}, 404)
-    
+
+    count_row = fetch_one(
+        "SELECT COUNT(*) as active_count FROM event_registrations WHERE event_id = %s AND (status IS NULL OR LOWER(status) != 'rejected')",
+        [event_id]
+    )
+    active_count = count_row.get("active_count", 0) if count_row else 0
+
     existing = fetch_one("SELECT id, COALESCE(status, 'pending') as status FROM event_registrations WHERE event_id = %s AND user_id = %s", [event_id, user["id"]])
     if existing:
+        st = existing.get("status", "pending")
         return api_response({
             "success": True,
-            "message": f"Already registered for this event. Status: {existing.get('status', 'pending').upper()}",
-            "status": existing.get("status", "pending")
+            "message": f"Your attendance request is {st.upper()}.",
+            "status": st,
+            "participant_count": active_count
         }, 200)
 
+    if active_count >= 50:
+        return api_response({"success": False, "message": "Sorry, this event is fully booked! 0 spots remaining."}, 400)
+
     execute("INSERT INTO event_registrations (event_id, user_id, status) VALUES (%s, %s, 'pending')", [event_id, user["id"]])
+    new_count = active_count + 1
     return api_response({
         "success": True,
-        "message": "Registration submitted! Your status is PENDING host verification.",
-        "status": "pending"
+        "message": "Your attendance request is PENDING organizer review.",
+        "status": "pending",
+        "participant_count": new_count
     })
 
 

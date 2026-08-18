@@ -500,20 +500,28 @@
                     updateUserStatusUI('pending');
                 }
 
+                if (data.participant_count !== undefined) {
+                    const spotsLeft = Math.max(0, 50 - data.participant_count);
+                    const stickySpots = document.getElementById('sticky-spots');
+                    if (stickySpots) stickySpots.textContent = `${spotsLeft} spots remaining`;
+                }
+
                 if (formUrl) {
-                    showToast('Opening registration link... Status: PENDING host approval.', 'success');
-                    const win = window.open(formUrl, '_blank');
-                    if (!win || win.closed || typeof win.closed === 'undefined') {
-                        window.location.href = formUrl;
-                    }
+                    showToast('Attendance request recorded as PENDING! Redirecting to form...', 'success');
+                    setTimeout(() => {
+                        const win = window.open(formUrl, '_blank');
+                        if (!win || win.closed || typeof win.closed === 'undefined') {
+                            window.location.href = formUrl;
+                        }
+                    }, 400);
                 } else {
-                    showToast(data.message || 'Registration submitted! Status: PENDING host approval.', 'success');
+                    showToast(data.message || 'Your attendance request is pending organizer review.', 'success');
                 }
                 await loadEventDetails();
             } catch (e) {
                 showToast('Error registering for event.', 'error');
             } finally {
-                if (attendBtn) attendBtn.disabled = false;
+                if (attendBtn && !activeEventData?.my_status) attendBtn.disabled = false;
             }
         }
 
@@ -648,10 +656,11 @@
                 });
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    alert(`Participant status updated to ${newStatus.toUpperCase()}`);
+                    showToast(`Participant status updated to ${newStatus.toUpperCase()}`, 'success');
                     loadHostVerificationCenter();
+                    await loadEventDetails();
                 } else {
-                    alert(data.message || 'Failed to update status');
+                    showToast(data.message || 'Failed to update status', 'error');
                 }
             } catch (e) {
                 alert('Error updating status');
@@ -669,10 +678,10 @@
                 attendBtn.style.background = '#059669';
                 attendBtn.onclick = () => document.getElementById('ticket-modal').classList.remove('hidden');
             } else if (st === 'pending') {
-                attendBtn.disabled = false;
-                attendBtn.textContent = 'Status: Pending Approval ⏳';
+                attendBtn.disabled = true;
+                attendBtn.textContent = 'Status: Pending Organizer Review ⏳';
                 attendBtn.style.background = '#d97706';
-                attendBtn.onclick = () => showToast('Your attendance request is PENDING approval by the event host.', 'info');
+                attendBtn.onclick = null;
             } else if (st === 'rejected') {
                 attendBtn.disabled = true;
                 attendBtn.textContent = 'Status: Rejected ❌';
