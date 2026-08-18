@@ -499,6 +499,25 @@
             return raw;
         }
 
+        function getEventFormUrl() {
+            if (!activeEventData) return '';
+            const rawUrl = (activeEventData.google_form_url || '').trim();
+            if (!rawUrl) return '';
+            if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+                return 'https://' + rawUrl;
+            }
+            return rawUrl;
+        }
+
+        function openFormLink(url) {
+            const link = url || getEventFormUrl();
+            if (!link) return;
+            const opened = window.open(link, '_blank');
+            if (!opened || opened.closed || typeof opened.closed === 'undefined') {
+                window.location.href = link;
+            }
+        }
+
         async function openGoogleFormModal() {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -512,13 +531,11 @@
                 return;
             }
 
-            const rawUrl = (activeEventData.google_form_url || '').trim();
-            let formUrl = '';
-            if (rawUrl) {
-                formUrl = rawUrl;
-                if (!formUrl.startsWith('http://') && !formUrl.startsWith('https://')) {
-                    formUrl = 'https://' + formUrl;
-                }
+            const formUrl = getEventFormUrl();
+
+            // 1. If an external form URL exists, open it immediately on click
+            if (formUrl) {
+                openFormLink(formUrl);
             }
 
             const attendBtn = document.getElementById('attend-btn');
@@ -527,14 +544,7 @@
                 attendBtn.textContent = 'Submitting Request...';
             }
 
-            // Open/redirect to form link immediately on click gesture (never blocked by popup blocker)
-            if (formUrl) {
-                const openedTab = window.open(formUrl, '_blank');
-                if (!openedTab || openedTab.closed || typeof openedTab.closed === 'undefined') {
-                    window.location.href = formUrl;
-                }
-            }
-
+            // 2. Submit pending registration in background
             try {
                 const res = await apiFetch(`/events/${eventId}/register`, {
                     method: 'POST'
@@ -559,7 +569,7 @@
                 showToast('Attendance request recorded.', 'info');
                 if (attendBtn && !activeEventData?.my_status) {
                     attendBtn.disabled = false;
-                    attendBtn.textContent = 'Attend Event';
+                    attendBtn.textContent = formUrl ? 'Attend & Fill Form 🔗' : 'Attend Event';
                 }
             }
         }
@@ -710,26 +720,37 @@
             const attendBtn = document.getElementById('attend-btn');
             if (!attendBtn) return;
 
+            const formUrl = getEventFormUrl();
             const st = (status || '').toLowerCase();
+
             if (st === 'approved' || st === 'confirmed') {
                 attendBtn.disabled = false;
                 attendBtn.textContent = 'Status: Attending ✓ (View Pass)';
                 attendBtn.style.background = '#059669';
+                attendBtn.style.cursor = 'pointer';
                 attendBtn.onclick = () => document.getElementById('ticket-modal').classList.remove('hidden');
             } else if (st === 'pending') {
-                attendBtn.disabled = true;
-                attendBtn.textContent = 'Status: Pending Organizer Review ⏳';
+                attendBtn.disabled = false;
                 attendBtn.style.background = '#d97706';
-                attendBtn.onclick = null;
+                attendBtn.style.cursor = 'pointer';
+                if (formUrl) {
+                    attendBtn.textContent = 'Open Form Link 🔗 (Pending ⏳)';
+                    attendBtn.onclick = () => openFormLink(formUrl);
+                } else {
+                    attendBtn.textContent = 'Status: Pending Organizer Review ⏳';
+                    attendBtn.onclick = () => showToast('Your attendance request is pending organizer review.', 'info');
+                }
             } else if (st === 'rejected') {
                 attendBtn.disabled = true;
                 attendBtn.textContent = 'Status: Rejected ❌';
                 attendBtn.style.background = '#dc2626';
+                attendBtn.style.cursor = 'not-allowed';
                 attendBtn.onclick = null;
             } else {
                 attendBtn.disabled = false;
-                attendBtn.textContent = 'Attend Event';
+                attendBtn.textContent = formUrl ? 'Attend & Fill Form 🔗' : 'Attend Event';
                 attendBtn.style.background = 'var(--primary)';
+                attendBtn.style.cursor = 'pointer';
                 attendBtn.onclick = openGoogleFormModal;
             }
         }
