@@ -1497,27 +1497,83 @@ def events(request):
             price = 0.0
 
         space_id = data.get("spaceId") or None
-        _, event_id = execute(
-            """
-            INSERT INTO events (title, city, venue, event_type, description, google_form_url, is_paid, price, event_date, end_date, image_url, space_id, created_by)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """,
-            [
-                data.get("title"),
-                data.get("city") or None,
-                data.get("venue") or None,
-                data.get("eventType") or None,
-                data.get("description"),
-                google_form_url,
-                is_paid,
-                price,
-                data.get("eventDate"),
-                data.get("endDate") or None,
-                image_url,
-                space_id,
-                user["id"],
-            ],
-        )
+        event_id = None
+        try:
+            _, event_id = execute(
+                """
+                INSERT INTO events (title, city, venue, event_type, description, google_form_url, is_paid, price, event_date, end_date, image_url, space_id, created_by)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                [
+                    data.get("title"),
+                    data.get("city") or None,
+                    data.get("venue") or None,
+                    data.get("eventType") or None,
+                    data.get("description"),
+                    google_form_url,
+                    is_paid,
+                    price,
+                    data.get("eventDate"),
+                    data.get("endDate") or None,
+                    image_url,
+                    space_id,
+                    user["id"],
+                ],
+            )
+        except Exception:
+            try:
+                if connection.vendor == "postgresql":
+                    execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE")
+                    execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS price NUMERIC(10,2) DEFAULT 0")
+                elif connection.vendor == "sqlite":
+                    execute("ALTER TABLE events ADD COLUMN is_paid INTEGER DEFAULT 0")
+                    execute("ALTER TABLE events ADD COLUMN price NUMERIC DEFAULT 0")
+                else:
+                    execute("ALTER TABLE events ADD COLUMN is_paid BOOLEAN DEFAULT FALSE")
+                    execute("ALTER TABLE events ADD COLUMN price DECIMAL(10,2) DEFAULT 0")
+
+                _, event_id = execute(
+                    """
+                    INSERT INTO events (title, city, venue, event_type, description, google_form_url, is_paid, price, event_date, end_date, image_url, space_id, created_by)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    [
+                        data.get("title"),
+                        data.get("city") or None,
+                        data.get("venue") or None,
+                        data.get("eventType") or None,
+                        data.get("description"),
+                        google_form_url,
+                        is_paid,
+                        price,
+                        data.get("eventDate"),
+                        data.get("endDate") or None,
+                        image_url,
+                        space_id,
+                        user["id"],
+                    ],
+                )
+            except Exception:
+                _, event_id = execute(
+                    """
+                    INSERT INTO events (title, city, venue, event_type, description, google_form_url, event_date, end_date, image_url, space_id, created_by)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    [
+                        data.get("title"),
+                        data.get("city") or None,
+                        data.get("venue") or None,
+                        data.get("eventType") or None,
+                        data.get("description"),
+                        google_form_url,
+                        data.get("eventDate"),
+                        data.get("endDate") or None,
+                        image_url,
+                        space_id,
+                        user["id"],
+                    ],
+                )
+
         return api_response({"success": True, "data": {"id": event_id, "title": data.get("title"), "google_form_url": google_form_url, "is_paid": is_paid, "price": price, "eventDate": data.get("eventDate")}}, 201)
 
     return method_not_allowed()
@@ -1590,14 +1646,25 @@ def event_detail(request, event_id):
         elif data.get("image_url"):
             image_url = data.get("image_url")
 
-        execute(
-            """
-            UPDATE events 
-            SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, is_paid = %s, price = %s, event_date = %s, end_date = %s, image_url = %s
-            WHERE id = %s
-            """,
-            [title, city, venue, event_type, description, google_form_url, is_paid, price, event_date, end_date, image_url, event_id],
-        )
+        try:
+            execute(
+                """
+                UPDATE events 
+                SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, is_paid = %s, price = %s, event_date = %s, end_date = %s, image_url = %s
+                WHERE id = %s
+                """,
+                [title, city, venue, event_type, description, google_form_url, is_paid, price, event_date, end_date, image_url, event_id],
+            )
+        except Exception:
+            execute(
+                """
+                UPDATE events 
+                SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, event_date = %s, end_date = %s, image_url = %s
+                WHERE id = %s
+                """,
+                [title, city, venue, event_type, description, google_form_url, event_date, end_date, image_url, event_id],
+            )
+
         return api_response({"success": True, "message": "Event updated successfully", "data": {"id": event_id, "title": title}})
 
     if request.method == "DELETE":

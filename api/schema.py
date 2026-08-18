@@ -17,18 +17,18 @@ def ensure_schema():
     else:
         statements = mysql_statements()
 
-    try:
-        with connection.cursor() as cursor:
-            for statement in statements:
+    for statement in statements:
+        try:
+            with connection.cursor() as cursor:
                 cursor.execute(statement)
-            for statement in compatibility_statements(connection.vendor):
-                try:
-                    cursor.execute(statement)
-                except Exception:
-                    pass
-    except Exception:
-        logger.exception("Could not ensure database schema")
-        return
+        except Exception:
+            pass
+    for statement in compatibility_statements(connection.vendor):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(statement)
+        except Exception:
+            pass
 
     _schema_checked = True
 

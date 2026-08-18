@@ -529,17 +529,23 @@
                     body: formData 
                 });
                 
-                if(res.ok) { 
+                let data = null;
+                try {
+                    data = await res.json();
+                } catch(e) {}
+
+                if(res.ok && (!data || data.success !== false)) { 
                     showToast ? showToast('Event created successfully.', 'success') : alert('Event created successfully.'); 
                     toggleEventModal(false); 
                     fetchEvents(); 
                     form.reset(); 
+                    document.getElementById('create-price-container').style.display = 'none';
                 } else { 
-                    const data = await res.json(); 
-                    showToast ? showToast('Error: ' + data.message, 'error') : alert('Error: ' + data.message); 
+                    const errMsg = (data && data.message) ? data.message : `Failed to create event (Status: ${res.status})`;
+                    showToast ? showToast(errMsg, 'error') : alert(errMsg); 
                 }
             } catch (err) { 
-                showToast ? showToast('Connection Error', 'error') : alert('Connection Error'); 
+                showToast ? showToast('Error submitting event: ' + err.message, 'error') : alert('Error: ' + err.message); 
             } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
