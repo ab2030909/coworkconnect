@@ -313,6 +313,9 @@
                 </div>
 
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <button id="edit-space-btn" class="btn" style="display: none; background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; border-radius: 12px; font-weight: 800; align-items: center; gap: 6px; padding: 0.65rem 1.1rem; font-size: 0.85rem;">
+                        <i data-lucide="pencil" size="15"></i> Edit Workspace
+                    </button>
                     <button id="delete-space-btn" class="btn" style="display: none; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 12px; font-weight: 800; align-items: center; gap: 6px; padding: 0.65rem 1.1rem; font-size: 0.85rem;">
                         <i data-lucide="trash-2" size="15"></i> Delete Workspace
                     </button>
@@ -484,6 +487,55 @@
         </div>
     </div>
 
+    <!-- Edit Workspace Modal -->
+    <div id="edit-space-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 580px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark);">Edit Workspace</h3>
+                <button type="button" onclick="closeEditSpaceModal()" style="background: none; border: none; cursor: pointer; color: var(--gray);"><i data-lucide="x" size="22"></i></button>
+            </div>
+            <form id="edit-space-detail-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Workspace Name</label>
+                    <input type="text" id="edit-sp-name" maxlength="60" class="input-field" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Type</label>
+                        <select id="edit-sp-type" class="input-field" required>
+                            <option value="desk">Dedicated Desk</option>
+                            <option value="private_office">Private Office</option>
+                            <option value="meeting_room">Meeting Room</option>
+                            <option value="virtual_office">Virtual Office</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Location / City</label>
+                        <input type="text" id="edit-sp-location" maxlength="80" class="input-field" required>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Price / Day (Rs)</label>
+                        <input type="number" id="edit-sp-price" min="0" max="999999" class="input-field" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Capacity (Seats)</label>
+                        <input type="number" id="edit-sp-capacity" min="1" max="9999" class="input-field" required>
+                    </div>
+                </div>
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); display: block; margin-bottom: 0.3rem;">Description</label>
+                    <textarea id="edit-sp-desc" maxlength="300" rows="3" class="input-field" style="resize: vertical;"></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeEditSpaceModal()" style="border-radius: 12px; font-weight: 700; padding: 0.75rem 1.2rem;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800;">Save Updates</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Delete Workspace Confirmation Modal -->
     <div id="delete-space-modal" class="modal-overlay">
         <div class="modal-card" style="max-width: 440px; text-align: center; padding: 2rem;">
@@ -538,6 +590,72 @@
         contactModal.addEventListener('click', (e) => {
             if (e.target === contactModal) closeContactModal();
         });
+
+        // Edit Modal Controls
+        const editSpaceModal = document.getElementById('edit-space-modal');
+        function openEditSpaceModal() {
+            if (!currentSpace) return;
+            document.getElementById('edit-sp-name').value = currentSpace.name || '';
+            document.getElementById('edit-sp-type').value = currentSpace.type || 'desk';
+            document.getElementById('edit-sp-location').value = currentSpace.location || '';
+            document.getElementById('edit-sp-price').value = currentSpace.price_per_day || 0;
+            document.getElementById('edit-sp-capacity').value = currentSpace.capacity || 1;
+            document.getElementById('edit-sp-desc').value = currentSpace.description || '';
+            editSpaceModal.classList.add('open');
+            if (window.lucide) lucide.createIcons();
+        }
+        function closeEditSpaceModal() {
+            editSpaceModal.classList.remove('open');
+        }
+        if (editSpaceModal) {
+            editSpaceModal.addEventListener('click', (e) => {
+                if (e.target === editSpaceModal) closeEditSpaceModal();
+            });
+        }
+
+        const editForm = document.getElementById('edit-space-detail-form');
+        if (editForm) {
+            editForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!currentSpace) return;
+                const token = localStorage.getItem('token');
+                if (!token) return;
+
+                const submitBtn = editForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+
+                const payload = {
+                    name: document.getElementById('edit-sp-name').value.trim(),
+                    type: document.getElementById('edit-sp-type').value,
+                    location: document.getElementById('edit-sp-location').value.trim(),
+                    price_per_day: document.getElementById('edit-sp-price').value,
+                    capacity: document.getElementById('edit-sp-capacity').value,
+                    description: document.getElementById('edit-sp-desc').value.trim()
+                };
+
+                try {
+                    const res = await apiFetch('/spaces/' + currentSpace.id, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        showToast('Workspace updated successfully!', 'success');
+                        closeEditSpaceModal();
+                        await loadWorkspaceDetails();
+                    } else {
+                        showToast(data.message || 'Failed to update workspace.', 'error');
+                    }
+                } catch (err) {
+                    showToast('Error updating workspace.', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Save Updates';
+                }
+            });
+        }
 
         // Delete Modal Controls
         const deleteModal = document.getElementById('delete-space-modal');
@@ -671,9 +789,16 @@
                 const isAdmin = currentUser && currentUser.role === 'admin';
 
                 const deleteBtn = document.getElementById('delete-space-btn');
+                const editBtn = document.getElementById('edit-space-btn');
                 if (isCreator || isAdmin) {
-                    deleteBtn.style.display = 'inline-flex';
-                    deleteBtn.onclick = () => deleteWorkspace(space.id, space.name);
+                    if (editBtn) {
+                        editBtn.style.display = 'inline-flex';
+                        editBtn.onclick = openEditSpaceModal;
+                    }
+                    if (deleteBtn) {
+                        deleteBtn.style.display = 'inline-flex';
+                        deleteBtn.onclick = () => deleteWorkspace(space.id, space.name);
+                    }
                 }
 
                 // Populate Fields in Dedicated Fixed Areas
