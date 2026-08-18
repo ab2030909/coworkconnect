@@ -694,6 +694,14 @@
             }
         }
 
+        function formatDateTimeLocal(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '';
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
         function openEditEventModal() {
             if (!activeEventData) return;
             document.getElementById('edit-e-title').value = activeEventData.title || '';
@@ -704,12 +712,10 @@
             document.getElementById('edit-e-google-form').value = activeEventData.google_form_url || '';
 
             if (activeEventData.event_date) {
-                const d = new Date(activeEventData.event_date);
-                document.getElementById('edit-e-date').value = d.toISOString().slice(0, 16);
+                document.getElementById('edit-e-date').value = formatDateTimeLocal(activeEventData.event_date);
             }
             if (activeEventData.end_date) {
-                const d = new Date(activeEventData.end_date);
-                document.getElementById('edit-e-end-date').value = d.toISOString().slice(0, 16);
+                document.getElementById('edit-e-end-date').value = formatDateTimeLocal(activeEventData.end_date);
             }
 
             document.getElementById('edit-event-modal').classList.remove('hidden');
@@ -725,42 +731,62 @@
             const token = localStorage.getItem('token');
             if (!token || !eventId) return;
 
-            const form = document.getElementById('edit-event-form');
-            const formData = new FormData(form);
-
-            const rawDate = formData.get('eventDate');
-            const rawEndDate = formData.get('endDate');
-
-            if (rawDate) formData.set('eventDate', rawDate.replace('T', ' ') + ':00');
-            if (rawEndDate) formData.set('endDate', rawEndDate.replace('T', ' ') + ':00');
-
-            const submitBtn = form.querySelector('button[type="submit"]');
+            const submitBtn = document.querySelector('#edit-event-form button[type="submit"]');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.dataset.origText = submitBtn.innerHTML;
-                submitBtn.innerHTML = 'Saving Changes...';
+                submitBtn.textContent = 'Saving Changes...';
             }
 
             try {
-                const res = await fetch(`/api/events/${eventId}`, {
+                let imageUrl = activeEventData?.image_url || null;
+                const fileInput = document.getElementById('edit-e-image');
+                if (fileInput && fileInput.files && fileInput.files[0]) {
+                    const imgForm = new FormData();
+                    imgForm.append('file', fileInput.files[0]);
+                    const upRes = await apiFetch('/upload', {
+                        method: 'POST',
+                        body: imgForm
+                    });
+                    const upData = await upRes.json();
+                    if (upData.success && (upData.url || upData.avatar_url)) {
+                        imageUrl = upData.url || upData.avatar_url;
+                    }
+                }
+
+                const rawDate = document.getElementById('edit-e-date').value;
+                const rawEndDate = document.getElementById('edit-e-end-date').value;
+
+                const payload = {
+                    title: document.getElementById('edit-e-title').value.trim(),
+                    eventType: document.getElementById('edit-e-type').value,
+                    city: document.getElementById('edit-e-city').value.trim(),
+                    venue: document.getElementById('edit-e-venue').value.trim(),
+                    description: document.getElementById('edit-e-desc').value.trim(),
+                    googleFormUrl: document.getElementById('edit-e-google-form').value.trim(),
+                    eventDate: rawDate ? rawDate.replace('T', ' ') + ':00' : null,
+                    endDate: rawEndDate ? rawEndDate.replace('T', ' ') + ':00' : null,
+                    imageUrl: imageUrl
+                };
+
+                const res = await apiFetch(`/events/${eventId}`, {
                     method: 'PUT',
-                    headers: { Authorization: `Bearer ${token}` },
-                    body: formData
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    alert('Event details updated successfully!');
+                    showToast('Event details updated successfully!', 'success');
                     closeEditEventModal();
-                    loadEventDetails();
+                    await loadEventDetails();
                 } else {
-                    alert(data.message || 'Failed to update event');
+                    showToast(data.message || 'Failed to update event', 'error');
                 }
             } catch (err) {
-                alert('Error updating event');
+                showToast('Error updating event', 'error');
             } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
-                    if (submitBtn.dataset.origText) submitBtn.innerHTML = submitBtn.dataset.origText;
+                    submitBtn.textContent = 'Save Changes';
                 }
             }
         });

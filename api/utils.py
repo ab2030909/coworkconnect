@@ -27,6 +27,15 @@ def read_data(request):
             return json.loads(request.body.decode("utf-8"))
         except json.JSONDecodeError:
             return {}
+    if request.method in ["PUT", "PATCH"] and "multipart/form-data" in content_type:
+        from django.http.multipartparser import MultiPartParser
+        try:
+            post, files = MultiPartParser(request.META, request, request.upload_handlers).parse()
+            request.POST = post
+            request.FILES = files
+            return post.dict()
+        except Exception:
+            return {}
     return request.POST.dict()
 
 
