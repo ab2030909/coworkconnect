@@ -494,11 +494,8 @@
                     method: 'POST'
                 });
                 const data = await res.json();
-                if (data.status) {
-                    updateUserStatusUI(data.status);
-                } else {
-                    updateUserStatusUI('pending');
-                }
+                activeEventData.my_status = data.status || 'pending';
+                updateUserStatusUI(activeEventData.my_status);
 
                 if (data.participant_count !== undefined) {
                     const spotsLeft = Math.max(0, 50 - data.participant_count);
@@ -520,8 +517,10 @@
                 await loadEventDetails();
             } catch (e) {
                 showToast('Error registering for event.', 'error');
-            } finally {
-                if (attendBtn && !activeEventData?.my_status) attendBtn.disabled = false;
+                if (attendBtn && !activeEventData?.my_status) {
+                    attendBtn.disabled = false;
+                    attendBtn.textContent = 'Attend Event';
+                }
             }
         }
 
@@ -828,10 +827,6 @@
             if(!event) return;
             activeEventData = event;
 
-            if (event.my_status) {
-                updateUserStatusUI(event.my_status);
-            }
-
             const dateStr = new Date(event.event_date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
             const timeStr = new Date(event.event_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
             
@@ -890,9 +885,8 @@
                 loadHostVerificationCenter();
             }
 
-            // Attend button default click handler -> opens embedded Google Form
-            const attendBtn = document.getElementById('attend-btn');
-            attendBtn.onclick = openGoogleFormModal;
+            // Sync Attend button status and handler
+            updateUserStatusUI(event.my_status);
 
             // Render Related Events
             const eventImages = [
