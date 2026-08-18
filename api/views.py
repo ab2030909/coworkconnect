@@ -1681,14 +1681,37 @@ def event_detail(request, event_id):
                 [title, city, venue, event_type, description, google_form_url, is_paid, price, total_seats, event_date, end_date, image_url, event_id],
             )
         except Exception:
-            execute(
-                """
-                UPDATE events 
-                SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, event_date = %s, end_date = %s, image_url = %s
-                WHERE id = %s
-                """,
-                [title, city, venue, event_type, description, google_form_url, event_date, end_date, image_url, event_id],
-            )
+            try:
+                if connection.vendor == "postgresql":
+                    execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE")
+                    execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS price NUMERIC(10,2) DEFAULT 0")
+                    execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS total_seats INT DEFAULT 50")
+                elif connection.vendor == "sqlite":
+                    execute("ALTER TABLE events ADD COLUMN is_paid INTEGER DEFAULT 0")
+                    execute("ALTER TABLE events ADD COLUMN price NUMERIC DEFAULT 0")
+                    execute("ALTER TABLE events ADD COLUMN total_seats INTEGER DEFAULT 50")
+                else:
+                    execute("ALTER TABLE events ADD COLUMN is_paid BOOLEAN DEFAULT FALSE")
+                    execute("ALTER TABLE events ADD COLUMN price DECIMAL(10,2) DEFAULT 0")
+                    execute("ALTER TABLE events ADD COLUMN total_seats INT DEFAULT 50")
+
+                execute(
+                    """
+                    UPDATE events 
+                    SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, is_paid = %s, price = %s, total_seats = %s, event_date = %s, end_date = %s, image_url = %s
+                    WHERE id = %s
+                    """,
+                    [title, city, venue, event_type, description, google_form_url, is_paid, price, total_seats, event_date, end_date, image_url, event_id],
+                )
+            except Exception:
+                execute(
+                    """
+                    UPDATE events 
+                    SET title = %s, city = %s, venue = %s, event_type = %s, description = %s, google_form_url = %s, event_date = %s, end_date = %s, image_url = %s
+                    WHERE id = %s
+                    """,
+                    [title, city, venue, event_type, description, google_form_url, event_date, end_date, image_url, event_id],
+                )
 
         return api_response({"success": True, "message": "Event updated successfully", "data": {"id": event_id, "title": title}})
 

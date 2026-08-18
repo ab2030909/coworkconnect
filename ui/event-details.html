@@ -782,11 +782,11 @@
             document.getElementById('edit-e-seats').value = activeEventData.total_seats || 50;
             document.getElementById('edit-e-google-form').value = activeEventData.google_form_url || '';
 
-            const isPaid = activeEventData.is_paid && Number(activeEventData.price) > 0;
+            const isPaid = (Boolean(activeEventData.is_paid) && activeEventData.is_paid !== '0' && activeEventData.is_paid !== 0) || (activeEventData.price && Number(activeEventData.price) > 0);
             if (isPaid) {
                 document.getElementById('edit-is-paid').checked = true;
                 document.getElementById('edit-price-container').style.display = 'block';
-                document.getElementById('edit-e-price').value = activeEventData.price;
+                document.getElementById('edit-e-price').value = activeEventData.price || '';
             } else {
                 document.getElementById('edit-is-free').checked = true;
                 document.getElementById('edit-price-container').style.display = 'none';
@@ -839,6 +839,7 @@
                 const rawEndDate = document.getElementById('edit-e-end-date').value;
                 const isPaidSelected = document.getElementById('edit-is-paid').checked ? 1 : 0;
                 const priceVal = isPaidSelected ? parseFloat(document.getElementById('edit-e-price').value || 0) : 0;
+                const seatsVal = parseInt(document.getElementById('edit-e-seats').value || 50, 10);
 
                 const payload = {
                     title: document.getElementById('edit-e-title').value.trim(),
@@ -849,6 +850,8 @@
                     googleFormUrl: document.getElementById('edit-e-google-form').value.trim(),
                     is_paid: isPaidSelected,
                     price: priceVal,
+                    total_seats: isNaN(seatsVal) || seatsVal < 1 ? 50 : seatsVal,
+                    totalSeats: isNaN(seatsVal) || seatsVal < 1 ? 50 : seatsVal,
                     eventDate: rawDate ? rawDate.replace('T', ' ') + ':00' : null,
                     endDate: rawEndDate ? rawEndDate.replace('T', ' ') + ':00' : null,
                     imageUrl: imageUrl
@@ -1012,10 +1015,10 @@
             // Price Badges Sync
             const cardPriceBadge = document.getElementById('e-card-price-badge');
             const stickyPriceBadge = document.getElementById('sticky-price-badge');
-            const isPaid = event.is_paid && Number(event.price) > 0;
+            const isPaid = (Boolean(event.is_paid) && event.is_paid !== '0' && event.is_paid !== 0) || (event.price && Number(event.price) > 0);
 
             if (isPaid) {
-                const formattedPrice = `PKR ${Number(event.price).toLocaleString()}`;
+                const formattedPrice = `PKR ${Number(event.price || 0).toLocaleString()}`;
                 if (cardPriceBadge) {
                     cardPriceBadge.textContent = formattedPrice;
                     cardPriceBadge.style.background = '#ecfdf5';
