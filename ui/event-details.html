@@ -399,8 +399,8 @@
                 </div>
 
                 <div class="input-group">
-                    <label style="font-weight: 800; color: var(--dark);">Google Form Registration Link <span style="color: #dc2626;">* (Compulsory)</span></label>
-                    <input type="url" id="edit-e-google-form" name="googleFormUrl" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;" required>
+                    <label style="font-weight: 800; color: var(--dark);">Registration / External Link <span style="font-size: 0.8rem; color: var(--gray); font-weight: 500;">(Optional)</span></label>
+                    <input type="url" id="edit-e-google-form" name="googleFormUrl" class="input-field" style="border-radius: 12px; padding: 0.8rem 1rem;" placeholder="https://docs.google.com/forms/..., https://forms.gle/..., or website link">
                 </div>
 
                 <div class="input-group"><label style="font-weight:800;color:var(--dark);">Update Event Photo</label><input type="file" id="edit-e-image" name="image" class="input-field" style="border-radius: 12px; padding: 0.6rem 1rem;" accept="image/*"></div>
@@ -472,64 +472,34 @@
             if (!activeEventData) return;
             const rawUrl = (activeEventData.google_form_url || '').trim();
 
-            if (rawUrl) {
-                let formUrl = rawUrl;
-                if (!formUrl.startsWith('http://') && !formUrl.startsWith('https://')) {
-                    formUrl = 'https://' + formUrl;
-                }
-
-                // Immediately open Google Form in new tab
-                window.open(formUrl, '_blank');
-
-                const attendBtn = document.getElementById('attend-btn');
-                if (attendBtn) {
-                    attendBtn.disabled = true;
-                    attendBtn.textContent = 'Registering...';
-                }
-
-                try {
-                    const res = await fetch(`/api/events/${eventId}/register`, {
-                        method: 'POST',
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
-                    const data = await res.json();
-                    showToast('Opening Google Form! Your application is recorded as PENDING.', 'success');
-                    await loadEventDetails();
-                } catch (e) {
-                    showToast('Opening Google Form for registration...', 'info');
-                } finally {
-                    if (attendBtn) attendBtn.disabled = false;
-                }
-            } else {
-                // If host didn't specify an external form URL, directly complete registration!
-                submitDirectRegistration();
-            }
-        }
-
-        async function submitDirectRegistration() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                showToast('Please sign in to register.', 'error');
-                setTimeout(() => { window.location.href = 'login'; }, 1000);
-                return;
-            }
-
             const attendBtn = document.getElementById('attend-btn');
             if (attendBtn) {
                 attendBtn.disabled = true;
                 attendBtn.textContent = 'Submitting...';
             }
 
+            if (rawUrl) {
+                let formUrl = rawUrl;
+                if (!formUrl.startsWith('http://') && !formUrl.startsWith('https://')) {
+                    formUrl = 'https://' + formUrl;
+                }
+                window.open(formUrl, '_blank');
+            }
+
             try {
-                const res = await fetch(`/api/events/${eventId}/register`, {
-                    method: 'POST',
-                    headers: { Authorization: `Bearer ${token}` }
+                const res = await apiFetch(`/events/${eventId}/register`, {
+                    method: 'POST'
                 });
                 const data = await res.json();
-                showToast(data.message || 'Registration submitted for host approval!', 'success');
+                if (data.status) {
+                    updateUserStatusUI(data.status);
+                } else {
+                    updateUserStatusUI('pending');
+                }
+                showToast(rawUrl ? 'Registration link opened! Status: PENDING organizer approval.' : 'Registration submitted! Status: PENDING organizer approval.', 'success');
                 await loadEventDetails();
             } catch (e) {
-                showToast('Connection error while registering.', 'error');
+                showToast('Error registering for event.', 'error');
             } finally {
                 if (attendBtn) attendBtn.disabled = false;
             }
@@ -680,19 +650,27 @@
             const attendBtn = document.getElementById('attend-btn');
             if (!attendBtn) return;
 
-            const st = (status || 'pending').toLowerCase();
+            const st = (status || '').toLowerCase();
             if (st === 'approved' || st === 'confirmed') {
-                attendBtn.textContent = 'View Official Pass 🎟️';
+                attendBtn.disabled = false;
+                attendBtn.textContent = 'Status: Attending ✓ (View Pass)';
                 attendBtn.style.background = '#059669';
                 attendBtn.onclick = () => document.getElementById('ticket-modal').classList.remove('hidden');
             } else if (st === 'pending') {
+                attendBtn.disabled = false;
                 attendBtn.textContent = 'Status: Pending Approval ⏳';
                 attendBtn.style.background = '#d97706';
-                attendBtn.onclick = openGoogleFormModal;
+                attendBtn.onclick = () => showToast('Your attendance request is PENDING approval by the event host.', 'info');
             } else if (st === 'rejected') {
+                attendBtn.disabled = true;
                 attendBtn.textContent = 'Status: Rejected ❌';
                 attendBtn.style.background = '#dc2626';
-                attendBtn.disabled = true;
+                attendBtn.onclick = null;
+            } else {
+                attendBtn.disabled = false;
+                attendBtn.textContent = 'Attend Event';
+                attendBtn.style.background = 'var(--primary)';
+                attendBtn.onclick = openGoogleFormModal;
             }
         }
 
@@ -732,12 +710,6 @@
 
             const rawDate = formData.get('eventDate');
             const rawEndDate = formData.get('endDate');
-
-            const googleFormUrl = (formData.get('googleFormUrl') || '').trim();
-            if (!googleFormUrl) {
-                alert('Error: Google Form Registration Link is compulsory.');
-                return;
-            }
 
             if (rawDate) formData.set('eventDate', rawDate.replace('T', ' ') + ':00');
             if (rawEndDate) formData.set('endDate', rawEndDate.replace('T', ' ') + ':00');
@@ -817,12 +789,27 @@
         async function loadEventDetails() {
             if(!eventId) { window.location.href = 'events'; return; }
             
-            const res = await fetch(`/api/events`);
-            const data = await res.json();
-            const event = data.data.find(e => e.id == eventId);
+            let event = null;
+            try {
+                const res = await apiFetch('/events/' + eventId);
+                const data = await res.json();
+                if (data.success && data.data) {
+                    event = data.data;
+                }
+            } catch(e) {}
+
+            if(!event) {
+                const res = await fetch('/api/events');
+                const data = await res.json();
+                event = data.data ? data.data.find(e => e.id == eventId) : null;
+            }
 
             if(!event) return;
             activeEventData = event;
+
+            if (event.my_status) {
+                updateUserStatusUI(event.my_status);
+            }
 
             const dateStr = new Date(event.event_date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
             const timeStr = new Date(event.event_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });

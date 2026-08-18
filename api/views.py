@@ -1443,7 +1443,7 @@ def is_google_form_url(url):
     if not url or not isinstance(url, str):
         return False
     u = url.strip().lower()
-    return "docs.google.com/forms" in u or "forms.gle" in u or u.startswith("https://")
+    return u.startswith("http://") or u.startswith("https://") or "docs.google.com" in u or "forms.gle" in u or "." in u
 
 
 def events(request):
@@ -1470,10 +1470,8 @@ def events(request):
             return missing
         
         google_form_url = (data.get("googleFormUrl") or data.get("google_form_url") or "").strip()
-        if not google_form_url:
-            return api_response({"success": False, "message": "Google Form URL is compulsory for event registration."}, 400)
-        if not is_google_form_url(google_form_url):
-            return api_response({"success": False, "message": "Please enter a valid Google Form URL (e.g. https://docs.google.com/forms/... or https://forms.gle/...)"}, 400)
+        if google_form_url and not is_google_form_url(google_form_url):
+            return api_response({"success": False, "message": "Please enter a valid Registration / External Link URL (e.g. https://...)"}, 400)
 
         if data.get("endDate") and data.get("endDate") < data.get("eventDate"):
             return api_response({"success": False, "message": "End date and time cannot be earlier than start time"}, 400)
@@ -1522,6 +1520,11 @@ def event_detail(request, event_id):
         return api_response({"success": False, "message": "Event not found"}, 404)
 
     if request.method == "GET":
+        user, _ = auth_user(request)
+        if user:
+            reg = fetch_one("SELECT status FROM event_registrations WHERE event_id = %s AND user_id = %s", [event_id, user["id"]])
+            if reg:
+                event["my_status"] = reg.get("status") or "pending"
         return api_response({"success": True, "data": event})
 
     if request.method == "PUT":
@@ -1539,9 +1542,9 @@ def event_detail(request, event_id):
         event_type = data.get("eventType") or data.get("event_type") or event.get("event_type")
         description = data.get("description") if "description" in data else event.get("description")
         
-        google_form_url = (data.get("googleFormUrl") or data.get("google_form_url") or event.get("google_form_url") or "").strip()
+        google_form_url = (data.get("googleFormUrl") or data.get("google_form_url") if "googleFormUrl" in data or "google_form_url" in data else event.get("google_form_url") or "").strip()
         if google_form_url and not is_google_form_url(google_form_url):
-            return api_response({"success": False, "message": "Please enter a valid Google Form URL"}, 400)
+            return api_response({"success": False, "message": "Please enter a valid Registration / External Link URL"}, 400)
 
         event_date = data.get("eventDate") or data.get("event_date") or event.get("event_date")
         end_date = data.get("endDate") or data.get("end_date") or event.get("end_date")
