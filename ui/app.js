@@ -381,6 +381,8 @@ if (registerForm) {
         const name = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim().toLowerCase();
         const password = document.getElementById('password').value;
+        const confirmPasswordEl = document.getElementById('confirm-password');
+        const confirmPassword = confirmPasswordEl ? confirmPasswordEl.value : null;
         const errorMsg = document.getElementById('error-message');
         const successMsg = document.getElementById('success-message');
         const submitBtn = registerForm.querySelector('button[type="submit"]');
@@ -393,6 +395,12 @@ if (registerForm) {
 
         if (password.length < 8) {
             errorMsg.querySelector('.msg-content').textContent = 'Password must be at least 8 characters.';
+            errorMsg.classList.remove('hidden');
+            return;
+        }
+
+        if (confirmPasswordEl && password !== confirmPassword) {
+            errorMsg.querySelector('.msg-content').textContent = 'Passwords do not match.';
             errorMsg.classList.remove('hidden');
             return;
         }
@@ -620,3 +628,22 @@ document.addEventListener('error', (event) => {
     target.dataset.fallbackApplied = 'true';
     target.src = imageFallbackFor(target);
 }, true);
+
+// Toggle password visibility
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.toggle-password');
+    if (btn) {
+        const targetId = btn.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        if (input) {
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerHTML = '<i data-lucide="eye-off" size="18"></i>';
+            } else {
+                input.type = 'password';
+                btn.innerHTML = '<i data-lucide="eye" size="18"></i>';
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+    }
+});
