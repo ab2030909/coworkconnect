@@ -469,21 +469,24 @@
                 return;
             }
 
-            if (!activeEventData) return;
+            if (!activeEventData) {
+                showToast('Loading event details, please try again.', 'info');
+                return;
+            }
             const rawUrl = (activeEventData.google_form_url || '').trim();
 
             const attendBtn = document.getElementById('attend-btn');
             if (attendBtn) {
                 attendBtn.disabled = true;
-                attendBtn.textContent = 'Submitting...';
+                attendBtn.textContent = 'Submitting Request...';
             }
 
+            let formUrl = '';
             if (rawUrl) {
-                let formUrl = rawUrl;
+                formUrl = rawUrl;
                 if (!formUrl.startsWith('http://') && !formUrl.startsWith('https://')) {
                     formUrl = 'https://' + formUrl;
                 }
-                window.open(formUrl, '_blank');
             }
 
             try {
@@ -496,7 +499,16 @@
                 } else {
                     updateUserStatusUI('pending');
                 }
-                showToast(rawUrl ? 'Registration link opened! Status: PENDING organizer approval.' : 'Registration submitted! Status: PENDING organizer approval.', 'success');
+
+                if (formUrl) {
+                    showToast('Opening registration link... Status: PENDING host approval.', 'success');
+                    const win = window.open(formUrl, '_blank');
+                    if (!win || win.closed || typeof win.closed === 'undefined') {
+                        window.location.href = formUrl;
+                    }
+                } else {
+                    showToast(data.message || 'Registration submitted! Status: PENDING host approval.', 'success');
+                }
                 await loadEventDetails();
             } catch (e) {
                 showToast('Error registering for event.', 'error');
