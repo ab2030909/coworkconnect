@@ -229,8 +229,8 @@
                     </div>
 
                     <!-- Register Now Button -->
-                    <button class="btn btn-primary" onclick="openContactModal()" style="width: 100%; padding: 0.95rem 1.25rem; border-radius: 14px; font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
-                        <i data-lucide="check-circle-2" size="18"></i> Register Now
+                    <button id="card-register-btn" class="btn btn-primary" onclick="handleRegisterNow()" style="width: 100%; padding: 0.95rem 1.25rem; border-radius: 14px; font-weight: 800; font-size: 1.02rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+                        <i data-lucide="external-link" size="18"></i> Visit Website / Register
                     </button>
 
                     <p style="text-align: center; font-size: 0.78rem; color: #64748b; margin: 0; font-weight: 600;">
@@ -322,8 +322,8 @@
         <div style="display: flex; align-items: center; gap: 1rem;">
             <span style="border: 1px solid #e2e8f0; padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; color: var(--dark);">Free</span>
             
-            <button onclick="openContactModal()" class="btn btn-primary" style="padding: 0 2.2rem; height: 48px; border-radius: 50px; font-weight: 800; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                <i data-lucide="check-circle-2" size="18"></i> Register Now
+            <button id="sticky-register-btn" onclick="handleRegisterNow()" class="btn btn-primary" style="padding: 0 2.2rem; height: 48px; border-radius: 50px; font-weight: 800; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                <i data-lucide="external-link" size="18"></i> Visit Website / Register
             </button>
         </div>
     </div>
@@ -656,6 +656,27 @@
             }
         }
 
+        function handleRegisterNow() {
+            let formUrl = '';
+            if (activeEventData && activeEventData.google_form_url && activeEventData.google_form_url.trim()) {
+                formUrl = activeEventData.google_form_url.trim();
+                if (!formUrl.startsWith('http://') && !formUrl.startsWith('https://')) {
+                    formUrl = 'https://' + formUrl;
+                }
+            }
+
+            if (formUrl) {
+                // Directly redirect / open the organizer's website/form link in new tab
+                const win = window.open(formUrl, '_blank');
+                if (!win || win.closed || typeof win.closed === 'undefined') {
+                    window.location.href = formUrl;
+                }
+            } else {
+                // If no website link was added by organizer, open the contact modal
+                openContactModal();
+            }
+        }
+
         function syncEventContactActions(event) {
             let formUrl = '';
             if (event.google_form_url && event.google_form_url.trim()) {
@@ -665,8 +686,8 @@
                 }
             }
 
-            const cardWebBtn = document.getElementById('card-website-btn');
-            const stickyWebBtn = document.getElementById('sticky-website-btn');
+            const cardRegisterBtn = document.getElementById('card-register-btn');
+            const stickyRegisterBtn = document.getElementById('sticky-register-btn');
             const modalFormBtn = document.getElementById('modal-form-btn');
             const modalEmailBtn = document.getElementById('modal-email-btn');
             const modalTitle = document.getElementById('modal-event-title');
@@ -674,22 +695,26 @@
             if (modalTitle) modalTitle.textContent = event.title || 'Event';
 
             if (formUrl) {
-                if (cardWebBtn) {
-                    cardWebBtn.href = formUrl;
-                    cardWebBtn.style.display = 'inline-flex';
+                if (cardRegisterBtn) {
+                    cardRegisterBtn.innerHTML = '<i data-lucide="external-link" size="18"></i> Visit Website / Register';
                 }
-                if (stickyWebBtn) {
-                    stickyWebBtn.href = formUrl;
-                    stickyWebBtn.style.display = 'inline-flex';
+                if (stickyRegisterBtn) {
+                    stickyRegisterBtn.innerHTML = '<i data-lucide="external-link" size="18"></i> Visit Website / Register';
                 }
                 if (modalFormBtn) {
                     modalFormBtn.href = formUrl;
                     modalFormBtn.style.display = 'inline-flex';
                 }
             } else {
-                if (cardWebBtn) cardWebBtn.style.display = 'none';
-                if (stickyWebBtn) stickyWebBtn.style.display = 'none';
-                if (modalFormBtn) modalFormBtn.style.display = 'none';
+                if (cardRegisterBtn) {
+                    cardRegisterBtn.innerHTML = '<i data-lucide="mail" size="18"></i> Contact Organizer';
+                }
+                if (stickyRegisterBtn) {
+                    stickyRegisterBtn.innerHTML = '<i data-lucide="mail" size="18"></i> Contact Organizer';
+                }
+                if (modalFormBtn) {
+                    modalFormBtn.style.display = 'none';
+                }
             }
 
             if (modalEmailBtn) {
@@ -697,6 +722,8 @@
                 const mailBody = encodeURIComponent(`Hi ${event.creator_name || 'Organizer'},\n\nI am interested in attending "${event.title}". Please share details regarding registration.\n\nThank you!`);
                 modalEmailBtn.href = `mailto:info@coworkconnect.com?subject=${mailSubject}&body=${mailBody}`;
             }
+
+            if (window.lucide) lucide.createIcons();
         }
 
         function formatDateTimeLocal(dateStr) {
