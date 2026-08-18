@@ -243,7 +243,9 @@
                     <div>
                         <p style="font-size: 0.9rem; color: var(--gray); margin-bottom: 0.2rem; font-weight: 600;">Date and Time</p>
                         <p id="e-full-date" style="font-weight: 800; color: var(--dark); font-size: 1.1rem; margin-bottom: 0.5rem; line-height: 1.4;">Date Loading...</p>
-                        <a href="#" style="font-size: 0.9rem; color: var(--primary); font-weight: 700; text-decoration: none;">Add to calendar</a>
+                        <a id="add-to-cal-link" href="javascript:void(0)" onclick="addToGoogleCalendar()" style="font-size: 0.9rem; color: var(--primary); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <i data-lucide="calendar-plus" size="15"></i> Add to Google Calendar
+                        </a>
                     </div>
                 </div>
 
@@ -439,6 +441,42 @@
 
         let activeEventData = null;
         let myRegistrationStatus = null;
+
+        function formatGoogleCalendarDate(dateObj) {
+            const pad = (n) => String(n).padStart(2, '0');
+            const year = dateObj.getUTCFullYear();
+            const month = pad(dateObj.getUTCMonth() + 1);
+            const day = pad(dateObj.getUTCDate());
+            const hours = pad(dateObj.getUTCHours());
+            const minutes = pad(dateObj.getUTCMinutes());
+            const seconds = pad(dateObj.getUTCSeconds());
+            return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+        }
+
+        function addToGoogleCalendar() {
+            if (!activeEventData) {
+                showToast('Event details are loading...', 'info');
+                return;
+            }
+            const title = activeEventData.title || 'CoWorkConnect Event';
+            const description = `${activeEventData.description || ''}\n\nView event on CoWorkConnect: ${window.location.href}`;
+            const location = activeEventData.space_name || activeEventData.venue || activeEventData.city || 'Pakistan';
+
+            let startDate = activeEventData.event_date ? new Date(activeEventData.event_date) : new Date();
+            if (isNaN(startDate.getTime())) startDate = new Date();
+
+            let endDate = activeEventData.end_date ? new Date(activeEventData.end_date) : null;
+            if (!endDate || isNaN(endDate.getTime())) {
+                endDate = new Date(startDate.getTime() + (2 * 60 * 60 * 1000));
+            }
+
+            const startFormatted = formatGoogleCalendarDate(startDate);
+            const endFormatted = formatGoogleCalendarDate(endDate);
+
+            const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startFormatted}/${endFormatted}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`;
+
+            window.open(calUrl, '_blank');
+        }
 
         function getGoogleEmbedUrl(url) {
             if (!url) return '';
