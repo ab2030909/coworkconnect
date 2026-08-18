@@ -647,3 +647,51 @@ document.addEventListener('click', (e) => {
         }
     }
 });
+
+// Global Form Validation for Space-only inputs and trimming
+document.addEventListener('submit', (e) => {
+    const form = e.target;
+    if (form && form.tagName === 'FORM') {
+        let isValid = true;
+        let firstInvalidField = null;
+        
+        const requiredInputs = form.querySelectorAll('input[required], textarea[required]');
+        requiredInputs.forEach(input => {
+            if (input.type === 'text' || input.type === 'email' || input.tagName === 'TEXTAREA') {
+                const val = input.value;
+                const trimmed = val.trim();
+                
+                if (val.length > 0 && trimmed.length === 0) {
+                    input.value = ''; // Force empty to trigger native or custom checks
+                    isValid = false;
+                    if (!firstInvalidField) firstInvalidField = input;
+                }
+            }
+        });
+
+        if (!isValid) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            
+            const errorMsg = form.querySelector('.auth-message, #error-message, .form-error-message');
+            if (errorMsg) {
+                const contentSpan = errorMsg.querySelector('.msg-content');
+                if (contentSpan) contentSpan.textContent = 'This field cannot contain only spaces. Please enter valid information.';
+                errorMsg.classList.remove('hidden');
+                errorMsg.style.display = 'flex';
+            } else {
+                showToast('This field cannot contain only spaces. Please enter valid information.', 'error');
+            }
+            if (firstInvalidField) firstInvalidField.focus();
+            return false;
+        }
+        
+        // Trim all inputs before submission
+        const allInputs = form.querySelectorAll('input[type="text"], input[type="email"], textarea');
+        allInputs.forEach(input => {
+            if (input.value) {
+                input.value = input.value.trim();
+            }
+        });
+    }
+}, true);

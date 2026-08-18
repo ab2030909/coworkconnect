@@ -104,7 +104,20 @@
                 <div style="background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--border); box-shadow: var(--shadow);">
                     <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem; font-weight: 800;"><i data-lucide="award" size="24" color="var(--primary)"></i> My Expertise</h3>
                     <div id="skills-container" style="display: flex; flex-wrap: wrap; gap: 0.7rem; margin-bottom: 1.5rem;"></div>
-                    <div style="display: flex; gap: 1rem;"><input type="text" id="skill-input" class="input-field" placeholder="Add Skill (e.g. React)" style="border-radius: 12px;"><button id="add-skill-btn" class="btn btn-outline" style="padding: 0 2rem; border-radius: 12px; font-weight: 800;">Add</button></div>
+                    <div style="position: relative;" id="expertise-dropdown-wrapper">
+                        <div id="expertise-dropdown-toggle" class="input-field" style="border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: white;">
+                            <span>Select Expertise</span>
+                            <i data-lucide="chevron-down" size="18"></i>
+                        </div>
+                        <div id="expertise-dropdown-menu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 12px; margin-top: 0.5rem; box-shadow: var(--shadow); z-index: 10; max-height: 250px; overflow-y: auto;">
+                            <!-- Options will be populated by JS -->
+                        </div>
+                    </div>
+                    <div id="custom-expertise-wrapper" style="display: none; gap: 1rem; margin-top: 1rem;">
+                        <input type="text" id="custom-skill-input" class="input-field" placeholder="Enter custom expertise" style="border-radius: 12px; flex: 1;">
+                        <button id="add-custom-skill-btn" class="btn btn-outline" style="padding: 0 2rem; border-radius: 12px; font-weight: 800;">Add</button>
+                    </div>
+                    <div id="expertise-error" style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; display: none;"></div>
                 </div>
 
                 <!-- Friends Card (Facebook style) -->
@@ -135,9 +148,73 @@
         lucide.createIcons();
         let avatarUrl = '';
         const skillsContainer = document.getElementById('skills-container');
-        const skillInput = document.getElementById('skill-input');
-        const addSkillBtn = document.getElementById('add-skill-btn');
         let skills = [];
+
+        const predefinedExpertise = ["Software Development", "Design", "Marketing", "Product Management", "Data Science", "Sales", "Customer Support", "Finance", "HR", "Legal", "Operations", "Others"];
+        const dropdownMenu = document.getElementById('expertise-dropdown-menu');
+        const dropdownToggle = document.getElementById('expertise-dropdown-toggle');
+        const customWrapper = document.getElementById('custom-expertise-wrapper');
+        const customInput = document.getElementById('custom-skill-input');
+        const addCustomBtn = document.getElementById('add-custom-skill-btn');
+        const expError = document.getElementById('expertise-error');
+
+        function renderDropdown() {
+            if (!dropdownMenu) return;
+            dropdownMenu.innerHTML = predefinedExpertise.map(exp => `
+                <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;">
+                    <input type="checkbox" value="${escapeHtml(exp)}" class="expertise-cb" ${skills.includes(exp) ? 'checked' : ''} style="accent-color: var(--primary); width: 16px; height: 16px;">
+                    <span style="font-size: 0.95rem; color: var(--dark);">${escapeHtml(exp)}</span>
+                </label>
+            `).join('');
+            
+            dropdownMenu.querySelectorAll('.expertise-cb').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const val = e.target.value;
+                    if (val === 'Others') {
+                        customWrapper.style.display = e.target.checked ? 'flex' : 'none';
+                    } else {
+                        if (e.target.checked && !skills.includes(val)) {
+                            skills.push(val);
+                        } else if (!e.target.checked) {
+                            skills = skills.filter(item => item !== val);
+                        }
+                        renderSkills();
+                    }
+                });
+            });
+        }
+
+        dropdownToggle?.addEventListener('click', () => {
+            const isHidden = dropdownMenu.style.display === 'none';
+            dropdownMenu.style.display = isHidden ? 'block' : 'none';
+        });
+
+        document.addEventListener('click', (e) => {
+            const wrapper = document.getElementById('expertise-dropdown-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                dropdownMenu.style.display = 'none';
+            }
+        });
+
+        function addCustomExpertise(e) {
+            e.preventDefault();
+            const val = customInput.value.trim();
+            expError.style.display = 'none';
+            if (!val) {
+                expError.textContent = 'This field cannot contain only spaces. Please enter valid information.';
+                expError.style.display = 'block';
+                return;
+            }
+            if (skills.includes(val)) {
+                expError.textContent = 'This expertise is already added.';
+                expError.style.display = 'block';
+                return;
+            }
+            skills.push(val);
+            customInput.value = '';
+            renderSkills();
+        }
+        addCustomBtn?.addEventListener('click', addCustomExpertise);
 
         async function loadProfile() {
             const token = localStorage.getItem('token');
@@ -168,6 +245,7 @@
                     skills = [];
                 }
                 renderSkills();
+                renderDropdown();
 
                 localStorage.setItem('user', JSON.stringify(user));
                 updateNavbar();
@@ -327,8 +405,7 @@
             lucide.createIcons();
         }
 
-        addSkillBtn.addEventListener('click', () => { if(skillInput.value) { skills.push(skillInput.value); skillInput.value = ''; renderSkills(); } });
-        window.removeSkill = (s) => { skills = skills.filter(item => item !== s); renderSkills(); };
+        window.removeSkill = (s) => { skills = skills.filter(item => item !== s); renderSkills(); renderDropdown(); };
         document.addEventListener('DOMContentLoaded', () => { loadProfile(); renderSkills(); });
     </script>
 
