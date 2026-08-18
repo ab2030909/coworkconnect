@@ -1623,7 +1623,7 @@ def event_detail(request, event_id):
         if error:
             return error
 
-        if user.get("role") != "admin" and event["created_by"] != user["id"]:
+        if user.get("role") != "admin" and str(event.get("created_by")) != str(user.get("id")):
             return api_response({"success": False, "message": "Only the event host or admin can edit this event"}, 403)
 
         data = read_data(request)
@@ -1633,43 +1633,33 @@ def event_detail(request, event_id):
         event_type = data.get("eventType") or data.get("event_type") or event.get("event_type")
         description = data.get("description") if "description" in data else event.get("description")
         
-        google_form_url = (data.get("googleFormUrl") or data.get("google_form_url") if "googleFormUrl" in data or "google_form_url" in data else event.get("google_form_url") or "").strip()
-        if google_form_url and not is_google_form_url(google_form_url):
-            return api_response({"success": False, "message": "Please enter a valid Registration / External Link URL"}, 400)
+        google_form_url = (data.get("googleFormUrl") or data.get("google_form_url") if ("googleFormUrl" in data or "google_form_url" in data) else event.get("google_form_url") or "").strip()
+        if google_form_url and not google_form_url.startswith("http://") and not google_form_url.startswith("https://"):
+            google_form_url = "https://" + google_form_url
 
-        is_paid = event.get("is_paid", 0)
-        if "is_paid" in data or "price" in data:
-            is_paid = 1 if str(data.get("is_paid", "")).lower() in ["true", "1", "paid"] or (data.get("price") and float(data.get("price") or 0) > 0) else 0
+        is_paid = 1 if str(data.get("is_paid", event.get("is_paid", 0))).lower() in ["true", "1", "paid"] or (data.get("price") and float(data.get("price") or 0) > 0) else 0
         
-        price = event.get("price", 0.0)
-        if "price" in data:
-            try:
-                price = float(data.get("price") or 0) if is_paid else 0.0
-            except (ValueError, TypeError):
-                price = 0.0
-        elif not is_paid:
+        try:
+            price = float(data.get("price") if "price" in data else event.get("price", 0)) if is_paid else 0.0
+        except (ValueError, TypeError):
             price = 0.0
 
-        total_seats = event.get("total_seats", 50)
-        if "total_seats" in data or "totalSeats" in data:
-            try:
-                total_seats = int(data.get("total_seats") or data.get("totalSeats") or 50)
-                if total_seats < 1:
-                    total_seats = 50
-            except (ValueError, TypeError):
+        try:
+            total_seats = int(data.get("total_seats") or data.get("totalSeats") or event.get("total_seats", 50))
+            if total_seats < 1:
                 total_seats = 50
+        except (ValueError, TypeError):
+            total_seats = 50
 
         event_date = data.get("eventDate") or data.get("event_date") or event.get("event_date")
         end_date = data.get("endDate") or data.get("end_date") or event.get("end_date")
 
-        image_url = event.get("image_url")
+        image_url = data.get("imageUrl") or data.get("image_url") or event.get("image_url")
         if "image" in request.FILES:
             try:
                 image_url = save_upload(request.FILES["image"], "events")
             except Exception as e:
                 return api_response({"success": False, "message": str(e)}, 400)
-        elif data.get("image_url"):
-            image_url = data.get("image_url")
 
         try:
             execute(
@@ -1720,7 +1710,7 @@ def event_detail(request, event_id):
         if error:
             return error
 
-        if user.get("role") != "admin" and event["created_by"] != user["id"]:
+        if user.get("role") != "admin" and str(event.get("created_by")) != str(user.get("id")):
             return api_response({"success": False, "message": "Only the event host or admin can delete this event"}, 403)
 
         execute("DELETE FROM events WHERE id = %s", [event_id])
