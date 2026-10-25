@@ -663,9 +663,8 @@ Open your browser and navigate to: **`http://localhost:5000`** (or `http://127.0
 
 ---
 
-## 👥 Contributors & License
+## 👥 License
 
-- **Project Lead & Author**: Abubakkar Khan ([@Abubakkar-Khan](https://github.com/Abubakkar-Khan))
 - **License**: MIT License — open for academic, personal, and commercial usage.
 
 ---
